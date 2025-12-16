@@ -1,0 +1,190 @@
+[
+  {
+    "type": "dashboard-main",
+    "width": "50%",
+    "position": "left",
+    "header": "Leadership Enabling Continuous Improvements",
+    "subHeader": "",
+    "description": "Change begins when leadership is unlocked beyond government offices and school corridors\u2014in village meetings and community spaces. This improvement journey is driven by leaders across government, civil society, and market sectors. Shikshagraha is fueled by such leadership.",
+    "styles": {
+      "section": "dashboard-main-section",
+      "title": "dashboard-main-title",
+      "tagline": "dashboard-main-tagline",
+      "summary": "dashboard-main-summary"
+    }
+  },
+  {
+    "type": "dashboard-metrics",
+    "width": "50%",
+    "position": "center",
+    "header": "Our Goal",
+    "subHeader": "To impact atleast 30% of India's states and districts by 2030",
+    "indicators": [
+      {
+        "label": "States",
+        "value": 12
+      },
+      {
+        "label": "Districts",
+        "value": 250
+      },
+      {
+        "label": "Schools",
+        "value": 521415
+      }
+    ],
+    "styles": {
+      "section": "hero-section",
+      "title": "hero-title",
+      "tagline": "hero-tagline",
+      "summary": "hero-summary"
+    }
+  },
+  {
+    "type": "country-view",
+    "showVariations": false,
+    "showDetails": true,
+    "width": "100%",
+    "position": "left",
+    "title": "Our Network",
+    "notes": [
+      "Click on a state to view detailed insights",
+      "Data as shared by the partners"
+    ],
+    "selections": [
+      {
+        "label": "Micro Improvement initiated",
+        "value": "Micro Improvement Initiated",
+        "selected": true
+      },
+      {
+        "label": "Leaders driving improvements",
+        "value": "Leaders Driving Improvements",
+        "selected": false
+      },
+      {
+        "label": "Schools driving improvements",
+        "value": "Schools Driving Improvements",
+        "selected": false
+      }
+    ],
+    "legends": [
+      {
+        "label": "Micro Improvement Initiated",
+        "color": "#6c757d"
+      },
+      {
+        "label": "Leaders Driving Improvements",
+        "color": "#6c757d"
+      },
+      {
+        "label": "Schools Driving Improvements",
+        "color": "#6c757d"
+      },
+      {
+        "label": "Community-Led Improvements",
+        "color": "#6c757d"
+      }
+    ],
+    "styles": {
+      "section": "partner-logos-section",
+      "title": "section-title",
+      "category": "partner-category",
+      "logosContainer": "logos-container",
+      "logo": "partner-logo"
+    }
+  },
+  {
+    "type": "line-chart",
+    "width": "50%",
+    "position": "center",
+    "title": "Monthly Progress",
+    "data": [
+      {
+        "year": 2024,
+        "data": [
+          178135.0,
+          307343.0,
+          434933.0,
+          520362.0
+        ]
+      },
+      {
+        "year": 2025,
+        "data": [
+          618359.0,
+          763265.0
+        ]
+      }
+    ],
+    "styles": {
+      "section": "line-chart-section",
+      "title": "section-title"
+    }
+  },
+  {
+    "type": "pie-chart",
+    "width": "50%",
+    "position": "center",
+    "title": "Monthly Progress",
+    "data": [
+      {
+        "name": "Infrastructure and Resources",
+        "value": ""
+      },
+      {
+        "name": "School Structure and Practices",
+        "value": 35671
+      },
+      {
+        "name": "Leadership",
+        "value": 79676
+      },
+      {
+        "name": " Pedagogy ",
+        "value": 374119
+      },
+      {
+        "name": "Assessment and Evaluation",
+        "value": ""
+      },
+      {
+        "name": "Community Engagement",
+        "value": 273799
+      }
+    ],
+    "styles": {
+      "section": "line-chart-section",
+      "title": "section-title"
+    }
+  },
+  {
+    "type": "pie-chart-community-led",
+    "data": [
+      {
+        "name": "Infrastructure and resources",
+        "value": 0
+      },
+      {
+        "name": "School structure and practices",
+        "value": 0
+      },
+      {
+        "name": "Leadership",
+        "value": 0
+      },
+      {
+        "name": "Pedagogy",
+        "value": 0
+      },
+      {
+        "name": "Assessment and Evaluation",
+        "value": 0
+      },
+      {
+        "name": "Community Engagement",
+        "value": 3044
+      }
+    ]
+  }
+]
