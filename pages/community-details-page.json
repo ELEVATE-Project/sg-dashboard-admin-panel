@@ -1,0 +1,75 @@
+{
+    "sections":[
+        {
+          "type": "dashboard-main",
+          "width": "100%",
+          "position": "left",
+          "header": "Community led Initiatives",
+          "subHeader": "Change begins when leadership is unlocked, not only in government offices or school corridors, but also in village meetings and community spaces.",
+          "description": "Initiatives implemented by women leaders or youth leaders in their communities",
+          "styles": {
+            "section": "dashboard-main-section",
+            "title": "dashboard-main-title",
+            "tagline": "dashboard-main-tagline",
+            "summary": "dashboard-main-summary"
+          }
+        },
+        {
+            "type": "state-view",
+            "showVariations":false,
+            "showDetails":true,
+            "width": "100%",
+            "position": "left",
+            "title": "",
+            "selections":[],
+            "legends":{
+              "category_1": {
+                "label": "Districts with Community led initiatives",
+                "color": "#ffffff",
+                "show_details": true,
+                "icon": "assets/icons/community_map_icon.svg"
+              },
+              "category_2": {
+                "label": "Yet to start",
+                "color": "#ffffff",
+                "show_details": true
+              }
+            },
+            "path":"/states/{code}/community-map.json",
+            "styles": {
+              "section": "partner-logos-section",
+              "title": "section-title",
+              "category": "partner-category",
+              "logosContainer": "logos-container",
+              "logo": "partner-logo"
+            },
+            "notes":[
+               "Click on a district to view detailed insights", "Data as shared by the partners"
+            ]
+        },
+        {
+            "type": "pie-chart",
+            "width": "100%",
+            "position": "center",
+            "title": "Monthly Progress",
+            "data": [],
+            "styles": {
+              "section": "line-chart-section",
+              "title": "section-title"
+            },
+            "path":"/states/{code}/community-pie-chart.json"
+        },
+        {
+            "type": "programs-list",
+            "width": "100%",
+            "position": "center",
+            "title": "Ongoing Community Led State Missions (Reports)",
+            "data": [],
+            "styles": {
+              "section": "line-chart-section",
+              "title": "section-title"
+            }
+        }
+    ]
+      
+}
