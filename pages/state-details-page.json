@@ -1,0 +1,153 @@
+{
+  "sections": [
+    {
+      "type": "state-metrics",
+      "width": "100%",
+      "data": [
+        {
+          "label": "State led Program",
+          "value": "",
+          "description": "Programs co-created and implemented by department of school education in the state in collaboration with civil society organisations",
+          "linkText": "*Click to learn more about the state programs",
+          "redirectionLink": "",
+          "identifier": "slm",
+          "icon": "/assets/icons/clipboard.svg"
+        },
+        {
+          "label": "District led Program",
+          "value": "",
+          "description": "Programs co-created and implemented by education department in districts in partnership with civil society organisations",
+          "linkText": "*Click on districts to explore district programs",
+          "redirectionLink": "",
+          "identifier": "dlm",
+          "icon": "/assets/icons/guide.svg"
+        },
+        {
+          "label": "Community led Initiative",
+          "value": "",
+          "description": "Initiatives implemented by women leaders or youth leaders in their communities",
+          "linkText": "*Click to learn more about the community led initiatives",
+          "redirectionLink": "",
+          "identifier": "clm",
+          "icon": "/assets/icons/folder.svg"
+        }
+      ],
+      "path": "/states/{code}/metrics.json"
+    },
+    {
+      "type": "state-view",
+      "showVariations": false,
+      "showDetails": true,
+      "width": "100%",
+      "position": "left",
+      "title": "",
+      "selections": [
+        {
+          "label": "Micro Improvement Initiated",
+          "value": "Micro Improvement Initiated",
+          "selected": true
+        },
+        {
+          "label": "Leaders Driving Improvements",
+          "value": "Leaders Driving Improvements",
+          "selected": false
+        },
+        {
+          "label": "Schools Driving Improvements",
+          "value": "Schools Driving Improvements",
+          "selected": false
+        },
+        {
+          "label": "Community-Led Improvements",
+          "value": "Community-Led Improvements",
+          "selected": false
+        }
+      ],
+      "legends": {
+        "category_1": {
+          "label": "State and District led programs",
+          "color": "#5F1160",
+          "show_details": true
+        },
+        "category_2": {
+          "label": "State led programs",
+          "color": "#954696",
+          "show_details": true
+        },
+        "category_3": {
+          "label": "District led programs",
+          "color": "#B485B4",
+          "show_details": true
+        },
+        "category_4": {
+          "label": "Community led initiatives",
+          "color": "#ffffff",
+          "show_details": true,
+          "icon": "assets/icons/community_map_icon.svg"
+        },
+        "category_5": {
+          "label": "Yet to start",
+          "color": "#ffffff",
+          "show_details": false
+        }
+      },
+      "path": "/states/{code}/map.json",
+      "styles": {
+        "section": "partner-logos-section",
+        "title": "section-title",
+        "category": "partner-category",
+        "logosContainer": "logos-container",
+        "logo": "partner-logo"
+      },
+      "notes": [
+        "Click on a district to view detailed insights",
+        "Data as shared by the partners"
+      ]
+    },
+    {
+      "type": "line-chart",
+      "width": "50%",
+      "position": "center",
+      "title": "Monthly Progress",
+      "data": [],
+      "styles": {
+        "section": "line-chart-section",
+        "title": "section-title"
+      },
+      "path": "/states/{code}/line-chart.json"
+    },
+    {
+      "type": "pie-chart",
+      "width": "50%",
+      "position": "center",
+      "title": "Monthly Progress",
+      "data": [],
+      "styles": {
+        "section": "line-chart-section",
+        "title": "section-title"
+      },
+      "path": "/states/{code}/pie-chart.json"
+    },
+    {
+      "type": "programs-list",
+      "width": "100%",
+      "position": "center",
+      "title": "Ongoing Community Led State Missions",
+      "data": [
+        {
+          "title": "program 1",
+          "status": "In Progress",
+          "gallery": [
+            "link",
+            "link"
+          ],
+          "partners": []
+        }
+      ],
+      "styles": {
+        "section": "line-chart-section",
+        "title": "section-title"
+      }
+    }
+  ]
+}
