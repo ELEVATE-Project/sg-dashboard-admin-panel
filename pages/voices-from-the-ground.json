@@ -1,0 +1,132 @@
+[
+  {
+    "type": "branch-animation",
+    "width": "80%",
+    "position": "center",
+    "title": "",
+    "styles": {}
+  },
+  {
+    "type": "data-indicators",
+    "width": "80%",
+    "position": "center",
+    "title": "India Speaks",
+    "indicators": [
+      {
+        "label": "Shiksha \nChaupals",
+        "value": 11971,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/shiksha_chaupals.svg"
+      },
+      {
+        "label": "Community members \nparticipating in dialogues",
+        "value": 333557,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_member.svg"
+      },
+      {
+        "label": "Local challenges \nidentified",
+        "value": 28042,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/mountain.svg"
+      },
+      {
+        "label": "Community leaders \ndriving improvements",
+        "value": 275,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_leaders.svg"
+      },
+      {
+        "label": "Local solutions \nidentified",
+        "value": 24546,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/bulb_light.svg"
+      },
+      {
+        "label": "Local solutions \nimplemented",
+        "value": 12501,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/solution_improvements.svg"
+      }
+    ],
+    "styles": {
+      "section": "data-indicators-section",
+      "title": "text-left",
+      "grid": "data-indicators-grid"
+    }
+  },
+  {
+    "type": "heat-map",
+    "width": "100%",
+    "position": "center",
+    "title": "",
+    "styles": {}
+  },
+  {
+    "type": "section-heading",
+    "width": "90%",
+    "position": "left",
+    "title": "Voices of improvement",
+    "styles": {
+      "title": "section-sub-title my-4 ml-5 pl-2",
+      "section": "ml-5 pl-2"
+    }
+  },
+  {
+    "type": "story-of-the-week",
+    "width": "50",
+    "position": "left",
+    "title": "Story of the week",
+    "styles": {
+      "section": "ml-5 pl-3",
+      "title": "section-sub-title my-4"
+    }
+  },
+  {
+    "type": "community-feed",
+    "width": "50",
+    "position": "left",
+    "title": "Community feed",
+    "styles": {
+      "section": "ml-5 pl-5",
+      "title": "section-sub-title my-4"
+    }
+  },
+  {
+    "type": "section-heading",
+    "width": "90%",
+    "position": "left",
+    "title": "Pulse of leadership",
+    "styles": {
+      "title": "section-sub-title my-4 ml-5 ",
+      "section": "ml-5 pl-2"
+    }
+  },
+  {
+    "type": "leaders-engaged",
+    "width": "50%",
+    "position": "left",
+    "title": "Leaders engaged",
+    "styles": {}
+  },
+  {
+    "type": "micro-improvements-so-far",
+    "width": "50",
+    "position": "left",
+    "data": [
+      {
+        "year": 2025,
+        "data": [
+          618359.0,
+          763265.0
+        ]
+      }
+    ],
+    "title": "Micro Improvements so far",
+    "styles": {}
+  },
+  {
+    "type": "more-stories",
+    "width": "100%",
+    "position": "left",
+    "title": "More stories of Micro Improvements",
+    "styles": {
+      "title": "section-sub-title my-4 ml-5 pl-2",
+      "section": "ml-5 pl-2 mt-5"
+    }
+  }
+]

@@ -9,8 +9,10 @@ PAGE_METADATA = {
     "TESTIMONIALS":"Testimonials",
     "PROGRAMS":"Programs",
     "COMMUNITY_LED_PROGRAMS":"Community Led Programs",
-    "DISTRICT_DETAILS": "District Details"
-}
+    "DISTRICT_DETAILS": "District Details",
+    "UPLOAD_IMAGES":"Imagesicons",
+    "VOICE_TAB_BIG_NUMBERS":"Voices tab_Big numbers"
+    }
 
 TABS_METADATA = {
     "HOME_PAGE":['Indicator', 'Definition', 'Data', 'Icon link'],
@@ -36,5 +38,7 @@ TABS_METADATA = {
         "Report Link"
     ],
     "COMMUNITY_LEAD_PROGRAMS":["Name of the State ","Name of the District","No. of community leaders engaged","Community led improvements","Challenges shared","Solutions shared","Infrastructure and resources","School structure and practices","Leadership"," Pedagogy","Assessment and Evaluation","Community Engagement","Districts initiated"],
-    "DISTRICT_DETAILS": ["State Name", "District Name", "Indicator", "Definition", "Data"]
+    "DISTRICT_DETAILS": ["State Name", "District Name", "Indicator", "Definition", "Data"],
+    "UPLOAD_IMAGES":['Name of images','Link of images'],
+    "VOICE_TAB_BIG_NUMBERS":['Name of the State ','Name of the District', 'Shiksha Chaupals', 'Community members participating in dialogues', 'Local challenges identified', 'Community leaders driving improvements', 'Local solutions identified', 'Local Solutions implemented']
 }

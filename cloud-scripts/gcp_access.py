@@ -65,3 +65,22 @@ def upload_file_to_gcs_and_get_directory(bucket_name, source_file_path, destinat
     except Exception as e:
         logger.error(f"Failed to upload file or generate public URL: {str(e)}")
         return None
+
+
+def delete_file_from_gcs(bucket_name, blob_name):
+    credentials = service_account.Credentials.from_service_account_info(
+        service_account_info,
+        scopes=['https://www.googleapis.com/auth/cloud-platform']
+    )
+
+    storage_client = storage.Client(
+        credentials=credentials,
+        project=service_account_info["project_id"]
+    )
+
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+
+    blob.delete()
+
+

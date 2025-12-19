@@ -93,16 +93,16 @@ def goals(excel_file):
         # private_key_path = os.path.join(script_dir, "..", "private-key.json")
 
 
-        # folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
-        #     bucket_name=os.environ.get("BUCKET_NAME"),
-        #     source_file_path=json_path,
-        #     destination_blob_name="sg-dashboard/landing-page.json"
-        # )
+        folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+            bucket_name=os.environ.get("BUCKET_NAME"),
+            source_file_path=json_path,
+            destination_blob_name="sg-dashboard/dashboard.json"
+        )
 
-        # if folder_url:
-        #     print(f"Successfully uploaded and got public folder URL: {folder_url}")
-        # else:
-        #     print("Failed to upload file to GCS. Check logs for details.")
+        if folder_url:
+            print(f"Successfully uploaded and got public folder URL: {folder_url}")
+        else:
+            print("Failed to upload file to GCS. Check logs for details.")
 
 
     except Exception as e:

@@ -73,9 +73,9 @@
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/strategic_partners.svg"
       },
       {
-        "label": "Funds mobilised",
+        "label": "Funds mobilised (INR)",
         "value": "25 Crore",
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/funds_mobilised.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/funds_mobilised_inr.svg"
       },
       {
         "label": "NAS Grade 3",
