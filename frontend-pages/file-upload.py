@@ -16,7 +16,7 @@ from tabs_scripts.programs import generate_program_reports
 from tabs_scripts.extract_district_details import extract_district_details
 from tabs_scripts.extract_community_details import extract_community_details
 from tabs_scripts.upload_images_from_excel import upload_images_from_excel
-from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
+from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers, update_voices_json
 
 from constants import ALLOWED_TABS as allowed_tabs
 
@@ -198,6 +198,7 @@ if uploaded_file is not None:
                     extract_micro_improvements(uploaded_file)
                     upload_images_from_excel(uploaded_file)
                     voices_tab_big_numbers(uploaded_file)
+                    update_voices_json(uploaded_file)
                     status.update(label="✅ All files uploaded successfully!", state="complete")
             except Exception as e:
                 st.error(f"❌ Error during full upload: {e}")

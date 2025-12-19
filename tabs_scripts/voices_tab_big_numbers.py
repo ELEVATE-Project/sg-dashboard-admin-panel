@@ -6,6 +6,94 @@ import importlib.util
 from constants import PAGE_METADATA, TABS_METADATA
 
 
+def update_voices_json(excel_file):
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path_voice = os.path.join(script_dir, "..", "pages", "voices-from-the-ground.json")
+
+    # Load Excel file
+    workbook = openpyxl.load_workbook(excel_file, data_only=True)
+    try:
+        sheet = workbook["Micro improvements progress"]
+    except KeyError:
+        print("❌ Sheet 'Micro improvements progress' not found.")
+        return
+
+    # Sum only 2025 data (ignore district rows)
+    sums_2025 = {'Q1': 0, 'Q2': 0, 'Q3': 0, 'Q4': 0}
+    valid_quarters_2025 = {'Q1': False, 'Q2': False, 'Q3': False, 'Q4': False}
+
+    for row in sheet.iter_rows(min_row=2, max_col=7, values_only=True):
+        district_name = row[1]
+        year = row[2]
+        q1, q2, q3, q4 = row[3:7]
+
+        if district_name:  # skip district rows
+            continue
+        if year != 2025:
+            continue
+
+        if q1 is not None:
+            sums_2025['Q1'] += float(q1)
+            valid_quarters_2025['Q1'] = True
+        if q2 is not None:
+            sums_2025['Q2'] += float(q2)
+            valid_quarters_2025['Q2'] = True
+        if q3 is not None:
+            sums_2025['Q3'] += float(q3)
+            valid_quarters_2025['Q3'] = True
+        if q4 is not None:
+            sums_2025['Q4'] += float(q4)
+            valid_quarters_2025['Q4'] = True
+
+    # Format 2025 data
+    data_2025 = [sums_2025[q] for q in ['Q1', 'Q2', 'Q3', 'Q4'] if valid_quarters_2025[q]]
+
+    # Update voices-from-the-ground.json
+    try:
+        with open(json_path_voice, 'r', encoding='utf-8') as f:
+            voices_data = json.load(f)
+
+        # Replace the 'data' field for the target type
+        for item in voices_data:
+            if item.get("type") == "micro-improvements-so-far":
+                item["data"] = [{"year": 2025, "data": data_2025}]
+
+        with open(json_path_voice, 'w', encoding='utf-8') as f:
+            json.dump(voices_data, f, indent=2, ensure_ascii=False)
+
+        print(f"✅ Updated voices-from-the-ground.json with 2025 data: {data_2025}")
+
+    except FileNotFoundError:
+        print(f"❌ {json_path_voice} not found.")
+        return
+    except Exception as e:
+        print(f"❌ Error updating voices-from-the-ground.json: {str(e)}")
+        return
+
+    # Upload to GCS
+    try:
+        gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+        spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+        gcp_access = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gcp_access)
+
+        folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+            bucket_name=os.environ.get("BUCKET_NAME"),
+            source_file_path=json_path_voice,
+            destination_blob_name="sg-dashboard/voices-from-the-ground.json"
+        )
+
+        if folder_url:
+            print(f"✅ Uploaded voices-from-the-ground.json to GCS: {folder_url}")
+        else:
+            print(f"❌ Failed to upload voices-from-the-ground.json")
+    except Exception as e:
+        print(f"❌ Error uploading to GCS: {str(e)}")
+
+
+
+
 def voices_tab_big_numbers(excel_file):
     try:
         print("\n🔵 Starting Voices Tab Big Numbers Update")
