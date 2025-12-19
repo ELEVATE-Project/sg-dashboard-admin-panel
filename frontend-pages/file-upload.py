@@ -18,6 +18,9 @@ from tabs_scripts.extract_community_details import extract_community_details
 from tabs_scripts.upload_images_from_excel import upload_images_from_excel
 from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
 
+from constants import ALLOWED_TABS as allowed_tabs
+
+
 # ✅ Utility: Clean DataFrame for display
 def sanitize_dataframe(df):
     for col in df.columns:
@@ -29,12 +32,6 @@ def sanitize_dataframe(df):
 def normalize_name(name):
     return re.sub(r'[^a-z0-9]', '', name.strip().lower())
 
-# ✅ Allowed sheets for preview & upload (clean names)
-allowed_tabs = [
-    "Data on homepage", "Dashboard first page", "Goals", "States details",
-    "District Details", "Programs", "Micro improvements progress",
-    "Partners", "Network Map", "Testimonials", "Images/icons", "Voices Tab Big Numbers"
-]
 
 # ✅ Map sheet names to upload processing functions
 upload_actions = {

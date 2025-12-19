@@ -4,20 +4,25 @@ import importlib.util
 import re
 import requests
 
-from constants import PAGE_METADATA, TABS_METADATA
-
+from constants import (
+    PAGE_METADATA,
+    TABS_METADATA,
+    DRIVE_IMAGE_URL,
+    DRIVE_DOWNLOAD_URL,
+    BUCKET_PREFIX_FOR_IMAGES as prefix
+)
 
 def convert_drive_link_to_direct_url(link):
     if not isinstance(link, str):
         return ''
     match = re.search(r"/d/([a-zA-Z0-9_-]+)", link) or re.search(r"id=([a-zA-Z0-9_-]+)", link)
     if match:
-        return f"https://drive.google.com/uc?export=view&id={match.group(1)}"
+        return f"{DRIVE_IMAGE_URL}{match.group(1)}"
     return link.strip()
 
 
 def download_image(file_id, save_path):
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    url = f"{DRIVE_DOWNLOAD_URL}{file_id}"
     try:
         response = requests.get(url, timeout=30)
         if response.status_code == 200:
@@ -97,7 +102,7 @@ def upload_images_from_excel(excel_file):
                 folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
                     bucket_name=os.environ.get("BUCKET_NAME"),
                     source_file_path=local_path,
-                    destination_blob_name=f"sg-dashboard/assets/icons/{local_filename}"
+                    destination_blob_name=f"{prefix}{local_filename}"
                 )
 
                 if folder_url:

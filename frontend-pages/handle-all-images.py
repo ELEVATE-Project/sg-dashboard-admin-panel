@@ -19,10 +19,10 @@ service_account_info = {
 credentials = service_account.Credentials.from_service_account_info(service_account_info)
 client = storage.Client(credentials=credentials, project=service_account_info["project_id"])
 
-bucket_name = "dev-sg-dashboard"
-prefix = "sg-dashboard/assets/icons/"
+bucket_name = os.environ.get("BUCKET_NAME")
+from constants import BUCKET_PREFIX_FOR_IMAGES as prefix
 bucket = client.bucket(bucket_name)
-blobs = list(bucket.list_blobs(prefix=prefix))
+blobs = list(bucket.list_blobs(prefix=prefix)) 
 
 st.title("GCS Images")
 

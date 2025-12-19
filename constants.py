@@ -42,3 +42,16 @@ TABS_METADATA = {
     "UPLOAD_IMAGES":['Name of images','Link of images'],
     "VOICE_TAB_BIG_NUMBERS":['Name of the State ','Name of the District', 'Shiksha Chaupals', 'Community members participating in dialogues', 'Local challenges identified', 'Community leaders driving improvements', 'Local solutions identified', 'Local Solutions implemented']
 }
+
+
+ALLOWED_TABS = [
+    "Data on homepage", "Dashboard first page", "Goals", "States details",
+    "District Details", "Programs", "Micro improvements progress",
+    "Partners", "Network Map", "Testimonials", "Images/icons", "Voices Tab Big Numbers"
+]
+
+BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
+
+DRIVE_IMAGE_URL = "https://drive.google.com/uc?export=view&id="
+
+DRIVE_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id="

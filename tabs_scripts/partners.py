@@ -3,7 +3,7 @@ import json
 import os
 import re
 import requests
-from constants import PAGE_METADATA, TABS_METADATA
+from constants import PAGE_METADATA,TABS_METADATA, DRIVE_IMAGE_URL, DRIVE_DOWNLOAD_URL
 import importlib.util
 
 
@@ -15,12 +15,12 @@ def convert_drive_link_to_direct_url(link):
         match = re.search(r"id=([a-zA-Z0-9_-]+)", link)
     if match:
         file_id = match.group(1)
-        return f"https://drive.google.com/uc?export=view&id={file_id}"
+        return f"{DRIVE_IMAGE_URL}{file_id}"
     return link.strip()
 
 
 def download_image(file_id, save_path):
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    url = f"{DRIVE_DOWNLOAD_URL}{file_id}"
     try:
         response = requests.get(url)
         if response.status_code == 200:
