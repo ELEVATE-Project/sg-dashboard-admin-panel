@@ -6,7 +6,7 @@ import re
 from tabs_scripts.community_led_details import community_led_programs_sum_with_codes, pie_chart_community_led
 from tabs_scripts.goals import goals
 from tabs_scripts.key_progress_indicators import key_progress_indicators
-from tabs_scripts.line_chart import extract_district_line_chart, extract_micro_improvements, extract_state_line_chart
+from tabs_scripts.line_chart import extract_district_line_chart, extract_micro_improvements, extract_state_line_chart, update_voices_json_line_chart
 from tabs_scripts.network_map_data import get_network_map_data
 from tabs_scripts.partners import get_partners
 from tabs_scripts.extract_state_details import update_district_view_indicators
@@ -198,6 +198,7 @@ if uploaded_file is not None:
                     extract_micro_improvements(uploaded_file)
                     upload_images_from_excel(uploaded_file)
                     voices_tab_big_numbers(uploaded_file)
+                    update_voices_json_line_chart(uploaded_file)
                     status.update(label="✅ All files uploaded successfully!", state="complete")
             except Exception as e:
                 st.error(f"❌ Error during full upload: {e}")
