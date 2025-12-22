@@ -5,6 +5,7 @@ import importlib.util
 
 from constants import PAGE_METADATA, TABS_METADATA
 
+
 def voices_tab_big_numbers(excel_file):
     try:
         print("\n🔵 Starting Voices Tab Big Numbers Update")
