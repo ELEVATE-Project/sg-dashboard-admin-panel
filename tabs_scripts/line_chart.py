@@ -27,6 +27,96 @@ def _add_quarters(bucket, values):
 def _format_year_data(bucket):
     return [bucket[q] for q in QUARTERS if bucket[f'valid_{q}']]
 
+def update_leaders_engaged_dual_axis_chart(excel_file):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(script_dir, "..", "pages", "voices-from-the-ground.json")
+
+    # Load workbook
+    workbook = openpyxl.load_workbook(excel_file, data_only=True)
+
+    # Access sheet safely
+    try:
+        sheet = workbook["Leaders and community members_v"]
+    except KeyError:
+        print("❌ Sheet not found.")
+        return
+
+    QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
+
+    # Initialize sums
+    leading_micro = {q: 0 for q in QUARTERS}
+    participating = {q: 0 for q in QUARTERS}
+
+    # Iterate over rows
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        if not row or all(v is None for v in row):
+            continue
+
+        # Get relevant columns safely
+        state = row[0] if len(row) > 0 else None
+        district = row[1] if len(row) > 1 else None
+        metric = row[2] if len(row) > 2 else None
+        year = row[3] if len(row) > 3 else None
+        q_values = [row[i] if len(row) > i else None for i in range(4, 8)]
+
+
+        # Only year 2025
+        if year != 2025:
+            continue
+
+        # Sum values for each quarter
+        for q, v in zip(QUARTERS, q_values):
+            if v is None:
+                continue
+
+            if metric == "Leading Micro Improvements":
+                leading_micro[q] += float(v)
+            elif metric == "Pariticipating in dialogues":
+                participating[q] += float(v)
+
+    # Final summed data
+    chart_data = {
+        "Leading Micro Improvements": [leading_micro[q] for q in QUARTERS],
+        "Pariticipating in dialogues": [participating[q] for q in QUARTERS]
+    }
+
+    # Update JSON file
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+
+        for item in json_data:
+            if item.get("type") == "leaders-engaged":
+                item["data"] = chart_data
+
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+
+        print("✅ leaders-engaged data updated successfully")
+        print(json.dumps(chart_data, indent=2))
+    except Exception as e:
+        print(f"❌ Error updating JSON: {e}")
+
+    # Upload to GCS
+    try:
+        gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+        spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+        gcp_access = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gcp_access)
+
+        folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+            bucket_name=os.environ.get("BUCKET_NAME"),
+            source_file_path=json_path,  # Use correct variable
+            destination_blob_name="sg-dashboard/voices-from-the-ground.json"
+        )
+
+        if folder_url:
+            print(f"✅ Uploaded voices-from-the-ground.json to GCS: {folder_url}")
+        else:
+            print(f"❌ Failed to upload voices-from-the-ground.json")
+    except Exception as e:
+        print(f"❌ Error uploading to GCS: {e}")
+        
 
 def update_voices_json_line_chart(excel_file):
 
