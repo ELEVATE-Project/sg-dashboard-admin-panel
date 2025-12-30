@@ -78,7 +78,7 @@ with col2:
 # =========================
 # 🗂️ TWO MAIN TABS
 # =========================
-tabs = st.tabs(["📁 File Upload Dashboard", "🧩 JSON Editor Section", "Upload image from local device","Handle all images"])
+tabs = st.tabs(["📁 File Upload Dashboard", "🧩 JSON Editor Section", "Upload image from local device","Handle all images", "Backend Data Uploader"])
 
 
 # =========================
@@ -130,4 +130,43 @@ with tabs[3]:
     st.markdown("### 🧩 Upload image from local device")
     st.caption("Upload svg images and get url of gcs")
     run_page("frontend-pages/handle-all-images.py")
+
+# =========================
+# TAB 4 → Backend Data Uploader
+# =========================
+from tabs_scripts.backend_data_uploader import CSV_TYPES, upload_to_gcp
+
+with tabs[4]:
+    st.markdown("### 📤 Upload Your Backend CSV File")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        csv_type = st.selectbox(
+            "Select Data Type *", 
+            options=["Select..."] + CSV_TYPES,
+            index=0,
+            help="Choose the category of data you are uploading."
+        )
+        
+
+    # File Uploader
+    uploaded_file = st.file_uploader("Upload CSV File *", type=['csv'], key="backend_uploader")
+
+    # Submit Button
+    if st.button("Submit Upload", key="submit_backend"):
+        if csv_type == "Select...":
+            st.error("Please select a valid Data Type.", icon="🚨")
+        elif uploaded_file is None:
+            st.error("Please upload a file.", icon="🚨")
+        else:
+            # 3. Upload
+            with st.spinner("Uploading to GCP and Processing..."):
+                success, message = upload_to_gcp(uploaded_file, csv_type)
+                
+            if success:
+                st.success("json file uploaded sucessfully", icon="✅")
+                st.balloons()
+            else:
+                st.error("failed to upload json", icon="❌")
 
