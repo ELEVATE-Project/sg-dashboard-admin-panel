@@ -71,13 +71,13 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
 
             if metric == "Leading Micro Improvements":
                 leading_micro[q] += float(v)
-            elif metric == "Pariticipating in dialogues":
+            elif metric == "Participating in dialogues":
                 participating[q] += float(v)
 
     # Final summed data
     chart_data = {
         "Leading Micro Improvements": [leading_micro[q] for q in QUARTERS],
-        "Pariticipating in dialogues": [participating[q] for q in QUARTERS]
+        "Participating in dialogues": [participating[q] for q in QUARTERS]
     }
 
     # Update JSON file
