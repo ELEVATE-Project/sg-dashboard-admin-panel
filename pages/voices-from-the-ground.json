@@ -1,14 +1,14 @@
 [
   {
     "type": "branch-animation",
-    "width": "80%",
+    "width": "95%",
     "position": "center",
     "title": "",
     "styles": {}
   },
   {
     "type": "data-indicators",
-    "width": "80%",
+    "width": "95%",
     "position": "center",
     "title": "India Speaks",
     "indicators": [
@@ -58,37 +58,37 @@
   },
   {
     "type": "section-heading",
-    "width": "90%",
+    "width": "100%",
     "position": "left",
     "title": "Voices of improvement",
     "styles": {
-      "title": "section-sub-title my-4 ml-5 pl-2",
-      "section": "ml-5 pl-2"
+      "title": "section-sub-title mt-5 ml-2 pl-2",
+      "section": "my-5 pl-2"
     }
   },
   {
     "type": "story-of-the-week",
-    "width": "50",
+    "width": "50%",
     "position": "left",
     "title": "Story of the week",
     "styles": {
-      "section": "ml-5 pl-3",
+      "section": "ml-4 p-0",
       "title": "section-sub-title my-4"
     }
   },
   {
     "type": "community-feed",
-    "width": "50",
+    "width": "50%",
     "position": "left",
-    "title": "Community feed",
+    "title": "Community Feed",
     "styles": {
-      "section": "ml-5 pl-5",
+      "section": "ml-5 p-0",
       "title": "section-sub-title my-4"
     }
   },
   {
     "type": "section-heading",
-    "width": "90%",
+    "width": "100%",
     "position": "left",
     "title": "Pulse of leadership",
     "styles": {
@@ -101,11 +101,29 @@
     "width": "50%",
     "position": "left",
     "title": "Leaders engaged",
-    "styles": {}
+    "legends": [
+      "Leading Micro Improvements",
+      "Participating in dialogues"
+    ],
+    "styles": {},
+    "data": {
+      "Leading Micro Improvements": [
+        284555.0,
+        325989.0,
+        393146.0,
+        0
+      ],
+      "Participating in dialogues": [
+        62.0,
+        74.0,
+        105.0,
+        0
+      ]
+    }
   },
   {
     "type": "micro-improvements-so-far",
-    "width": "50",
+    "width": "50%",
     "position": "left",
     "data": [
       {
@@ -127,7 +145,7 @@
     "title": "More stories of Micro Improvements",
     "styles": {
       "title": "section-sub-title my-4 ml-5 pl-2",
-      "section": "ml-5 pl-2 mt-5"
+      "section": "m-0 p-0"
     }
   }
 ]
