@@ -64,7 +64,7 @@ def generate_timestamp():
 
 def generate_csv_filename(csv_type):
     if csv_type == "Micro Improvement Feed":
-        return f"microimprovement_feed.csv"
+        return f"microimprovement_feeds.csv"
 
     if csv_type == "Themes Emerged":
         return f"themes_emerged.csv"
@@ -119,7 +119,7 @@ def upload_to_gcp(uploaded_file, csv_type):
 
         logger.info(f"CSV uploaded → gs://{bucket_name}/{csv_blob_path}")
         
-        success, msg = trigger_processing(csv_type, bucket_name)
+        success, msg = trigger_processing(csv_type)
 
         if not success:
             return False, msg
@@ -131,25 +131,21 @@ def upload_to_gcp(uploaded_file, csv_type):
         return False, str(e)
 
 
-def trigger_processing(csv_type, bucket_name):
+def trigger_processing(csv_type):
     """
     Call feeds.py / themes.py after upload
     """
-    input_blob_path = config.get("GCP", "INPUT_BLOB_PATH")
-    output_blob_path = config.get("GCP", "OUTPUT_BLOB_PATH")
 
     try:
-        if csv_type == "Microimprovement Feed":
+        if csv_type == "Micro Improvement Feed":
             from tabs_scripts import feeds
-            output_filename = "microimprovement_feed.json"
-            feeds.main(bucket_name, output_blob_path, input_blob_path, output_filename)
+            feeds.main()
             logger.info("Microimprovement Feed processed")
             return True, "Microimprovement Feed processed"
 
         if csv_type == "Themes Emerged":
             from tabs_scripts import themes
-            output_filename = "themes_emerged.json"
-            themes.main(bucket_name, output_blob_path, input_blob_path, output_filename)
+            themes.main()
             logger.info("Themes Emerged processed")
             return True, "Themes Emerged processed"
 

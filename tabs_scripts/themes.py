@@ -9,6 +9,9 @@ import subprocess
 from dotenv import load_dotenv
 from google.cloud import storage
 from google.oauth2 import service_account
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,6 +20,7 @@ load_dotenv()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(current_dir, '..', 'config.ini')
 
+# Load configuration from config.ini
 config = configparser.RawConfigParser()
 config.read(config_path)
 LOG_DIR = config.get("LOGS", "log_dir")
@@ -58,29 +62,23 @@ def setup_logger():
 
 logger = setup_logger()
 
-def get_config(section, key, default=None):
-    try:
-        return config.get(section, key)
-    except (configparser.NoSectionError, configparser.NoOptionError):
-        return default
-
 def get_gcp_credentials():
     """Create GCP credentials from environment variables"""
     logger.info("Loading GCP credentials from environment variables...")
     
     try:
         credentials_dict = {
-            "type": get_config("GCP", "TYPE"),
-            "project_id": get_config("GCP", "PROJECT_ID"),
-            "private_key_id": get_config("GCP", "PRIVATE_KEY_ID"),
-            "private_key": get_config("GCP", "PRIVATE_KEY", "").replace('\\n', '\n'),
-            "client_email": get_config("GCP", "CLIENT_EMAIL"),
-            "client_id": get_config("GCP", "CLIENT_ID"),
-            "auth_uri": get_config("GCP", "AUTH_URl") or get_config("GCP", "auth_uri"),
-            "token_uri": get_config("GCP", "TOKEN_URI"),
-            "auth_provider_x509_cert_url": get_config("GCP", "AUTH_PROVIDER_X509_CERT_URL"),
-            "client_x509_cert_url": get_config("GCP", "CLIENT_X509_CERT_URL"),
-            "universe_domain": get_config("GCP", "UNIVERSE_DOMAIN")
+            "type": os.getenv("TYPE"),
+            "project_id": os.getenv("PROJECT_ID"),
+            "private_key_id": os.getenv("PRIVATE_KEY_ID"),
+            "private_key": os.getenv("PRIVATE_KEY").replace('\\n', '\n'),
+            "client_email": os.getenv("CLIENT_EMAIL"),
+            "client_id": os.getenv("CLIENT_ID"),
+            "auth_uri": os.getenv("AUTH_URI"),
+            "token_uri": os.getenv("TOKEN_URI"),
+            "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
+            "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL"),
+            "universe_domain": os.getenv("UNIVERSE_DOMAIN")
         }
         
         credentials = service_account.Credentials.from_service_account_info(credentials_dict)
@@ -172,6 +170,9 @@ def filter_data_by_theme(df):
     - Check if ANY row has add_to_frontend == True
     - If YES: Return ONLY those rows
     - If NO: For EACH theme, select up to 20 rows with filters
+          - Distributed proportionally across all available states
+          - If a state doesn't have enough, redistribute to other states
+          - Mixed districts within each state
     """
     logger.info("Applying business logic filters...")
     logger.debug(f"Total rows: {len(df)}")
@@ -193,7 +194,6 @@ def filter_data_by_theme(df):
     else:
         # Process null rows per theme with filters
         logger.info("No rows with add_to_frontend=True found")
-        logger.info("Processing rows with null add_to_frontend (20 per theme)...")
         
         df_null = df[df['add_to_frontend'].isna()]
         logger.debug(f"Rows with null add_to_frontend: {len(df_null)}")
@@ -213,15 +213,99 @@ def filter_data_by_theme(df):
             logger.warning("No rows meet the criteria (confidence>=0.9, challenge length>30)")
             return pd.DataFrame()
         
-        # For EACH theme, select up to 20 random rows
+        # Get unique states from data
+        unique_states = filtered_null['state'].str.strip().unique()
+        num_states = len(unique_states)
+        
+        if num_states == 0:
+            logger.warning("No states found in data")
+            return pd.DataFrame()
+        
+        # Calculate samples per state (distribute 20 samples)
+        samples_per_state = 20 // num_states
+        remaining_samples = 20 % num_states
+        
+        logger.info(f"Found {num_states} unique states: {', '.join(unique_states)}")
+        logger.info(f"Sampling strategy: {samples_per_state} per state (+ {remaining_samples} additional)")
+        
+        # For EACH theme, select up to 20 rows distributed across states
         selected_rows_list = []
         grouped = filtered_null.groupby('theme_name')
         
         for theme_name, group in grouped:
-            theme_sample_size = min(20, len(group))
-            theme_sample = group.sample(n=theme_sample_size, random_state=None)
-            selected_rows_list.append(theme_sample)
-            logger.info(f"  Theme '{theme_name}': Selected {len(theme_sample)}/{len(group)} rows")
+            theme_selected = []
+            total_needed = 20
+            total_collected = 0
+            
+            # First pass: Collect samples from each state (equal distribution)
+            state_samples = {}
+            for idx, state in enumerate(unique_states):
+                state_data = group[group['state'].str.strip() == state]
+                
+                # Calculate sample size for this state
+                base_samples = samples_per_state
+                if idx < remaining_samples:
+                    base_samples += 1
+                
+                state_sample_size = min(base_samples, len(state_data))
+                
+                if state_sample_size > 0:
+                    state_sample = state_data.sample(n=state_sample_size, random_state=None)
+                    state_samples[state] = {
+                        'sampled': state_sample,
+                        'remaining': state_data.drop(state_sample.index),
+                        'requested': base_samples,
+                        'got': state_sample_size
+                    }
+                    total_collected += state_sample_size
+                    logger.info(f"  Theme '{theme_name}' - {state}: Collected {state_sample_size}/{len(state_data)} rows (requested {base_samples})")
+                else:
+                    logger.warning(f"  Theme '{theme_name}' - {state}: No data available")
+            
+            # Second pass: Redistribute unfilled quota to states with remaining data
+            shortfall = total_needed - total_collected
+            
+            if shortfall > 0:
+                logger.info(f"  Theme '{theme_name}': Shortfall of {shortfall} samples, redistributing...")
+                
+                # Find states that have remaining data
+                states_with_extra = [(state, info) for state, info in state_samples.items() 
+                                     if len(info['remaining']) > 0]
+                
+                if states_with_extra:
+                    # Distribute shortfall proportionally
+                    extra_per_state = shortfall // len(states_with_extra)
+                    extra_remainder = shortfall % len(states_with_extra)
+                    
+                    for idx, (state, info) in enumerate(states_with_extra):
+                        extra_needed = extra_per_state
+                        if idx < extra_remainder:
+                            extra_needed += 1
+                        
+                        extra_available = min(extra_needed, len(info['remaining']))
+                        
+                        if extra_available > 0:
+                            extra_sample = info['remaining'].sample(n=extra_available, random_state=None)
+                            # Append to existing sample
+                            state_samples[state]['sampled'] = pd.concat([state_samples[state]['sampled'], extra_sample])
+                            state_samples[state]['remaining'] = state_samples[state]['remaining'].drop(extra_sample.index)
+                            total_collected += extra_available
+                            logger.info(f"  Theme '{theme_name}' - {state}: Added {extra_available} extra samples (total now: {len(state_samples[state]['sampled'])})")
+            
+            # Collect all samples for this theme
+            for state, info in state_samples.items():
+                theme_selected.append(info['sampled'])
+                logger.info(f"  Theme '{theme_name}' - {state}: Final count {len(info['sampled'])} rows from {info['sampled']['district'].nunique()} districts")
+            
+            # Combine all states for this theme
+            if theme_selected:
+                theme_combined = pd.concat(theme_selected, ignore_index=True)
+                selected_rows_list.append(theme_combined)
+                logger.info(f"  Theme '{theme_name}': Total selected {len(theme_combined)} rows")
+        
+        if not selected_rows_list:
+            logger.warning("No rows selected across all themes")
+            return pd.DataFrame()
         
         result_df = pd.concat(selected_rows_list, ignore_index=True)
         logger.info(f"✓ Selected total of {len(result_df)} rows across all themes")
@@ -233,7 +317,7 @@ def clean_text(text):
         return text
     return re.sub(r'\s+', ' ', str(text).strip())
 
-def construct_json(df, theme_counts):
+def construct_json(df, theme_counts=None):
     logger.info("Constructing JSON...")
     
     # Group by theme_id and theme_name
@@ -242,8 +326,14 @@ def construct_json(df, theme_counts):
     data_list = []
     
     for (theme_id, theme_name), group in grouped:
-        # Get the ORIGINAL total count from pre-calculated theme_counts
-        original_count = theme_counts.get((theme_id, theme_name), len(group))
+        # Check if voices_raised column exists (pre-processed data)
+        if 'voices_raised' in group.columns:
+            # Use voices_raised value from the dataframe
+            original_count = group['voices_raised'].iloc[0]
+            logger.debug(f"  Using voices_raised from CSV for theme '{theme_name}'")
+        else:
+            # Use theme_counts dict (newly processed data)
+            original_count = theme_counts.get((theme_id, theme_name), len(group))
         
         # Build list of challenges (only filtered ones)
         challenge_list = []
@@ -260,7 +350,7 @@ def construct_json(df, theme_counts):
         theme_obj = {
             "id": str(theme_id),
             "label": clean_text(theme_name),
-            "value": str(original_count),  # Using original count, not filtered count
+            "value": str(original_count),  # Using original count
             "list": challenge_list
         }
         
@@ -307,12 +397,172 @@ def upload_to_gcp(json_data, bucket_name, blob_name, credentials):
         logger.info("Falling back to gsutil method...")
         return False
 
-def fetch_the_csv_file_from_gcp(bucket_name, blob_path, credentials):
+def upload_to_gcp_gsutil(local_filepath, bucket_name, blob_name):
+    """Fallback: Upload using gsutil"""
+    logger.info(f"Uploading to GCP using gsutil...")
+    
+    try:
+        gs_path = f"gs://{bucket_name}/{blob_name}"
+        result = subprocess.run(
+            ['gsutil', 'cp', local_filepath, gs_path],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        
+        if result.returncode == 0:
+            logger.info(f"✓ Successfully uploaded to {gs_path}")
+            return True
+        else:
+            logger.error(f"✗ gsutil upload failed: {result.stderr}")
+            return False
+        
+    except Exception as e:
+        logger.error(f"✗ Failed to upload: {str(e)}")
+        return False
+    
+def remove_spelling_mistakes(df):
+    """
+    Remove rows with gibberish/invalid text patterns
+    Fast pattern-based detection (~0.001s per row)
+    """
+    logger.info("Filtering out rows with gibberish/invalid text...")
+    initial_count = len(df)
+    
+    def is_low_quality_text(text):
+        if pd.isna(text) or text == '':
+            return False
+        
+        text = str(text).lower()
+        
+        # 1. Check for keyboard spam
+        if re.search(r'(asdf|qwer|zxcv|hjkl|lkjh){2,}', text):
+            return True
+        
+        # 2. Check for excessive special characters (>30% of text)
+        special_chars = len(re.findall(r'[^a-zA-Z0-9\s]', text))
+        if len(text) > 0 and (special_chars / len(text)) > 0.3:
+            return True
+        
+        # 3. Check for repeating characters (>4 times)
+        if re.search(r'(.)\1{4,}', text):
+            return True
+        
+        # 4. Check for words with no vowels (excluding common abbreviations)
+        words = text.split()
+        no_vowel_words = []
+        
+        for word in words:
+            clean_word = re.sub(r'[^a-z]', '', word.lower())
+            
+            # Skip short words and common abbreviations
+            if len(clean_word) <= 3:
+                continue
+            
+            # Check if word has no vowels
+            if not re.search(r'[aeiou]', clean_word):
+                no_vowel_words.append(word)
+        
+        # Flag if >30% of words have no vowels
+        if len(words) > 3 and len(no_vowel_words) / len(words) > 0.3:
+            return True
+        
+        # 5. Check for excessive consonant clusters (5+ consonants in a row)
+        excessive_consonants = len(re.findall(r'[^aeiou\s]{5,}', text))
+        if excessive_consonants > 2:
+            return True
+        
+        # 6. Check for very low vowel ratio (<15%)
+        letters = re.sub(r'[^a-z]', '', text)
+        if len(letters) > 0:
+            vowel_count = len(re.findall(r'[aeiou]', letters))
+            vowel_ratio = vowel_count / len(letters)
+            if vowel_ratio < 0.15:
+                return True
+        
+        return False
+    
+    filtered_df = df[~df['challenge'].apply(is_low_quality_text)].copy()
+    
+    removed_count = initial_count - len(filtered_df)
+    logger.info(f"✓ Removed {removed_count} rows with low-quality text. Remaining: {len(filtered_df)}")
+    return filtered_df
+
+def save_csv_locally(df, output_dir, filename):
+    logger.info("Saving CSV locally...")
+    os.makedirs(output_dir, exist_ok=True)
+    csv_filename = "filtered_" + filename.replace('.json', '.csv')
+    filepath = os.path.join(output_dir, csv_filename)
+    
+    df.to_csv(filepath, index=False, encoding='utf-8')
+    
+    file_size = os.path.getsize(filepath)
+    logger.info(f"✓ Saved to: {filepath} ({file_size/1024:.2f} KB)")
+    return filepath
+
+def remove_semantic_duplicates(df, similarity_threshold=0.85):
+    """
+    Remove semantically similar challenges within each theme
+    similarity_threshold: 0-1, higher means more strict (0.85 means 85% similar)
+    """
+    logger.info(f"Removing semantically similar challenges (threshold: {similarity_threshold})...")
+    initial_count = len(df)
+    
+    # Load sentence transformer model
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    
+    filtered_rows = []
+    
+    # Process each theme separately
+    grouped = df.groupby('theme_name')
+    
+    for theme_name, group in grouped:
+        challenges = group['challenge'].tolist()
+        
+        if len(challenges) <= 1:
+            filtered_rows.append(group)
+            continue
+        
+        # Get embeddings for all challenges in this theme
+        embeddings = model.encode(challenges)
+        
+        # Calculate pairwise cosine similarity
+        similarities = cosine_similarity(embeddings)
+        
+        # Keep track of which rows to keep
+        keep_indices = []
+        
+        for i in range(len(challenges)):
+            # Check if current challenge is similar to any already kept challenge
+            is_duplicate = False
+            for kept_idx in keep_indices:
+                if similarities[i][kept_idx] > similarity_threshold:
+                    is_duplicate = True
+                    # logger.debug(f"  Removing duplicate in '{theme_name}': '{challenges[i][:50]}...' (similar to '{challenges[kept_idx][:50]}...')")
+                    break
+            
+            if not is_duplicate:
+                keep_indices.append(i)
+        
+        # Keep only non-duplicate rows
+        filtered_group = group.iloc[keep_indices]
+        filtered_rows.append(filtered_group)
+        
+        removed = len(group) - len(filtered_group)
+        if removed > 0:
+            logger.info(f"  Theme '{theme_name}': Removed {removed} semantic duplicates, kept {len(filtered_group)}")
+    
+    result_df = pd.concat(filtered_rows, ignore_index=True)
+    removed_count = initial_count - len(result_df)
+    logger.info(f"✓ Removed {removed_count} semantically similar challenges. Remaining: {len(result_df)}")
+    return result_df
+
+def fetch_the_csv_file_from_gcp(local_csv_file_path, bucket_name, blob_path, credentials):
     """
     Fetch CSV file from GCP bucket inside a given blob path whose
     filename starts with 'themes_emerged'
     """
-    file_prefix = "themes_emerged"
+    file_prefix = "themes_emerged.csv"
     logger.info(
         f"Searching for '{file_prefix}' inside "
         f"gs://{bucket_name}/{blob_path}/"
@@ -350,106 +600,160 @@ def fetch_the_csv_file_from_gcp(bucket_name, blob_path, credentials):
 
         latest_blob = max(matching_blobs, key=lambda b: b.updated)
 
-        local_file_path = f"/tmp/{os.path.basename(latest_blob.name)}"
-
-        latest_blob.download_to_filename(local_file_path)
+        latest_blob.download_to_filename(local_csv_file_path)
 
         logger.info(f"✓ Successfully fetched: {latest_blob.name}")
-        return local_file_path
+
+        return local_csv_file_path
 
     except Exception as e:
         logger.error(f"Failed to fetch from GCP: {str(e)}", exc_info=True)
         return None
 
-def upload_to_gcp_gsutil(local_filepath, bucket_name, blob_name):
-    """Fallback: Upload using gsutil"""
-    logger.info(f"Uploading to GCP using gsutil...")
-    
-    try:
-        gs_path = f"gs://{bucket_name}/{blob_name}"
-        result = subprocess.run(
-            ['gsutil', 'cp', local_filepath, gs_path],
-            capture_output=True,
-            text=True,
-            check=False
-        )
-        
-        if result.returncode == 0:
-            logger.info(f"✓ Successfully uploaded to {gs_path}")
-            return True
-        else:
-            logger.error(f"✗ gsutil upload failed: {result.stderr}")
-            return False
-        
-    except Exception as e:
-        logger.error(f"✗ Failed to upload: {str(e)}")
-        return False
 
-def main(bucket_name,output_blob_path,input_blob_path,output_filename):
+
+def process_csv(csv_path, bucket_name, output_filename, local_output_dir):
     try:
         logger.info("="*60)
         logger.info("Starting Themes Emerged CSV processing pipeline")
         logger.info("="*60)
+        logger.info(f"Input CSV: {csv_path}")
+        logger.info(f"Output bucket: {bucket_name}")
+        logger.info(f"Output filename: {output_filename}")
+        logger.info(f"Local output: {local_output_dir}")
         
+        # Get GCP credentials
         credentials = get_gcp_credentials()
         
-        csv_path = fetch_the_csv_file_from_gcp(bucket_name,input_blob_path, credentials)
-        
-        if not csv_path:
-            logger.error("Failed to fetch CSV file. Aborting.")
-            return None
-
+        # Step 1: Read CSV
+        logger.info("-" * 60)
+        logger.info("STEP 1: Reading CSV")
         df = pd.read_csv(csv_path)
+        logger.info(f"✓ Loaded {len(df)} rows")
+
+        # Step 2: Validate columns
+        logger.info("-" * 60)
+        logger.info("STEP 2: Validating columns")
         validate_columns(df, REQUIRED_COLUMNS)
-        theme_counts = calculate_theme_counts(df)
         
-        df = remove_null_empty_rows(df, MANDATORY_OUTPUT_COLUMNS)
+        # Check if data is already pre-processed
+        is_preprocessed = 'voices_raised' in df.columns
         
-        if len(df) == 0:
-            logger.warning("No rows after removing null/empty values")
-            return None
+        if is_preprocessed:
+            logger.info("="*60)
+            logger.info("⚡ PRE-PROCESSED DATA DETECTED")
+            logger.info("Skipping validation steps (3-5.5) - Data already validated")
+            logger.info("="*60)
+            theme_counts = None  # Not needed for pre-processed data
+        else:
+            # Step 2.5: Calculate original theme counts (BEFORE any filtering)
+            logger.info("-" * 60)
+            logger.info("STEP 2.5: Calculating original theme counts")
+            theme_counts = calculate_theme_counts(df)
+            
+            # Step 3: Remove null/empty rows
+            logger.info("-" * 60)
+            logger.info("STEP 3: Data validation - Removing null/empty rows")
+            df = remove_null_empty_rows(df, MANDATORY_OUTPUT_COLUMNS)
+            
+            if len(df) == 0:
+                logger.warning("No rows after removing null/empty values")
+                return None
+            
+            # Step 4: Remove PII flagged rows
+            logger.info("-" * 60)
+            logger.info("STEP 4: Data validation - Removing PII flagged rows")
+            df = remove_pii_rows(df)
+            
+            if len(df) == 0:
+                logger.warning("No rows after removing PII flagged data")
+                return None
+            
+            # Step 5: Remove Unknown/Unclear themes
+            logger.info("-" * 60)
+            logger.info("STEP 5: Data validation - Removing Unknown/Unclear themes")
+            df = remove_unknown_themes(df)
+            
+            if len(df) == 0:
+                logger.warning("No rows after removing Unknown/Unclear themes")
+                return None
+            
+            # Step 5.5: Remove rows with spelling mistakes
+            logger.info("-" * 60)
+            logger.info("STEP 5.5: Data validation - Removing spelling mistakes")
+            df = remove_spelling_mistakes(df)
+            
+            if len(df) == 0:
+                logger.warning("No rows after removing spelling mistakes")
+                return None
+            
+            # Step 5.6: Remove semantic duplicates
+            logger.info("-" * 60)
+            logger.info("STEP 5.6: Data validation - Removing semantic duplicates")
+            df = remove_semantic_duplicates(df, similarity_threshold=0.85)
+            
+            if len(df) == 0:
+                logger.warning("No rows after removing semantic duplicates")
+                return None
         
-        df = remove_pii_rows(df)
-        
-        if len(df) == 0:
-            logger.warning("No rows after removing PII flagged data")
-            return None
-    
-        df = remove_unknown_themes(df)
-        
-        if len(df) == 0:
-            logger.warning("No rows after removing Unknown/Unclear themes")
-            return None
-        
+        # Step 6: Apply business logic filters
+        logger.info("-" * 60)
+        logger.info("STEP 6: Applying business logic filters")
         filtered_df = filter_data_by_theme(df)
         
         if len(filtered_df) == 0:
             logger.warning("No rows matched business logic criteria")
             return None
         
+        # Add voices_raised column only if not already present
+        if 'voices_raised' not in filtered_df.columns and theme_counts is not None:
+            filtered_df['voices_raised'] = filtered_df.apply(
+                lambda row: theme_counts.get((row['theme_id'], row['theme_name']), 0), 
+                axis=1
+            )
+            
+            # Reorder columns to place voices_raised after theme_name
+            cols = list(filtered_df.columns)
+            theme_name_index = cols.index('theme_name')
+            cols.insert(theme_name_index + 1, cols.pop(cols.index('voices_raised')))
+            filtered_df = filtered_df[cols]
+        
+        # Step 7: Construct JSON
+        logger.info("-" * 60)
+        logger.info("STEP 7: Constructing JSON")
         json_output = construct_json(filtered_df, theme_counts)
         
-        final_output_path = output_blob_path
-        if final_output_path.startswith(f"{bucket_name}/"):
-            final_output_path = final_output_path[len(bucket_name)+1:]
+        # Step 8: Save locally
+        logger.info("-" * 60)
+        logger.info("STEP 8: Saving locally")
+        local_filename = output_filename.split('/')[-1]
+        local_filepath = save_json_locally(json_output, local_output_dir, local_filename)
+
+        # Step 8.5: Save CSV
+        logger.info("-" * 60)
+        logger.info("STEP 8.5: Saving CSV")
+        csv_filepath = save_csv_locally(filtered_df, local_output_dir, local_filename)
         
-        # Prepare output path
-        final_output_path = output_blob_path
-        if final_output_path.startswith(f"{bucket_name}/"):
-            final_output_path = final_output_path[len(bucket_name)+1:]
+        # Step 9: Upload to GCP
+        logger.info("-" * 60)
+        logger.info("STEP 9: Uploading to GCP")
         
-        final_output_path = final_output_path.rstrip("/") + "/" + output_filename
-        
-        upload_success = upload_to_gcp(json_output, bucket_name, final_output_path, credentials)
+        upload_success = upload_to_gcp(json_output, bucket_name, output_filename, credentials)
         
         if not upload_success:
-            raise Exception("Failed to upload JSON to GCP")
-        else:
-            logger.info("Successfully uploaded to gs://{}")
+            logger.info("Trying gsutil fallback...")
+            upload_success = upload_to_gcp_gsutil(local_filepath, bucket_name, output_filename)
+        
+        if not upload_success:
+            logger.warning("⚠️  Auto-upload failed. Please upload manually:")
+            logger.warning(f"gsutil cp {local_filepath} gs://{bucket_name}/{output_filename}")
         
         logger.info("="*60)
-        logger.info("PIPELINE COMPLETED SUCCESSFULLY!")
+        logger.info("✓ PIPELINE COMPLETED SUCCESSFULLY!")
         logger.info("="*60)
+        logger.info(f"Local JSON: {local_filepath}")
+        logger.info(f"Local CSV: {csv_filepath}")
+        logger.info(f"GCP: gs://{bucket_name}/{output_filename}")
         
         return json_output
         
@@ -460,33 +764,47 @@ def main(bucket_name,output_blob_path,input_blob_path,output_filename):
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise
 
-if __name__ == "__main__":
-    # Read configuration from .env file
-    # CSV_PATH = os.getenv("THEMES_CSV_PATH")
-    # BUCKET_NAME = os.getenv("BUCKET_NAME")
-    # OUTPUT_FILENAME = os.getenv("THEMES_OUTPUT_BLOB_PATH")
-    # LOCAL_OUTPUT_DIR = os.getenv("LOCAL_OUTPUT_DIR")
+def main():
+    #local configurations 
+    LOCAL_CSV_PATH = config.get("GCP", "THEMES_LOCAL_CSV_PATH")
+    OUTPUT_FILENAME = config.get("GCP", "THEMES_OUTPUT_FILENAME")
+    LOCAL_OUTPUT_DIR = config.get("GCP", "LOCAL_OUTPUT_DIR")
+    LOCAL_JSON_PATH = os.path.join(LOCAL_OUTPUT_DIR, OUTPUT_FILENAME)
 
-    # Read configuration from .env file
+    #cloud configurations
     INPUT_BLOB_PATH = config.get("GCP", "INPUT_BLOB_PATH")
     BUCKET_NAME = config.get("GCP", "BUCKET_NAME")  
-    OUTPUT_BLOB_PATH = config.get("GCP", "OUTPUT_BLOB_PATH")
+    OUTPUT_BLOB_NAME = config.get("GCP", "OUTPUT_BLOB_NAME")
     OUTPUT_FILENAME = "themes_emerged.json"
+
+    credentials = get_gcp_credentials()
     
-    
+    CSV_PATH = fetch_the_csv_file_from_gcp(LOCAL_CSV_PATH, BUCKET_NAME, INPUT_BLOB_PATH, credentials)
+      
     logger.info("Application started")
     logger.info(f"Configuration loaded")
     
     try:
-        main(BUCKET_NAME,OUTPUT_BLOB_PATH,INPUT_BLOB_PATH,OUTPUT_FILENAME)
+        result = process_csv(CSV_PATH, BUCKET_NAME, OUTPUT_FILENAME, LOCAL_OUTPUT_DIR)
         
-        logger.info("="*60)
+        if result:
+            print('Total themes in output JSON:', len(result["data"]))
+        
+        full_blob_name = f"{OUTPUT_BLOB_NAME}/{OUTPUT_FILENAME}"
+        
+        local_json_path = os.path.join(LOCAL_OUTPUT_DIR, OUTPUT_FILENAME)
+
+        upload_success = upload_to_gcp(result, BUCKET_NAME, full_blob_name, credentials)
+
+        if not upload_success:
+            logger.info("Trying gsutil fallback...")
+            upload_success = upload_to_gcp_gsutil(local_json_path, BUCKET_NAME, full_blob_name)
+
         logger.info("Application finished successfully")
-        logger.info("="*60)
         
     except Exception as e:
-        logger.error("="*60)
-        logger.error("✗ PIPELINE FAILED")
-        logger.error("="*60)
-        logger.error(f"Error: {str(e)}", exc_info=True)
+        logger.critical(f"Application terminated: {str(e)}")
         raise
+
+if __name__ == "__main__":
+    main()
