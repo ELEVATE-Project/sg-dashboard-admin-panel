@@ -62,7 +62,7 @@
     "position": "left",
     "title": "Voices of improvement",
     "styles": {
-      "title": "section-sub-title mt-5 ml-2 pl-2",
+      "title": "section-sub-title mt-0 mt-md-5 ml-2 pl-2 section-heading-spacing",
       "section": "my-5 pl-2"
     }
   },
