@@ -86,7 +86,7 @@ st.title("JSON Editor & GCS Uploader")
 json_tabs = [
     "landing page", "Community country view", "Community details page",
     "District view indicators", "Community led improvements page", "dashboard",
-    "Network health", "State details page", "Voices from the ground", "heatmap_theme"
+    "Network health", "State details page", "Voices from the ground", "heatmap_theme", "animation_resolutions"
 ]
 
 JSON_DIR = "pages"
