@@ -755,5 +755,22 @@
         "image": ""
       }
     ]
+  },
+  "glossary": {
+    "title": "Glossary",
+    "informations": [
+      {
+        "title": "Momentum Partners",
+        "description": "Momentum Partners are the organisations leading on-ground change initiatives. They are the driving force behind the field-level implementation of the Shikshagraha movement, bringing the vision to life through direct action in schools and communities."
+      },
+      {
+        "title": "Strategic Partners",
+        "description": "These are long-term funding partners who provide critical financial, strategic and technological support for on-ground program implementation. Their contributions ensure that change initiatives can be sustainably carried out across various regions."
+      },
+      {
+        "title": "Collaborators (Academia, Design Labs, Consultants)",
+        "description": "Collaborators include academic institutions, design labs, consultants, and other entities that contribute specialised knowledge and services to the movement. These collaborators may be paid and support the design, research, and implementation of Shikshagraha initiatives."
+      }
+    ]
   }
 }
