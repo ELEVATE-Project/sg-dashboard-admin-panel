@@ -72,8 +72,8 @@
     "position": "left",
     "title": "Story of the week",
     "styles": {
-      "section": "ml-4 p-0",
-      "title": "section-sub-title my-4"
+      "section": "ml-2 ml-md-4 p-0",
+      "title": "section-sub-title my-4 community-spacing"
     }
   },
   {
