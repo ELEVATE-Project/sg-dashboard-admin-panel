@@ -191,7 +191,7 @@ if uploaded_file is not None:
                     goals(uploaded_file)
                     pie_chart(uploaded_file)
                     testimonials(uploaded_file)
-                    pie_chart_community_led(uploaded_file)
+                    # pie_chart_community_led(uploaded_file)   //  commenting this line as per phase enhancement 1
                     community_led_programs_sum_with_codes(uploaded_file)
                     generate_program_reports(uploaded_file)
                     extract_community_details(uploaded_file)
