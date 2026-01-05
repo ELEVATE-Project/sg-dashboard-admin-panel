@@ -3,9 +3,9 @@
     "type": "dashboard-main",
     "width": "100%",
     "position": "left",
-    "header": "Community Led Improvements",
+    "header": "Community led Initiatives",
     "subHeader": "Change begins when leadership is unlocked, not only in government offices or school corridors, but also in village meetings and community spaces.",
-    "description": "Shikshagraha supports both school leaders (headmasters, district, block and cluster level officials) and community leaders (SHG women, parents, youth) to design and lead local missions that solve real challenges. These micro-improvements form the foundation for sustained, scalable progress.",
+    "description": "Initiatives implemented by women leaders or youth leaders in their communities",
     "styles": {
       "section": "dashboard-main-section",
       "title": "dashboard-main-title",
