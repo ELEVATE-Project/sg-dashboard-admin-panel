@@ -148,6 +148,18 @@ def trigger_processing(csv_type):
             themes.main()
             logger.info("Themes Emerged processed")
             return True, "Themes Emerged processed"
+            
+        if csv_type == "Stories":
+            from tabs_scripts import stories
+            stories.main()
+            logger.info("Stories processed")
+            return True, "Stories processed"
+        
+        if csv_type == "Cracks and Flowers":
+            from tabs_scripts import animations
+            animations.main()
+            logger.info("Cracks and Flowers processed")
+            return True, "Cracks and Flowers processed"
 
         logger.info(f"No processing defined for {csv_type}")
         return True, "Upload completed (no processing)"
