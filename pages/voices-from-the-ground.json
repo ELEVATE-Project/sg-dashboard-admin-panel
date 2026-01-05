@@ -60,7 +60,7 @@
     "type": "section-heading",
     "width": "100%",
     "position": "left",
-    "title": "Voices of improvement",
+    "title": "Voices of Improvements",
     "styles": {
       "title": "section-sub-title mt-0 mt-md-5 ml-2 pl-2 section-heading-spacing",
       "section": "my-5 pl-2"
@@ -73,14 +73,14 @@
     "title": "Story of the week",
     "styles": {
       "section": "ml-2 ml-md-4 p-0",
-      "title": "section-sub-title my-4 community-spacing"
+      "title": "section-sub-title my-4"
     }
   },
   {
     "type": "community-feed",
     "width": "50%",
     "position": "left",
-    "title": "Community Feed",
+    "title": "Community feed",
     "styles": {
       "section": "ml-5 p-0",
       "title": "section-sub-title my-4"
@@ -92,7 +92,7 @@
     "position": "left",
     "title": "Pulse of leadership",
     "styles": {
-      "title": "section-sub-title my-4 ml-5 ",
+      "title": "section-sub-title mt-0 mt-md-5 ml-2 pl-2 mb-4 section-heading-spacing",
       "section": "ml-5 pl-2"
     }
   },

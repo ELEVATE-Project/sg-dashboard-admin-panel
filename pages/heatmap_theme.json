@@ -37,12 +37,12 @@
   "8": {
     "color": "theme8",
     "gridClass": "span-1-1",
-    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/teacher_capacity_and__quality_issues.svg"
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/safety_concerns.svg"
   },
   "9": {
     "color": "theme9",
     "gridClass": "span-1-1",
-    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/safety_concerns.svg"
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/substance_abuse_and_addiction.svg"
   },
   "10": {
     "color": "theme10",
