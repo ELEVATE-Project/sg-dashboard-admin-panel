@@ -41,20 +41,22 @@ def get_config(section, key, default=None):
 def get_gcp_credentials():
     """Load GCP credentials from config.ini"""
     credentials_dict = {
-        "type": get_config("GCP", "TYPE"),
-        "project_id": get_config("GCP", "PROJECT_ID"),
-        "private_key_id": get_config("GCP", "PRIVATE_KEY_ID"),
-        "private_key": get_config("GCP", "PRIVATE_KEY", "").replace("\\n", "\n"),
-        "client_email": get_config("GCP", "CLIENT_EMAIL"),
-        "client_id": get_config("GCP", "CLIENT_ID"),
-        "auth_uri": get_config("GCP", "AUTH_URI"),
-        "token_uri": get_config("GCP", "TOKEN_URI"),
-        "auth_provider_x509_cert_url": get_config("GCP", "AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": get_config("GCP", "CLIENT_X509_CERT_URL"),
-        "universe_domain": get_config("GCP", "UNIVERSE_DOMAIN"),
+        "type": os.getenv("TYPE"),
+        "project_id": os.getenv("PROJECT_ID"),
+        "private_key_id": os.getenv("PRIVATE_KEY_ID"),
+        "private_key": os.getenv("PRIVATE_KEY").replace('\\n', '\n'),
+        "client_email": os.getenv("CLIENT_EMAIL"),
+        "client_id": os.getenv("CLIENT_ID"),
+        "auth_uri": os.getenv("AUTH_URI"),
+        "token_uri": os.getenv("TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL"),
+        "universe_domain": os.getenv("UNIVERSE_DOMAIN")
     }
 
-    return service_account.Credentials.from_service_account_info(credentials_dict)
+    credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+    logger.info("✓ GCP credentials loaded successfully")
+    return credentials
 
 
 def generate_timestamp():
