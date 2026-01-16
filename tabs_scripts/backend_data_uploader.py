@@ -9,7 +9,8 @@ from google.oauth2 import service_account
 # CONFIG & LOGGING
 # --------------------------------------------------
 
-CONFIG_FILE = "config.ini"
+current_dir = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE = os.path.join(current_dir, '..', 'config.ini')
 
 config = configparser.RawConfigParser()
 config.read(CONFIG_FILE)

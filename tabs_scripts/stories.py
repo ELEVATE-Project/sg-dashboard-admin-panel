@@ -66,20 +66,26 @@ logger = setup_logger()
 def get_gcp_credentials():
     """Create GCP credentials from environment variables"""
     logger.info("Loading GCP credentials from environment variables...")
-    
+
+    def get_env_var(name: str) -> str:
+        value = os.getenv(name)
+        if value is None:
+            raise EnvironmentError(f"Missing required environment variable: {name}")
+        return value
+
     try:
         credentials_dict = {
-            "type": os.getenv("TYPE"),
-            "project_id": os.getenv("PROJECT_ID"),
-            "private_key_id": os.getenv("PRIVATE_KEY_ID"),
-            "private_key": os.getenv("PRIVATE_KEY").replace('\\n', '\n'),
-            "client_email": os.getenv("CLIENT_EMAIL"),
-            "client_id": os.getenv("CLIENT_ID"),
-            "auth_uri": os.getenv("AUTH_URI"),
-            "token_uri": os.getenv("TOKEN_URI"),
-            "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
-            "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL"),
-            "universe_domain": os.getenv("UNIVERSE_DOMAIN")
+            "type": get_env_var("TYPE"),
+            "project_id": get_env_var("PROJECT_ID"),
+            "private_key_id": get_env_var("PRIVATE_KEY_ID"),
+            "private_key": get_env_var("PRIVATE_KEY").replace('\\n', '\n'),
+            "client_email": get_env_var("CLIENT_EMAIL"),
+            "client_id": get_env_var("CLIENT_ID"),
+            "auth_uri": get_env_var("AUTH_URI"),
+            "token_uri": get_env_var("TOKEN_URI"),
+            "auth_provider_x509_cert_url": get_env_var("AUTH_PROVIDER_X509_CERT_URL"),
+            "client_x509_cert_url": get_env_var("CLIENT_X509_CERT_URL"),
+            "universe_domain": get_env_var("UNIVERSE_DOMAIN")
         }
         
         credentials = service_account.Credentials.from_service_account_info(credentials_dict)
@@ -813,15 +819,6 @@ def main():
         if result:
             print('Total stories in output JSON:', len(result["data"]))
         
-        full_blob_name = f"{OUTPUT_BLOB_NAME}/{OUTPUT_FILENAME}"
-        
-        local_json_path = os.path.join(LOCAL_OUTPUT_DIR, OUTPUT_FILENAME)
-
-        upload_success = upload_to_gcp(result, BUCKET_NAME, full_blob_name, credentials)
-
-        if not upload_success:
-            logger.info("Trying gsutil fallback...")
-            upload_success = upload_to_gcp_gsutil(local_json_path, BUCKET_NAME, full_blob_name)
 
         logger.info("Application finished successfully")
         

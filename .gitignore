@@ -13,7 +13,13 @@
 /yarn.lock
 
 # Environment files
+/my_env/
 /.env
+/config.env
+/logs/
+/tmp_json_outputs/
+/csv_input/
+/tabs_scripts/__pycache__/
 
 # Angular CLI and build artefacts
 /.angular-cli.json
@@ -26,3 +32,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Python cache
+__pycache__
