@@ -38,21 +38,26 @@ def get_config(section, key, default=None):
     except Exception:
         return default
 
+def get_env_var(name: str) -> str:
+    value = os.getenv(name)
+    if value is None:
+        raise EnvironmentError(f"Missing required environment variable: {name}")
+    return value
 
 def get_gcp_credentials():
     """Load GCP credentials from config.ini"""
     credentials_dict = {
-        "type": os.getenv("TYPE"),
-        "project_id": os.getenv("PROJECT_ID"),
-        "private_key_id": os.getenv("PRIVATE_KEY_ID"),
-        "private_key": os.getenv("PRIVATE_KEY").replace('\\n', '\n'),
-        "client_email": os.getenv("CLIENT_EMAIL"),
-        "client_id": os.getenv("CLIENT_ID"),
-        "auth_uri": os.getenv("AUTH_URI"),
-        "token_uri": os.getenv("TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL"),
-        "universe_domain": os.getenv("UNIVERSE_DOMAIN")
+        "type": get_env_var("TYPE"),
+        "project_id": get_env_var("PROJECT_ID"),
+        "private_key_id": get_env_var("PRIVATE_KEY_ID"),
+        "private_key": get_env_var("PRIVATE_KEY").replace('\\n', '\n'),
+        "client_email": get_env_var("CLIENT_EMAIL"),
+        "client_id": get_env_var("CLIENT_ID"),
+        "auth_uri": get_env_var("AUTH_URI"),
+        "token_uri": get_env_var("TOKEN_URI"),
+        "auth_provider_x509_cert_url": get_env_var("AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": get_env_var("CLIENT_X509_CERT_URL"),
+        "universe_domain": get_env_var("UNIVERSE_DOMAIN")
     }
 
     credentials = service_account.Credentials.from_service_account_info(credentials_dict)
