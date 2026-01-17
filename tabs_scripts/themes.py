@@ -62,15 +62,15 @@ def setup_logger():
 
 logger = setup_logger()
 
+def get_env_var(name: str) -> str:
+    value = os.getenv(name)
+    if value is None:
+        raise EnvironmentError(f"Missing required environment variable: {name}")
+    return value
+
 def get_gcp_credentials():
     """Create GCP credentials from environment variables"""
     logger.info("Loading GCP credentials from environment variables...")
-
-    def get_env_var(name: str) -> str:
-        value = os.getenv(name)
-        if value is None:
-            raise EnvironmentError(f"Missing required environment variable: {name}")
-        return value
     
     try:
         credentials_dict = {
