@@ -36,7 +36,7 @@ def upload_json_to_gcs(json_path, tab_name):
         )
 
         if folder_url:
-            st.success(f"✅ Successfully uploaded {json_path} to GCS: {folder_url}/{destination_blob_name}")
+            st.success(f"✅ Successfully uploaded {json_path} to GCS: {folder_url}/{file_name}")
             return folder_url
         else:
             st.error(f"❌ Failed to upload {json_path} to GCS.")
@@ -86,7 +86,7 @@ st.title("JSON Editor & GCS Uploader")
 json_tabs = [
     "landing page", "Community country view", "Community details page",
     "District view indicators", "Community led improvements page", "dashboard",
-    "Network health", "State details page", "Voices from the ground"
+    "Network health", "State details page", "Voices from the ground", "heatmap_theme", "animation_resolutions"
 ]
 
 JSON_DIR = "pages"

@@ -1,0 +1,52 @@
+{
+  "1": {
+    "color": "theme1",
+    "gridClass": "span-2-2",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/poverty_and_economic_barriers.svg"
+  },
+  "2": {
+    "color": "theme2",
+    "gridClass": "span-2-2",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/legal_document_linked_barriers.svg"
+  },
+  "3": {
+    "color": "theme3",
+    "gridClass": "span-1-2",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/early_marriage.svg"
+  },
+  "4": {
+    "color": "theme4",
+    "gridClass": "span-2-2",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/distance_and_accessibility_issues.svg"
+  },
+  "5": {
+    "color": "theme5",
+    "gridClass": "span-1-1",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/parental_attitudes_and_socio-cultural_barriers.svg"
+  },
+  "6": {
+    "color": "theme6",
+    "gridClass": "span-1-1",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/school_infrastructure.svg"
+  },
+  "7": {
+    "color": "theme7",
+    "gridClass": "span-1-1",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/teacher_capacity_and__quality_issues.svg"
+  },
+  "8": {
+    "color": "theme8",
+    "gridClass": "span-1-1",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/teacher_capacity_and__quality_issues.svg"
+  },
+  "9": {
+    "color": "theme9",
+    "gridClass": "span-1-1",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/safety_concerns.svg"
+  },
+  "10": {
+    "color": "theme10",
+    "gridClass": "span-1-1",
+    "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/other_factors.svg"
+  }
+}
