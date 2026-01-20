@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from constants import * 
 from .utils import (
     get_env_var, get_gcp_credentials, setup_logger, 
     fetch_csv_from_gcp, upload_to_gcp, upload_to_gcp_gsutil,
@@ -19,9 +20,8 @@ load_dotenv()
 LOG_DIR = os.getenv("LOG_DIR")
 
 # Required columns
-REQUIRED_COLUMNS = ['story_id', 'action_steps', 'impact', 'add_to_frontend', 
-                   'pii_flag', 'role', 'district', 'state', 'justification', 'confidence_score']
-MANDATORY_OUTPUT_COLUMNS = ['action_steps', 'impact', 'pii_flag', 'role', 'district', 'state']
+REQUIRED_COLUMNS = FEEDS_REQUIRED_COLUMNS
+MANDATORY_OUTPUT_COLUMNS = FEEDS_MANDATORY_OUTPUT_COLUMNS
 
 # Setup Logger
 logger = setup_logger(LOG_DIR, 'feeds.log', 'CSVProcessor')
@@ -70,7 +70,6 @@ def remove_pii_rows(df):
 
 def filter_data(df):
     """
-    CORRECTED LOGIC:
     - Check if ANY row has add_to_frontend == True
     - If YES: Return ONLY those rows (ignore rows with null add_to_frontend)
     - If NO: Process up to 100 rows with confidence_score >= 0.9 and length > 30

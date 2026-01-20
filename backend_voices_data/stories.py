@@ -4,6 +4,7 @@ import re
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from constants import *
 from .utils import (
     get_env_var, get_gcp_credentials, setup_logger, 
     fetch_csv_from_gcp, upload_to_gcp, upload_to_gcp_gsutil,
@@ -19,11 +20,8 @@ IMAGE_BASE_URL = os.getenv("IMAGE_BASE_URL")
 PDF_BASE_URL = os.getenv("PDF_BASE_URL")
 
 # Required columns
-REQUIRED_COLUMNS = ['story_id', 'story_title', 'updated_story_title', 'content', 'pdf_link', 'document_language', 
-                    'composite_score', 'add_to_frontend', 'overall_summary', 'image_link', 'role', 'district', 'state', 
-                    'translated_title', 'translated_content', 'translated_role', 'translated_district', 'translated_state']
-
-MANDATORY_OUTPUT_COLUMNS = ['story_title', 'content', 'pdf_link', 'document_language', 'role', 'district', 'state']
+REQUIRED_COLUMNS = STORIES_REQUIRED_COLUMNS
+MANDATORY_OUTPUT_COLUMNS = STORIES_MANDATORY_OUTPUT_COLUMNS
 
 # Setup Logger
 logger = setup_logger(LOG_DIR, 'stories.log', 'StoriesProcessor')

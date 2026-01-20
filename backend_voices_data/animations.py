@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import re
 from dotenv import load_dotenv
+from constants import * 
 from .utils import (
     get_env_var, get_gcp_credentials, setup_logger, 
     fetch_csv_from_gcp, upload_to_gcp, upload_to_gcp_gsutil,
@@ -15,16 +16,8 @@ load_dotenv()
 LOG_DIR = os.getenv("LOG_DIR")
 
 # Required columns
-REQUIRED_COLUMNS = [
-    'challenge_id', 'challenge_user_role', 'challenge_district', 'challenge_state', 'challenge',
-    'add_to_frontend', 'solution_id', 'solutions', 'solution_user_role', 
-    'solution_district', 'solution_state'
-]
-
-MANDATORY_OUTPUT_COLUMNS = [
-    'challenge_id', 'challenge_user_role', 'challenge_district', 'challenge_state', 'challenge',
-    'solution_id', 'solutions', 'solution_user_role', 'solution_district', 'solution_state'
-]
+REQUIRED_COLUMNS = ANIMATIONS_REQUIRED_COLUMNS
+MANDATORY_OUTPUT_COLUMNS = ANIMATIONS_MANDATORY_OUTPUT_COLUMNS
 
 # Setup Logger
 logger = setup_logger(LOG_DIR, 'animations.log', 'ChallengesSolutionsProcessor')

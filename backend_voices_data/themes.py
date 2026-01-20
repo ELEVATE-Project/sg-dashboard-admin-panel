@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import re
+from constants import *
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -17,10 +18,8 @@ load_dotenv()
 LOG_DIR = os.getenv("LOG_DIR")
 
 # Required columns
-REQUIRED_COLUMNS = ['discussion_id', 'challenge', 'theme_name', 'add_to_frontend', 
-                   'theme_id', 'pii_flag', 'role', 'district', 'state', 'confidence_score', 
-                   'justification']
-MANDATORY_OUTPUT_COLUMNS = ['challenge', 'theme_name', 'theme_id', 'pii_flag', 'role', 'district', 'state']
+REQUIRED_COLUMNS = THEMES_REQUIRED_COLUMNS
+MANDATORY_OUTPUT_COLUMNS = THEMES_MANDATORY_OUTPUT_COLUMNS
 
 # Setup Logger
 logger = setup_logger(LOG_DIR, 'themes.log', 'ThemesProcessor')
