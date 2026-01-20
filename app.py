@@ -165,7 +165,7 @@ with tabs[4]:
                 success, message = upload_to_gcp(uploaded_file, csv_type)
                 
             if success:
-                st.success("json file uploaded sucessfully", icon="✅")
+                st.success("json file uploaded successfully", icon="✅")
                 st.balloons()
             else:
-                st.error("failed to upload json", icon="❌")
+                st.error("failed to upload JSON", icon="❌")
