@@ -231,7 +231,8 @@ def construct_json(df):
     data_list = []
 
     for story_id, group in grouped:
-        first_row = group.iloc[0]
+        english_rows = group[group['document_language'].str.lower() == 'english']
+        first_row = english_rows.iloc[0] if not english_rows.empty else group.iloc[0]
 
         # Photos
         photos = []
@@ -365,6 +366,8 @@ def append_base_url(df, image_base_url, pdf_base_url):
     logger.info("Updating the base URL's")
     
     def update_links(links, base_url):
+        if not base_url:
+            return links
         if pd.isna(links) or links == '':
             return links
         link_list = str(links).split('|')

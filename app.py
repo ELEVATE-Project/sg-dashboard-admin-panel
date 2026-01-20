@@ -156,16 +156,16 @@ with tabs[4]:
     # Submit Button
     if st.button("Submit Upload", key="submit_backend"):
         if csv_type == "Select...":
-            st.error("Please select a valid Data Type.", icon="🚨")
+            st.error("Please select a valid data type.", icon="🚨")
         elif uploaded_file is None:
             st.error("Please upload a file.", icon="🚨")
         else:
-            # 3. Upload
-            with st.spinner("Uploading to GCP and Processing..."):
+            # Upload
+            with st.spinner("Uploading to GCP and processing..."):
                 success, message = upload_to_gcp(uploaded_file, csv_type)
-                
+
             if success:
-                st.success("json file uploaded successfully", icon="✅")
+                st.success(message or "JSON file uploaded successfully.", icon="✅")
                 st.balloons()
             else:
-                st.error("failed to upload JSON", icon="❌")
+                st.error(message or "Failed to upload JSON file.", icon="❌")

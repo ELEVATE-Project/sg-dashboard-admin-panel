@@ -88,7 +88,13 @@ def fetch_csv_from_gcp(local_csv_file_path, bucket_name, blob_path, credentials,
 
     try:
         # CREATE THE DIRECTORY IF IT DOESN'T EXIST
-        os.makedirs(os.path.dirname(local_csv_file_path), exist_ok=True)
+        if not local_csv_file_path:
+            logger.error("local_csv_file_path is None or empty")
+            return None
+
+        dir_path = os.path.dirname(local_csv_file_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
         
         storage_client = storage.Client(credentials=credentials, project=credentials.project_id)
         bucket = storage_client.bucket(bucket_name)
