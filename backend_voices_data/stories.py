@@ -572,7 +572,11 @@ def main():
         "stories.csv",
         logger
     )
-    
+
+    if CSV_PATH is None:
+        logger.error("Failed to fetch CSV from GCP. Exiting.")
+        return
+
     logger.info("Application started")
     logger.info(f"Configuration loaded")
     
