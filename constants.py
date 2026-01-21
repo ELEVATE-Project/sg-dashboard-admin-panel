@@ -55,3 +55,19 @@ BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
 DRIVE_IMAGE_URL = "https://drive.google.com/uc?export=view&id="
 
 DRIVE_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id="
+
+ANIMATIONS_REQUIRED_COLUMNS = ['challenge_id', 'challenge_user_role', 'challenge_district', 'challenge_state', 'challenge', 'add_to_frontend', 'solution_id', 'solutions', 'solution_user_role', 'solution_district', 'solution_state']
+
+ANIMATIONS_MANDATORY_OUTPUT_COLUMNS = ['challenge_id', 'challenge_user_role', 'challenge_district', 'challenge_state', 'challenge','solution_id', 'solutions', 'solution_user_role', 'solution_district', 'solution_state']
+
+FEEDS_REQUIRED_COLUMNS = ['story_id', 'action_steps', 'impact', 'add_to_frontend', 'pii_flag', 'role', 'district', 'state', 'justification', 'confidence_score']
+
+FEEDS_MANDATORY_OUTPUT_COLUMNS = ['action_steps', 'impact', 'pii_flag', 'role', 'district', 'state']
+
+STORIES_REQUIRED_COLUMNS = ['story_id', 'story_title', 'updated_story_title', 'content', 'pdf_link', 'document_language', 'composite_score', 'add_to_frontend', 'overall_summary', 'image_link', 'role', 'district', 'state', 'translated_title', 'translated_content', 'translated_role', 'translated_district', 'translated_state']
+
+STORIES_MANDATORY_OUTPUT_COLUMNS = ['story_title', 'content', 'pdf_link', 'document_language', 'role', 'district', 'state']
+
+THEMES_REQUIRED_COLUMNS = ['discussion_id', 'challenge', 'theme_name', 'add_to_frontend', 'theme_id', 'pii_flag', 'role', 'district', 'state', 'confidence_score', 'justification']
+
+THEMES_MANDATORY_OUTPUT_COLUMNS = ['challenge', 'theme_name', 'theme_id', 'pii_flag', 'role', 'district', 'state']
