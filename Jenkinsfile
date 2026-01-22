@@ -19,14 +19,16 @@ pipeline {
                                   doGenerateSubmoduleConfigurations: false,
                                   extensions: [],
                                   submoduleCfg: [],
-                                  userRemoteConfigs: [[url: 'https://github.com/ELEVATE-Project/sg-dashboard-admin-panel']]])
+                                //   userRemoteConfigs: [[url: 'https://github.com/ELEVATE-Project/sg-dashboard-admin-panel']]])
+                                userRemoteConfigs: [[url: 'https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git']]])
                     } else if (params.GIT_REF_TYPE == 'Tag') {
                         checkout([$class: 'GitSCM', 
                                   branches: [[name: "refs/tags/${params.GIT_REF}"]],
                                   doGenerateSubmoduleConfigurations: false,
                                   extensions: [],
                                   submoduleCfg: [],
-                                  userRemoteConfigs: [[url: 'https://github.com/ELEVATE-Project/sg-dashboard-admin-panel']]])
+                                //   userRemoteConfigs: [[url: 'https://github.com/ELEVATE-Project/sg-dashboard-admin-panel']]])
+                                  userRemoteConfigs: [[url: 'https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git']]])
                     } else {
                         error "Invalid GIT_REF_TYPE. Please choose 'Branch' or 'Tag'."
                     }
