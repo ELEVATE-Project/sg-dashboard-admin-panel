@@ -25,7 +25,7 @@
     - name: Fetch the latest code
       git:
         repo: https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git
-        dest: "{{ root_path }}"
+        dest: "{{ project_path }}"
         version: "{{ gitBranch | default('release-2.0.0') }}"
         force: yes
 
