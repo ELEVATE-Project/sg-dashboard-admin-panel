@@ -21,7 +21,7 @@
 
     - name: Fetch the latest code
       git:
-        repo: https://github.com/shikshalokam/sg-dashboard-admin-panel
+        repo: https://github.com/ELEVATE-Project/sg-dashboard-admin-panel
         dest: "{{ project_path }}"
         version: "{{ gitBranch }}"
         force: yes
@@ -52,6 +52,46 @@
         virtualenv: "{{ venv_path }}"
       become: yes
 
+    - name: Get vault credentials
+      shell: >
+        curl --location --request GET '{{ vaultAddress }}sg-dashboard-admin'
+        --header 'X-Vault-Token: {{ slurpfile.content | b64decode }}'
+        | jq '.data' > '{{ project_path }}/data2.json'
+      register: credentials
+
+    - name: Generate .env from Vault JSON data
+      shell: |
+        set -o pipefail
+        cat "{{ project_path }}/data2.json" | \
+        tr -d '\n' | \
+        grep -o '"[A-Za-z_][A-Za-z_0-9]\+"\s*:\s*\("[^"]\+"\|[0-9\.]\+\|true\|false\|null\)' | \
+        sed 's/"\(.*\)"\s*:\s*"\?\([^"]\+\)"\?/\1=\2/' \
+        > "{{ project_path }}/.env"
+      args:
+        executable: /bin/bash
+      become: yes
+      when: credentials is defined and credentials.rc == 0
+
+    # - name: Set permissions for json2env.sh
+    #   file:
+    #     path: "{{ current_path }}/scripts/json2env.sh"
+    #     mode: '0744'
+    #   register: chmod_json2env
+    #   failed_when: chmod_json2env.failed and "Permission denied" not in chmod_json2env.msg
+    #   ignore_errors: yes
+
+    # - name: Generate .env from Vault data
+    #   shell: |
+    #     set -e
+    #     cat {{ project_path }}/data2.json | {{ current_path }}/scripts/json2env.sh > {{ current_path }}/apiServices/src/main/.env.tmp
+    #     sed -i 's/= *"/=/g' {{ current_path }}/apiServices/src/main/.env.tmp
+    #     sed -i 's/"$//g' {{ current_path }}/apiServices/src/main/.env.tmp
+    #     mv {{ current_path }}/apiServices/src/main/.env.tmp {{ current_path }}/apiServices/src/main/.env
+    #   args:
+    #     executable: /bin/bash
+    #   register: envConfig
+    #   when: credentials is defined and credentials.rc == 0
+
     # [IMPORTANT] The application requires a .env file with GCP credentials (PROJECT_ID, PRIVATE_KEY, etc.)
     # You can add a task here to fetch secrets from Vault (as in your sample) or copy a file.
     # Example placeholder:
@@ -78,8 +118,11 @@
           WorkingDirectory={{ project_path }}
 
           ExecStart={{ venv_path }}/bin/streamlit run app.py \
-            --server.port 8501 \
-            --server.address 0.0.0.0
+              --server.port 8501 \
+              --server.address 0.0.0.0 \
+              --server.baseUrlPath admin \
+              --server.enableCORS false \
+              --server.enableXsrfProtection false
 
           Restart=always
           RestartSec=5
@@ -88,6 +131,7 @@
           StandardError=append:{{ root_path }}/logs/streamlit.err.log
 
           Environment="PATH={{ venv_path }}/bin"
+          Environment="STREAMLIT_THEME_BASE=light"
 
           [Install]
           WantedBy=multi-user.target

@@ -38,9 +38,9 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'git-credential', passwordVariable: 'GIT_TOKEN', usernameVariable: 'GIT_EMAIL')]) {
                     // Run Ansible playbook
-                    ansiblePlaybook becomeUser: 'root', 
+                    ansiblePlaybook becomeUser: 'jenkins', 
                     credentialsId: 'elevate', 
-                    extras: "-e gitBranch=${GIT_REF} -e GIT_USER_NAME=tech-infra -e GIT_EMAIL=${GIT_EMAIL} -e GIT_TOKEN=${GIT_TOKEN}", 
+                    extras: "-e vaultAddress=http://10.148.0.40:8200/v1/postgres-dev/data/ -e gitBranch=${GIT_REF}", 
                     installation: 'ansible', 
                     inventory: '/etc/ansible/postgres-hosts', 
                     playbook: 'deployment/ansible.yml'
