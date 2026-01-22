@@ -15,6 +15,20 @@
         src: "{{ backen_project_path }}/.token"
       register: slurpfile
 
+    - name: Debug which user Ansible is running as
+      debug:
+        msg:
+          - "ansible_user_id = {{ ansible_user_id }}"
+          - "ansible_user = {{ ansible_user | default('not set') }}"
+          - "ansible_become_user = {{ ansible_become_user | default('root') }}"
+          - "inventory_hostname = {{ inventory_hostname }}"
+
+    - name: Who am I (shell)
+      shell: whoami
+      register: whoami_out
+
+    - debug:
+        var: whoami_out.stdout
 
     - name: Ensure project directories exist
       file:
