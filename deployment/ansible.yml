@@ -47,7 +47,7 @@
         dest: "{{ root_path }}"
         version: "{{ gitBranch | default('release-2.0.0') }}"
         force: yes
-      become: yes
+      # become: yes
 
     # - name: Slurp vault token file
     #   slurp:
@@ -61,7 +61,7 @@
         --header 'X-Vault-Token: {{ slurpfile.content | b64decode | trim }}'
         | jq '.data' > '{{ backen_project_path }}/data2.json'
       register: credentials
-      become: yes
+      # become: yes
 
     - name: Generate .env from Vault JSON data
       shell: |
@@ -73,21 +73,21 @@
         > "{{ project_path }}/.env"
       args:
         executable: /bin/bash
-      become: yes
+      # become: yes
       when: credentials is defined and credentials.rc == 0
 
     - name: Create virtual environment
       command: "python{{ python_version }} -m venv {{ venv_path }}"
       args:
         creates: "{{ venv_path }}/bin/activate"
-      become: yes
+      # become: yes
 
     - name: Install requirements
       pip:
         requirements: "{{ project_path }}/requirements.txt"
         virtualenv: "{{ venv_path }}"
         extra_args: "--upgrade pip"
-      become: yes
+      # become: yes
 
     - name: Create systemd service file
       copy:
@@ -117,7 +117,7 @@
           [Install]
           WantedBy=multi-user.target
         mode: '0644'
-      become: yes
+      # become: yes
     
     - name: Reload systemd and restart service
       systemd:
@@ -125,7 +125,7 @@
         state: restarted
         daemon_reload: yes
         enabled: yes
-      become: yes
+      # become: yes
 
 # ---
 # - hosts: elevate
