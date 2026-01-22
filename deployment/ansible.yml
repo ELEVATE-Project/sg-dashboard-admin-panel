@@ -35,8 +35,7 @@
         --header 'X-Vault-Token: {{ slurpfile.content | b64decode | trim }}'
         | jq '.data' > '{{ backen_project_path }}/data2.json'
       register: credentials
-      # become: yes
-
+  
     - name: Generate .env from Vault JSON data
       shell: |
         set -o pipefail
@@ -47,22 +46,18 @@
         > "{{ project_path }}/.env"
       args:
         executable: /bin/bash
-      # become: yes
       when: credentials is defined and credentials.rc == 0
 
     - name: Create virtual environment
       command: "python{{ python_version }} -m venv {{ venv_path }}"
       args:
         creates: "{{ venv_path }}/bin/activate"
-      # become: yes
 
     - name: Install requirements
       pip:
         requirements: "{{ project_path }}/requirements.txt"
         virtualenv: "{{ venv_path }}"
         extra_args: "--upgrade pip"
-      # become: yes
-
 
     - name: Create streamlit start script
       copy:
@@ -89,3 +84,6 @@
             --server.enableCORS false \
             >> {{ root_path }}/logs/streamlit.log 2>&1 &
 
+    - name: Start Streamlit application
+      shell: |
+        nohup {{ root_path }}/start-streamlit.sh > /dev/null 2>&1 &
