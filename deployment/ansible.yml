@@ -42,7 +42,7 @@
       ansible.builtin.slurp:
         src: "{{ backen_project_path }}/data2.json"
       register: vault_json
-      when: credentials is defined and credentials.rc == 0
+      when: credentials is defined and credentials.status == 200
 
     - name: Generate .env from Vault JSON data
       ansible.builtin.copy:
