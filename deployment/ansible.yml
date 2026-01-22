@@ -1,0 +1,81 @@
+---
+- hosts: elevate
+  vars:
+    project_path: /opt/frontend/sgdashboard-admin/sg-dashboard-admin-panel
+    root_path: /opt/frontend/sgdashboard-admin
+    venv_path: /opt/frontend/sgdashboard-admin/resource/virtualenv
+    backen_project_path: /opt/backend/deployment
+    python_version: "3.10"
+    token_path: "/opt/backend/deployment/.token" 
+
+  tasks:
+    - name: Slurp hosts file
+      slurp:
+        src: "{{ backen_project_path }}/.token"
+      register: slurpfile
+
+    - name: Fetch the latest code
+      git:
+        repo: https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git
+        dest: "{{ project_path }}"
+        version: "{{ gitBranch | default('release-2.0.0') }}"
+        force: yes
+
+    - name: Get vault credentials
+      shell: >
+        curl --location --request GET '{{ vaultAddress }}sg-dashboard-admin'
+        --header 'X-Vault-Token: {{ slurpfile.content | b64decode | trim }}'
+        | jq '.data' > '{{ backen_project_path }}/data2.json'
+      register: credentials
+
+    - name: Generate .env from Vault JSON data
+      shell: |
+        set -o pipefail
+        cat "{{ backen_project_path }}/data2.json" | \
+        tr -d '\n' | \
+        grep -o '"[A-Za-z_][A-Za-z_0-9]\+"\s*:\s*\("[^"]\+"\|[0-9\.]\+\|true\|false\|null\)' | \
+        sed 's/"\(.*\)"\s*:\s*"\?\([^"]\+\)"\?/\1=\2/' \
+        > "{{ project_path }}/.env"
+      args:
+        executable: /bin/bash
+      when: credentials is defined and credentials.rc == 0
+
+    - name: Create virtual environment
+      command: "python{{ python_version }} -m venv {{ venv_path }}"
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+
+    - name: Install requirements
+      pip:
+        requirements: "{{ project_path }}/requirements.txt"
+        virtualenv: "{{ venv_path }}"
+        extra_args: "--upgrade pip"
+
+    - name: Create streamlit start script
+      copy:
+        dest: "{{ root_path }}/start-streamlit.sh"
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          set -e
+
+          cd {{ project_path }}
+          source {{ venv_path }}/bin/activate
+
+          # Streamlit env vars
+          export STREAMLIT_THEME_BASE=light
+          export PATH="{{ venv_path }}/bin:$PATH"
+
+          pkill -f "streamlit run app.py" || true
+
+          nohup streamlit run app.py \
+            --server.port 8501 \
+            --server.address 0.0.0.0 \
+            --server.baseUrlPath admin \
+            # --server.enableXsrfProtection false \
+            # --server.enableCORS false \
+            >> {{ root_path }}/logs/streamlit.log 2>&1 &
+
+    - name: Start Streamlit application
+      shell: |
+        nohup {{ root_path }}/start-streamlit.sh > /dev/null 2>&1 &
