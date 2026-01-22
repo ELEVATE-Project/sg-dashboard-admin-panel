@@ -100,5 +100,3 @@
     - name: Start Streamlit application
       shell: |
         nohup {{ root_path }}/start-streamlit.sh > /dev/null 2>&1 &
-
-
