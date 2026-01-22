@@ -1,0 +1,107 @@
+---
+- hosts: elevate
+  vars:
+    project_path: /opt/frontend/sgdashboard-admin/sg-dashboard-admin-panel
+    root_path: /opt/frontend/sgdashboard-admin
+    venv_path: /opt/frontend/sgdashboard-admin/resource/virtualenv
+    python_version: "3.10"
+  tasks:
+    - name: Ensure project directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+      loop:
+        - "{{ root_path }}"
+        - "{{ root_path }}/logs"
+        - "{{ root_path }}/resource"
+      become: yes
+
+    - name: Fetch the latest code
+      git:
+        repo: https://github.com/shikshalokam/sg-dashboard-admin-panel
+        dest: "{{ project_path }}"
+        version: "{{ gitBranch }}"
+        force: yes
+      become: yes
+
+    - name: Ensure python3.10-venv is installed
+      package:
+        name: 
+          - python{{ python_version }}-venv
+          - python{{ python_version }}-dev
+        state: present
+      become: yes
+      ignore_errors: yes 
+
+    - name: Create virtual environment
+      command: python{{ python_version }} -m venv {{ venv_path }}
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+      become: yes
+
+    - name: Upgrade pip in virtualenv
+      command: "{{ venv_path }}/bin/pip install --upgrade pip"
+      become: yes
+
+    - name: Install requirements
+      pip:
+        requirements: "{{ project_path }}/requirements.txt"
+        virtualenv: "{{ venv_path }}"
+      become: yes
+
+    # [IMPORTANT] The application requires a .env file with GCP credentials (PROJECT_ID, PRIVATE_KEY, etc.)
+    # You can add a task here to fetch secrets from Vault (as in your sample) or copy a file.
+    # Example placeholder:
+    # - name: Create .env file from template or secrets
+    #   copy:
+    #     dest: "{{ project_path }}/.env"
+    #     content: |
+    #       TYPE=service_account
+    #       PROJECT_ID=your-project-id
+    #       ...
+    #   become: yes
+
+
+    - name: Create systemd service file
+      copy:
+        dest: /etc/systemd/system/streamlit.service
+        content: |
+          [Unit]
+          Description=SG Dashboard Admin – Streamlit App
+          After=network.target
+
+          [Service]
+          User=root
+          WorkingDirectory={{ project_path }}
+
+          ExecStart={{ venv_path }}/bin/streamlit run app.py \
+            --server.port 8501 \
+            --server.address 0.0.0.0
+
+          Restart=always
+          RestartSec=5
+
+          StandardOutput=append:{{ root_path }}/logs/streamlit.out.log
+          StandardError=append:{{ root_path }}/logs/streamlit.err.log
+
+          Environment="PATH={{ venv_path }}/bin"
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: '0644'
+      become: yes
+    
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+      become: yes
+
+    - name: Enable and start streamlit service
+      systemd:
+        name: streamlit
+        state: restarted
+        enabled: yes
+      become: yes
