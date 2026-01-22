@@ -30,16 +30,16 @@
     - debug:
         var: whoami_out.stdout
 
-    - name: Ensure project directories exist
-      file:
-        path: "{{ root_path }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - "{{ root_path }}"
-        - "{{ root_path }}/logs"
-        - "{{ root_path }}/resource"
-      become: yes
+    # - name: Ensure project directories exist
+    #   file:
+    #     path: "{{ root_path }}"
+    #     state: directory
+    #     mode: '0755'
+    #   loop:
+    #     - "{{ root_path }}"
+    #     - "{{ root_path }}/logs"
+    #     - "{{ root_path }}/resource"
+    #   become: yes
 
     - name: Fetch the latest code
       git:
