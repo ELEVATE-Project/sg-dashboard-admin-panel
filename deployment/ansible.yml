@@ -89,43 +89,67 @@
         extra_args: "--upgrade pip"
       # become: yes
 
-    - name: Create systemd service file
+
+    - name: Create streamlit start script
       copy:
-        dest: /etc/systemd/system/streamlit.service
+        dest: "{{ root_path }}/start-streamlit.sh"
+        mode: '0755'
         content: |
-          [Unit]
-          Description=SG Dashboard Admin – Streamlit App
-          After=network.target
+          #!/bin/bash
+          set -e
 
-          [Service]
-          User=root
-          WorkingDirectory={{ project_path }}
-          # Load the generated .env file directly into the service environment
-          EnvironmentFile={{ project_path }}/.env
+          cd {{ project_path }}
+          source {{ venv_path }}/bin/activate
+
+          # Streamlit env vars
+          export STREAMLIT_THEME_BASE=light
+          export PATH="{{ venv_path }}/bin:$PATH"
+
+          pkill -f "streamlit run app.py" || true
+
+          nohup streamlit run app.py \
+            --server.port 8501 \
+            --server.address 0.0.0.0 \
+            --server.enableCORS false \
+            >> {{ root_path }}/logs/streamlit.log 2>&1 &
+
+
+    # - name: Create systemd service file
+    #   copy:
+    #     dest: /etc/systemd/system/streamlit.service
+    #     content: |
+    #       [Unit]
+    #       Description=SG Dashboard Admin – Streamlit App
+    #       After=network.target
+
+    #       [Service]
+    #       User=root
+    #       WorkingDirectory={{ project_path }}
+    #       # Load the generated .env file directly into the service environment
+    #       EnvironmentFile={{ project_path }}/.env
           
-          ExecStart={{ venv_path }}/bin/streamlit run app.py \
-              --server.port 8501 \
-              --server.address 0.0.0.0 \
-              --server.enableCORS false
+    #       ExecStart={{ venv_path }}/bin/streamlit run app.py \
+    #           --server.port 8501 \
+    #           --server.address 0.0.0.0 \
+    #           --server.enableCORS false
 
-          Restart=always
-          RestartSec=5
+    #       Restart=always
+    #       RestartSec=5
 
-          StandardOutput=append:{{ root_path }}/logs/streamlit.out.log
-          StandardError=append:{{ root_path }}/logs/streamlit.err.log
+    #       StandardOutput=append:{{ root_path }}/logs/streamlit.out.log
+    #       StandardError=append:{{ root_path }}/logs/streamlit.err.log
 
-          [Install]
-          WantedBy=multi-user.target
-        mode: '0644'
-      # become: yes
+    #       [Install]
+    #       WantedBy=multi-user.target
+    #     mode: '0644'
     
-    - name: Reload systemd and restart service
-      systemd:
-        name: streamlit
-        state: restarted
-        daemon_reload: yes
-        enabled: yes
-      # become: yes
+    # - name: Reload systemd and restart service
+    #   systemd:
+    #     name: streamlit
+    #     state: restarted
+    #     daemon_reload: yes
+    #     enabled: yes
+    #   # become: yes
 
 # ---
 # - hosts: elevate
@@ -235,37 +259,37 @@
 #     #   become: yes
 
 
-#     - name: Create systemd service file
-#       copy:
-#         dest: /etc/systemd/system/streamlit.service
-#         content: |
-#           [Unit]
-#           Description=SG Dashboard Admin – Streamlit App
-#           After=network.target
+    # - name: Create systemd service file
+    #   copy:
+    #     dest: /etc/systemd/system/streamlit.service
+    #     content: |
+    #       [Unit]
+    #       Description=SG Dashboard Admin – Streamlit App
+    #       After=network.target
 
-#           [Service]
-#           User=root
-#           WorkingDirectory={{ project_path }}
+    #       [Service]
+    #       User=root
+    #       WorkingDirectory={{ project_path }}
 
-#           ExecStart={{ venv_path }}/bin/streamlit run app.py \
-#               --server.port 8501 \
-#               --server.address 0.0.0.0 \
-#               --server.baseUrlPath admin \
-#               --server.enableCORS false \
-#               --server.enableXsrfProtection false
+    #       ExecStart={{ venv_path }}/bin/streamlit run app.py \
+    #           --server.port 8501 \
+    #           --server.address 0.0.0.0 \
+    #           --server.baseUrlPath admin \
+    #           --server.enableCORS false \
+    #           --server.enableXsrfProtection false
 
-#           Restart=always
-#           RestartSec=5
+    #       Restart=always
+    #       RestartSec=5
 
-#           StandardOutput=append:{{ root_path }}/logs/streamlit.out.log
-#           StandardError=append:{{ root_path }}/logs/streamlit.err.log
+    #       StandardOutput=append:{{ root_path }}/logs/streamlit.out.log
+    #       StandardError=append:{{ root_path }}/logs/streamlit.err.log
 
-#           Environment="PATH={{ venv_path }}/bin"
-#           Environment="STREAMLIT_THEME_BASE=light"
+    #       Environment="PATH={{ venv_path }}/bin"
+    #       Environment="STREAMLIT_THEME_BASE=light"
 
-#           [Install]
-#           WantedBy=multi-user.target
-#         mode: '0644'
+    #       [Install]
+    #       WantedBy=multi-user.target
+    #     mode: '0644'
 #       become: yes
     
 #     - name: Reload systemd daemon
