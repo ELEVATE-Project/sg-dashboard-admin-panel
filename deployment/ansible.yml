@@ -14,17 +14,9 @@
         src: "{{ backen_project_path }}/.token"
       register: slurpfile
 
-    - name: Debug which user Ansible is running as
-      debug:
-        msg:
-          - "ansible_user_id = {{ ansible_user_id }}"
-          - "ansible_user = {{ ansible_user | default('not set') }}"
-          - "ansible_become_user = {{ ansible_become_user | default('root') }}"
-          - "inventory_hostname = {{ inventory_hostname }}"
-
     - name: Fetch the latest code
       git:
-        repo: https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git
+        repo: https://github.com/ELEVATE-Project/sg-dashboard-admin-panel.git
         dest: "{{ project_path }}"
         version: "{{ gitBranch | default('release-2.0.0') }}"
         force: yes
@@ -35,7 +27,7 @@
         --header 'X-Vault-Token: {{ slurpfile.content | b64decode | trim }}'
         | jq '.data' > '{{ backen_project_path }}/data2.json'
       register: credentials
-  
+
     - name: Generate .env from Vault JSON data
       shell: |
         set -o pipefail
