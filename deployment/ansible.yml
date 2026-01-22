@@ -16,29 +16,44 @@
 
     - name: Fetch the latest code
       git:
-        repo: https://github.com/ELEVATE-Project/sg-dashboard-admin-panel.git
+        repo: https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git
         dest: "{{ project_path }}"
         version: "{{ gitBranch | default('release-2.0.0') }}"
         force: yes
 
     - name: Get vault credentials
-      shell: >
-        curl --location --request GET '{{ vaultAddress }}sg-dashboard-admin'
-        --header 'X-Vault-Token: {{ slurpfile.content | b64decode | trim }}'
-        | jq '.data' > '{{ backen_project_path }}/data2.json'
+      ansible.builtin.uri:
+        url: "{{ vaultAddress }}sg-dashboard-admin"
+        method: GET
+        headers:
+          X-Vault-Token: "{{ slurpfile.content | b64decode | trim }}"
+        return_content: true
       register: credentials
+      no_log: true
+
+    - name: Persist vault data (restricted)
+      ansible.builtin.copy:
+        content: "{{ credentials.json.data | to_nice_json }}"
+        dest: "{{ backen_project_path }}/data2.json"
+        mode: '0600'
+      when: credentials is defined and credentials.status == 200
+
+    - name: Read Vault JSON data
+      ansible.builtin.slurp:
+        src: "{{ backen_project_path }}/data2.json"
+      register: vault_json
+      when: credentials is defined and credentials.rc == 0
 
     - name: Generate .env from Vault JSON data
-      shell: |
-        set -o pipefail
-        cat "{{ backen_project_path }}/data2.json" | \
-        tr -d '\n' | \
-        grep -o '"[A-Za-z_][A-Za-z_0-9]\+"\s*:\s*\("[^"]\+"\|[0-9\.]\+\|true\|false\|null\)' | \
-        sed 's/"\(.*\)"\s*:\s*"\?\([^"]\+\)"\?/\1=\2/' \
-        > "{{ project_path }}/.env"
-      args:
-        executable: /bin/bash
-      when: credentials is defined and credentials.rc == 0
+      ansible.builtin.copy:
+        dest: "{{ project_path }}/.env"
+        mode: '0600'
+        content: |
+          {% set data = (vault_json.content | b64decode | from_json) %}
+          {% for item in data | dict2items %}
+          {{ item.key }}={{ item.value | string }}
+          {% endfor %}
+      when: vault_json is defined
 
     - name: Create virtual environment
       command: "python{{ python_version }} -m venv {{ venv_path }}"
@@ -50,6 +65,12 @@
         requirements: "{{ project_path }}/requirements.txt"
         virtualenv: "{{ venv_path }}"
         extra_args: "--upgrade pip"
+
+    - name: Ensure Streamlit logs directory exists
+      ansible.builtin.file:
+        path: "{{ root_path }}/logs"
+        state: directory
+        mode: '0755'
 
     - name: Create streamlit start script
       copy:
@@ -72,10 +93,12 @@
             --server.port 8501 \
             --server.address 0.0.0.0 \
             --server.baseUrlPath admin \
-            --server.enableXsrfProtection false \
-            --server.enableCORS false \
+            # --server.enableXsrfProtection false \
+            # --server.enableCORS false \
             >> {{ root_path }}/logs/streamlit.log 2>&1 &
 
     - name: Start Streamlit application
       shell: |
         nohup {{ root_path }}/start-streamlit.sh > /dev/null 2>&1 &
+
+
