@@ -106,15 +106,16 @@
         "data": [
           178135.0,
           307343.0,
-          434933.0,
-          520362.0
+          479933.0,
+          565362.0
         ]
       },
       {
         "year": 2025,
         "data": [
-          618359.0,
-          763265.0
+          663454.0,
+          808551.0,
+          1210780.0
         ]
       }
     ],
@@ -135,15 +136,15 @@
       },
       {
         "name": "School Structure and Practices",
-        "value": 35671
+        "value": 61689
       },
       {
         "name": "Leadership",
-        "value": 79676
+        "value": 99932
       },
       {
         "name": " Pedagogy ",
-        "value": 374119
+        "value": 488383
       },
       {
         "name": "Assessment and Evaluation",
@@ -151,7 +152,7 @@
       },
       {
         "name": "Community Engagement",
-        "value": 273799
+        "value": 560776
       }
     ],
     "styles": {

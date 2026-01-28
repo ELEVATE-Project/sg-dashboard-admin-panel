@@ -59,7 +59,9 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
         year = row[3] if len(row) > 3 else None
         q_values = [row[i] if len(row) > i else None for i in range(4, 8)]
 
-
+        if district:
+            continue
+        
         # Only year 2025
         if year != 2025:
             continue
@@ -329,6 +331,12 @@ def extract_district_line_chart(excel_file):
         workbook.close()
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
+        gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+        spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+        gcp_access = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gcp_access)
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
         for dist_id, dist_data in district_files_map.items():
             dist_dir = os.path.join(script_dir, "..", "districts", str(dist_id))
             os.makedirs(dist_dir, exist_ok=True)
@@ -344,6 +352,19 @@ def extract_district_line_chart(excel_file):
                 json.dump({"data": line_chart_data}, f, indent=2, ensure_ascii=False)
 
             print(f"✅ Generated line-chart.json for district {dist_id} ({dist_data['district_name']})")
+
+
+            destination_blob_name = f"sg-dashboard/districts/{dist_id}/line-chart.json"
+            folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+                bucket_name=os.environ.get("BUCKET_NAME"),
+                source_file_path=line_chart_path,
+                destination_blob_name=destination_blob_name
+            )
+
+            if folder_url:
+                print(f"✅ Uploaded line-chart.json for district {dist_id}: {folder_url}")
+            else:
+                print(f"❌ Failed to upload line-chart.json for district {dist_id}")
 
     except Exception as e:
         print(f"❌ Error: {str(e)}")
@@ -425,7 +446,40 @@ def extract_state_line_chart(excel_file):
 
         workbook.close()
 
-        print("✅ All line-chart.json files generated & uploaded successfully.")
+
+         # Load GCP access
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+        spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+        gcp_access = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gcp_access)
+
+        # ✅ SAVE STATE LINE-CHART.JSON HERE
+        for state_id, state_data in state_line_chart_map.items():
+
+            line_chart_data = []
+
+            for year in [2024, 2025]:
+                data = _format_year_data(state_data["line_chart"][year])
+                if data:
+                    line_chart_data.append({
+                        "year": year,
+                        "data": data
+                    })
+
+            if not line_chart_data:
+                continue
+
+            save_and_upload_state_file(
+                script_dir=script_dir,
+                state_id=state_id,
+                filename="line-chart.json",
+                data={"data": line_chart_data},
+                gcp_access=gcp_access
+            )
+
+
+        print("✅ All state line-chart.json files generated & uploaded successfully.")
         extract_district_line_chart(excel_file)
 
     except Exception as e:

@@ -12,18 +12,33 @@
         "left": "11%"
       },
       {
-        "minWidth": 1830,
+        "minWidth": 1890,
         "top": "85%",
         "left": "11%"
       },
       {
-        "minWidth": 1450,
+        "minWidth": 1830,
+        "top": "83%",
+        "left": "11%"
+      },
+      {
+        "minWidth": 1530,
         "top": "67%",
+        "left": "10%"
+      },
+      {
+        "minWidth": 1450,
+        "top": "64%",
         "left": "10%"
       },
       {
         "minWidth": 1440,
         "top": "62%",
+        "left": "10%"
+      },
+      {
+        "minWidth": 1420,
+        "top": "64%",
         "left": "10%"
       },
       {
@@ -33,7 +48,7 @@
       },
       {
         "minWidth": 1280,
-        "top": "55%",
+        "top": "56%",
         "left": "10%"
       },
       {
@@ -61,13 +76,23 @@
         "left": "37%"
       },
       {
-        "minWidth": 1830,
+        "minWidth": 1890,
         "top": "82%",
         "left": "37%"
       },
       {
-        "minWidth": 1450,
+        "minWidth": 1830,
+        "top": "79%",
+        "left": "37%"
+      },
+      {
+        "minWidth": 1530,
         "top": "64%",
+        "left": "37%"
+      },
+      {
+        "minWidth": 1450,
+        "top": "61%",
         "left": "37%"
       },
       {
@@ -76,8 +101,13 @@
         "left": "37%"
       },
       {
+        "minWidth": 1420,
+        "top": "61%",
+        "left": "37%"
+      },
+      {
         "minWidth": 1366,
-        "top": "57%",
+        "top": "56%",
         "left": "37%"
       },
       {
@@ -110,29 +140,44 @@
         "left": "60%"
       },
       {
-        "minWidth": 1830,
+        "minWidth": 1890,
         "top": "67%",
         "left": "60%"
       },
       {
-        "minWidth": 1450,
+        "minWidth": 1830,
+        "top": "64%",
+        "left": "60%"
+      },
+      {
+        "minWidth": 1530,
         "top": "52%",
         "left": "60%"
       },
       {
+        "minWidth": 1450,
+        "top": "55%",
+        "left": "63%"
+      },
+      {
         "minWidth": 1440,
-        "top": "49%",
-        "left": "60%"
+        "top": "55%",
+        "left": "63%"
+      },
+      {
+        "minWidth": 1420,
+        "top": "57%",
+        "left": "63%"
       },
       {
         "minWidth": 1366,
-        "top": "47%",
-        "left": "60%"
+        "top": "51%",
+        "left": "63%"
       },
       {
         "minWidth": 1280,
-        "top": "43%",
-        "left": "60%"
+        "top": "49%",
+        "left": "63%"
       },
       {
         "minWidth": 1024,
@@ -159,18 +204,33 @@
         "left": "89%"
       },
       {
-        "minWidth": 1830,
+        "minWidth": 1890,
         "top": "82%",
         "left": "89%"
       },
       {
-        "minWidth": 1450,
+        "minWidth": 1830,
+        "top": "79%",
+        "left": "89%"
+      },
+      {
+        "minWidth": 1530,
         "top": "64%",
+        "left": "89%"
+      },
+      {
+        "minWidth": 1450,
+        "top": "61%",
         "left": "89%"
       },
       {
         "minWidth": 1440,
         "top": "59%",
+        "left": "89%"
+      },
+      {
+        "minWidth": 1420,
+        "top": "61%",
         "left": "89%"
       },
       {

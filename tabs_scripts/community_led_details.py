@@ -122,6 +122,179 @@ def pie_chart_community_led(excel_file):
     except Exception as e:
         print(f"Error: {str(e)}")
 
+# def community_led_programs_sum_with_codes(excel_file):
+#     try:
+#         # Get the directory of the current script
+#         script_dir = os.path.dirname(os.path.abspath(__file__))
+#         print(script_dir)
+#         # Define the path to the JSON file
+#         json_path = os.path.join(script_dir, "..", "pages", "community-country-view.json")
+
+#         # Open the Excel file
+#         workbook = openpyxl.load_workbook(excel_file, data_only=True)
+
+#         # Load "Community Led Programs" sheet
+#         try:
+#             community_sheet = workbook["Community Led Programs"]
+#         except KeyError:
+#             print("Error: Sheet 'Community Led Programs' not found in the Excel file.")
+#             print(f"Available sheets: {workbook.sheetnames}")
+#             return
+
+#         # Load "State_district details" sheet for state codes
+#         try:
+#             state_district_sheet = workbook["State_district details"]
+#         except KeyError:
+#             print("Error: Sheet 'State_district details' not found in the Excel file.")
+#             print(f"Available sheets: {workbook.sheetnames}")
+#             return
+
+#         # Get headers for Community Led Programs
+#         community_headers = [cell.value for cell in community_sheet[1]]
+#         community_cleaned_headers = [str(cell).strip() if cell is not None else '' for cell in community_headers]
+#         expected_community_columns = [
+#             "Name of the State",
+#             "Name of the District",  # Added district column
+#             "No. of community leaders engaged",
+#             "Community led improvements",
+#             "Challenges shared",
+#             "Solutions shared"
+#         ]
+#         if not all(col in community_cleaned_headers for col in expected_community_columns):
+#             print(f"Error: Excel file must contain columns in Community Led Programs: {expected_community_columns}")
+#             print(f"Found: {community_cleaned_headers}")
+#             return
+
+#         # Get headers for State_district details
+#         state_district_headers = [cell.value for cell in state_district_sheet[1]]
+#         state_district_cleaned_headers = [str(cell).strip() if cell is not None else '' for cell in state_district_headers]
+#         expected_state_columns = ["state name", "state code"]
+#         if not all(col in state_district_cleaned_headers for col in expected_state_columns):
+#             print(f"Error: Excel file must contain columns in State_district details: {expected_state_columns}")
+#             print(f"Found: {state_district_cleaned_headers}")
+#             return
+
+#         # Extract state codes from State_district details
+#         state_codes = {}
+#         for row in state_district_sheet.iter_rows(min_row=2, max_col=len(state_district_headers), values_only=True):
+#             try:
+#                 state_name = row[state_district_cleaned_headers.index("state name")] or ''
+#                 state_code = row[state_district_cleaned_headers.index("state code")]
+#                 if state_name and state_code:
+#                     state_codes[state_name] = str(state_code)
+#             except Exception as e:
+#                 print(f"Error processing state code row: {str(e)}")
+#                 continue
+
+#         # Initialize dictionary to store sums and district counts by state
+#         state_sums = {}
+
+#         # Extract and sum data for specified columns and count unique districts
+#         for row in community_sheet.iter_rows(min_row=2, max_col=len(community_headers), values_only=True):
+#             try:
+#                 state_name = row[community_cleaned_headers.index("Name of the State")] or ''
+#                 district_name = row[community_cleaned_headers.index("Name of the District")] or ''
+#                 if not state_name or not district_name:
+#                     continue
+
+#                 # Initialize state entry if not exists
+#                 if state_name not in state_sums:
+#                     state_sums[state_name] = {
+#                         "No. of community leaders engaged": 0,
+#                         "Community led improvements": 0,
+#                         "Challenges shared": 0,
+#                         "Solutions shared": 0,
+#                         "Districts activated": set()  # Use a set to store unique district names
+#                     }
+
+#                 # Add district to the set
+#                 state_sums[state_name]["Districts activated"].add(district_name)
+
+#                 # Sum values for specified columns
+#                 for col_name in expected_community_columns[2:]:  # Skip State Name and District
+#                     col_index = community_cleaned_headers.index(col_name)
+#                     value = row[col_index]
+#                     if isinstance(value, (int, float)) and value is not None:
+#                         state_sums[state_name][col_name] += value
+
+#             except Exception as e:
+#                 print(f"Error processing row in Community Led Programs: {str(e)}")
+#                 continue
+
+#         # Format data as object of objects with state code as key
+#         states_data = {
+#             state_codes.get(state, "unknown"): {
+#                 "id": state_codes.get(state, "unknown"),
+#                 "label": state,
+#                 "type": "category_1",
+#                 "details": [
+#                     {"code": col_name, "value": int(val) if isinstance(val, float) and val.is_integer() else val}
+#                     for col_name, val in sums.items() if col_name != "Districts activated"  # Exclude Districts Activated temporarily
+#                 ] + [{"code": "Districts activated", "value": len(sums["Districts activated"])}]  # Add district count
+#             }
+#             for state, sums in state_sums.items()
+#         }
+
+#         # Create the final data structure
+#         data = {
+#             "result": {
+#                 "states": states_data
+#             }
+#         }
+
+#         # Read the existing JSON file
+#         try:
+#             with open(json_path, 'r', encoding='utf-8') as json_file:
+#                 raw_content = json_file.read()
+#                 json_file.seek(0)
+#                 try:
+#                     json_data = json.load(json_file)
+#                 except json.JSONDecodeError:
+#                     try:
+#                         json_data = json.loads(raw_content)
+#                     except json.JSONDecodeError:
+#                         json_data = {}
+#         except FileNotFoundError:
+#             json_data = {}
+
+#         # Ensure json_data is a dictionary with a "result" key
+#         if not isinstance(json_data, dict):
+#             json_data = {"result": {}}
+#         if "result" not in json_data:
+#             json_data["result"] = {}
+#         if "states" not in json_data["result"]:
+#             json_data["result"]["states"] = {}
+
+#         # Update the states data
+#         print(states_data)
+#         json_data["result"]["states"].update(states_data)
+
+#         # Write back to the file
+#         with open(json_path, 'w', encoding='utf-8') as json_file:
+#             json.dump(json_data, json_file, indent=2, ensure_ascii=False)
+
+#         # Dynamically import gcp_access module and upload file
+#         gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+#         spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+#         gcp_access = importlib.util.module_from_spec(spec)
+#         spec.loader.exec_module(gcp_access)
+
+#         folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+#             bucket_name=os.environ.get("BUCKET_NAME"),
+#             source_file_path=json_path,
+#             destination_blob_name="sg-dashboard/community-country-view.json"
+#         )
+
+#         if folder_url:
+#             print(f"Successfully uploaded and got public folder URL: {folder_url}")
+#             updateOverviewValues()
+#         else:
+#             print("Failed to upload file to GCS. Check logs for details.")
+
+#     except Exception as e:
+#         print(f"Error: {str(e)}")
+
+
 def community_led_programs_sum_with_codes(excel_file):
     try:
         # Get the directory of the current script
@@ -135,9 +308,9 @@ def community_led_programs_sum_with_codes(excel_file):
 
         # Load "Community Led Programs" sheet
         try:
-            community_sheet = workbook["Community Led Programs"]
+            community_sheet = workbook["New_Community led Programs "]
         except KeyError:
-            print("Error: Sheet 'Community Led Programs' not found in the Excel file.")
+            print("Error: Sheet 'new Community Led Programs' not found in the Excel file.")
             print(f"Available sheets: {workbook.sheetnames}")
             return
 
@@ -155,10 +328,11 @@ def community_led_programs_sum_with_codes(excel_file):
         expected_community_columns = [
             "Name of the State",
             "Name of the District",  # Added district column
-            "No. of community leaders engaged",
-            "Community led improvements",
-            "Challenges shared",
-            "Solutions shared"
+            "Community members participating in dialogues",
+            "Local challenges identified",
+            "Community leaders driving improvements",
+            "Local solutions identified",
+            "Local Solutions implemented"
         ]
         if not all(col in community_cleaned_headers for col in expected_community_columns):
             print(f"Error: Excel file must contain columns in Community Led Programs: {expected_community_columns}")
@@ -200,10 +374,11 @@ def community_led_programs_sum_with_codes(excel_file):
                 # Initialize state entry if not exists
                 if state_name not in state_sums:
                     state_sums[state_name] = {
-                        "No. of community leaders engaged": 0,
-                        "Community led improvements": 0,
-                        "Challenges shared": 0,
-                        "Solutions shared": 0,
+                        "Community members participating in dialogues": 0,
+                        "Local challenges identified": 0,
+                        "Community leaders driving improvements": 0,
+                        "Local solutions identified": 0,
+                        "Local Solutions implemented":0,
                         "Districts activated": set()  # Use a set to store unique district names
                     }
 
@@ -293,6 +468,7 @@ def community_led_programs_sum_with_codes(excel_file):
 
     except Exception as e:
         print(f"Error: {str(e)}")
+
 
 def updateOverviewValues():
     # Get the directory of the script
@@ -389,7 +565,6 @@ def updateOverviewValues():
     except Exception as e:
         print(f"Error: Failed to write to {output_path}: {str(e)}")
         exit(1)
-
 
 
 

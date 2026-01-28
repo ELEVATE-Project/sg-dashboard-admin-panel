@@ -11,7 +11,8 @@ PAGE_METADATA = {
     "COMMUNITY_LED_PROGRAMS":"Community Led Programs",
     "DISTRICT_DETAILS": "District Details",
     "UPLOAD_IMAGES":"Imagesicons",
-    "VOICE_TAB_BIG_NUMBERS":"Voices tab_Big numbers"
+    "VOICE_TAB_BIG_NUMBERS":"Voices tab_Big numbers",
+    "NEW_COMMUNITY_LED_PROGRAMS":"New_Community led Programs "
     }
 
 TABS_METADATA = {
