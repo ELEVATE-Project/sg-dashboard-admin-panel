@@ -200,7 +200,6 @@ if uploaded_file is not None:
                     voices_tab_big_numbers(uploaded_file)
                     update_voices_json_line_chart(uploaded_file)
                     update_leaders_engaged_dual_axis_chart(uploaded_file)
-                    delete_district_community_pie_charts()
                     status.update(label="✅ All files uploaded successfully!", state="complete")
             except Exception as e:
                 st.error(f"❌ Error during full upload: {e}")

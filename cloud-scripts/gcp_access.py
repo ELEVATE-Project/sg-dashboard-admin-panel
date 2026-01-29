@@ -84,7 +84,7 @@ def delete_file_from_gcs(bucket_name, blob_name):
     blob.delete()
 
 
-def delete_all_district_community_pie_charts(bucket_name):
+def delete_all_community_pie_charts_json(bucket_name):
     try:
         credentials = service_account.Credentials.from_service_account_info(
             service_account_info,
