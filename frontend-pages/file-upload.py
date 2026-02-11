@@ -14,7 +14,7 @@ from tabs_scripts.pie_chart import pie_chart
 from tabs_scripts.testimonials import testimonials
 from tabs_scripts.programs import generate_program_reports
 from tabs_scripts.extract_district_details import extract_district_details
-from tabs_scripts.extract_community_details import extract_community_details
+from tabs_scripts.extract_community_details import extract_community_details , delete_district_community_pie_charts
 from tabs_scripts.upload_images_from_excel import upload_images_from_excel
 from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
 
@@ -191,7 +191,7 @@ if uploaded_file is not None:
                     goals(uploaded_file)
                     pie_chart(uploaded_file)
                     testimonials(uploaded_file)
-                    pie_chart_community_led(uploaded_file)
+                    # pie_chart_community_led(uploaded_file)   #commenting this line as per phase enhancement 1
                     community_led_programs_sum_with_codes(uploaded_file)
                     generate_program_reports(uploaded_file)
                     extract_community_details(uploaded_file)

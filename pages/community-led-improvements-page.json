@@ -19,7 +19,7 @@
     "showDetails": true,
     "width": "100%",
     "position": "left",
-    "path": "community-country-view.json",
+    "path": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/community-country-view.json",
     "title": "Our Network",
     "selections": [
       {
@@ -56,42 +56,6 @@
       "category": "partner-category",
       "logosContainer": "logos-container",
       "logo": "partner-logo"
-    }
-  },
-  {
-    "type": "pie-chart",
-    "width": "100%",
-    "position": "center",
-    "title": "Monthly Progress",
-    "data": [
-      {
-        "name": "Community Engagement",
-        "value": 3044
-      },
-      {
-        "name": "Infrastructure and Resources",
-        "value": 0
-      },
-      {
-        "name": "School Structure and Practices",
-        "value": 0
-      },
-      {
-        "name": "Leadership",
-        "value": 0
-      },
-      {
-        "name": "Pedagogy",
-        "value": 0
-      },
-      {
-        "name": "Assessment and Evaluation",
-        "value": 0
-      }
-    ],
-    "styles": {
-      "section": "line-chart-section",
-      "title": "section-title"
     }
   }
 ]

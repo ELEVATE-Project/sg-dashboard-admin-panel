@@ -39,7 +39,7 @@
       "partners": [
         {
           "id": "alohomora",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/alohomora.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/alohomora.jpg",
           "alt": "alohomora",
           "name": "Alohomora",
           "countryName": "India",
@@ -53,7 +53,7 @@
         },
         {
           "id": "alokit",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/alokit.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/alokit.jpg",
           "alt": "alokit",
           "name": "Alokit",
           "countryName": "India",
@@ -61,13 +61,13 @@
           "category": "Momentum ",
           "website": "https://alokit.org/",
           "coordinates": [
-            28.894279,
-            76.565681
+            18.871854,
+            79.286631
           ]
         },
         {
           "id": "eduweave",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/eduweave.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/eduweave.jpg",
           "alt": "eduweave",
           "name": "EduWeave",
           "countryName": "India",
@@ -81,7 +81,7 @@
         },
         {
           "id": "ifet",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/ifet.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/ifet.jpg",
           "alt": "ifet",
           "name": "IFET",
           "countryName": "India",
@@ -95,7 +95,7 @@
         },
         {
           "id": "involve",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/involve.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/involve.jpg",
           "alt": "involve",
           "name": "Involve",
           "countryName": "India",
@@ -109,7 +109,7 @@
         },
         {
           "id": "karunodaya",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/karunodaya.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/karunodaya.jpg",
           "alt": "karunodaya",
           "name": "Karunodaya",
           "countryName": "India",
@@ -123,7 +123,7 @@
         },
         {
           "id": "makkala_jagriti",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/makkala_jagriti.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/makkala_jagriti.jpg",
           "alt": "makkala_jagriti",
           "name": "Makkala Jagriti",
           "countryName": "India",
@@ -137,7 +137,7 @@
         },
         {
           "id": "mantra4change",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/mantra4change.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/mantra4change.jpg",
           "alt": "mantra4change",
           "name": "Mantra4Change",
           "countryName": "India",
@@ -151,7 +151,7 @@
         },
         {
           "id": "nagaed",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/nagaed.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/nagaed.jpg",
           "alt": "nagaed",
           "name": "NagaED",
           "countryName": "India",
@@ -165,7 +165,7 @@
         },
         {
           "id": "neaid",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/neaid.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/neaid.jpg",
           "alt": "neaid",
           "name": "NEAID",
           "countryName": "India",
@@ -178,10 +178,10 @@
           ]
         },
         {
-          "id": "odhisha_rising",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/odhisha_rising.jpg",
-          "alt": "odhisha_rising",
-          "name": "Odhisha Rising",
+          "id": "odisha_rising_foundation",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/odisha_rising_foundation.jpg",
+          "alt": "odisha_rising_foundation",
+          "name": "Odisha Rising Foundation",
           "countryName": "India",
           "partnerState": "Odisha",
           "category": "Momentum ",
@@ -193,7 +193,7 @@
         },
         {
           "id": "prajayatna",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/prajayatna.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/prajayatna.jpg",
           "alt": "prajayatna",
           "name": "Prajayatna",
           "countryName": "India",
@@ -207,7 +207,7 @@
         },
         {
           "id": "sanjhi_sikhiya",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/sanjhi_sikhiya.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/sanjhi_sikhiya.jpg",
           "alt": "sanjhi_sikhiya",
           "name": "Sanjhi Sikhiya",
           "countryName": "India",
@@ -221,7 +221,7 @@
         },
         {
           "id": "shiksharth",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/shiksharth.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/shiksharth.jpg",
           "alt": "shiksharth",
           "name": "Shiksharth",
           "countryName": "India",
@@ -235,7 +235,7 @@
         },
         {
           "id": "slam_out_loud",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/slam_out_loud.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/slam_out_loud.jpg",
           "alt": "slam_out_loud",
           "name": "Slam Out Loud",
           "countryName": "India",
@@ -249,7 +249,7 @@
         },
         {
           "id": "vidhya_vidhai",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/vidhya_vidhai.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/vidhya_vidhai.jpg",
           "alt": "vidhya_vidhai",
           "name": "Vidhya Vidhai",
           "countryName": "India",
@@ -263,7 +263,7 @@
         },
         {
           "id": "jyoti_mahila_samakhya",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/jyoti_mahila_samakhya.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/jyoti_mahila_samakhya.jpg",
           "alt": "jyoti_mahila_samakhya",
           "name": "Jyoti Mahila Samakhya",
           "countryName": "India",
@@ -277,7 +277,7 @@
         },
         {
           "id": "srishti_mahila_samakhya",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/srishti_mahila_samakhya.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/srishti_mahila_samakhya.jpg",
           "alt": "srishti_mahila_samakhya",
           "name": "Srishti Mahila Samakhya",
           "countryName": "India",
@@ -290,10 +290,10 @@
           ]
         },
         {
-          "id": "deepmala_sanstha",
+          "id": "deepmala_federation",
           "src": "/assets/partners/default-partner.svg",
-          "alt": "deepmala_sanstha",
-          "name": "Deepmala Sanstha",
+          "alt": "deepmala_federation",
+          "name": "Deepmala Federation",
           "countryName": "India",
           "partnerState": "Bihar",
           "category": "Momentum ",
@@ -304,10 +304,10 @@
           ]
         },
         {
-          "id": "samriddhi_sanstha",
+          "id": "samriddhi_federation",
           "src": "/assets/partners/default-partner.svg",
-          "alt": "samriddhi_sanstha",
-          "name": "Samriddhi Sanstha",
+          "alt": "samriddhi_federation",
+          "name": "Samriddhi Federation",
           "countryName": "India",
           "partnerState": "Bihar",
           "category": "Momentum ",
@@ -318,10 +318,10 @@
           ]
         },
         {
-          "id": "hamari_drishti",
+          "id": "hamari_drishti_federation",
           "src": "/assets/partners/default-partner.svg",
-          "alt": "hamari_drishti",
-          "name": "Hamari Drishti",
+          "alt": "hamari_drishti_federation",
+          "name": "Hamari Drishti Federation",
           "countryName": "India",
           "partnerState": "Bihar",
           "category": "Momentum ",
@@ -332,10 +332,10 @@
           ]
         },
         {
-          "id": "pragati_ek_prayas",
+          "id": "pragati_ek_prayas_federation",
           "src": "/assets/partners/default-partner.svg",
-          "alt": "pragati_ek_prayas",
-          "name": "Pragati Ek Prayas",
+          "alt": "pragati_ek_prayas_federation",
+          "name": "Pragati Ek Prayas Federation",
           "countryName": "India",
           "partnerState": "Bihar",
           "category": "Momentum ",
@@ -375,7 +375,7 @@
         },
         {
           "id": "bharat_dekho",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/bharat_dekho.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/bharat_dekho.jpg",
           "alt": "bharat_dekho",
           "name": "Bharat Dekho",
           "countryName": "India",
@@ -389,13 +389,13 @@
         },
         {
           "id": "think_tac",
-          "src": "/assets/partners/default-partner.svg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/think_tac.jpg",
           "alt": "think_tac",
           "name": "Think Tac",
           "countryName": "India",
           "partnerState": "Haryana",
           "category": "Momentum ",
-          "website": "",
+          "website": "https://www.thinktac.com/?srsltid=AfmBOorOpaYjU6kJPWkERddtcUhnrbvoNHbFj8lcCI7zvmA-X1w75Whp",
           "coordinates": [
             28.7096663501517,
             77.1542533265416
@@ -403,7 +403,7 @@
         },
         {
           "id": "v_help",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/v_help.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/v_help.jpg",
           "alt": "v_help",
           "name": "V Help",
           "countryName": "India",
@@ -417,7 +417,7 @@
         },
         {
           "id": "initiative_for_people_empowerment_in_india_foundationipei",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/initiative_for_people_empowerment_in_india_foundationipei.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/initiative_for_people_empowerment_in_india_foundationipei.jpg",
           "alt": "initiative_for_people_empowerment_in_india_foundationipei",
           "name": "Initiative for People Empowerment in India Foundation(IPEI)",
           "countryName": "India",
@@ -431,13 +431,13 @@
         },
         {
           "id": "1m1b",
-          "src": "/assets/partners/default-partner.svg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/1m1b.jpg",
           "alt": "1m1b",
           "name": "1M1B",
           "countryName": "India",
           "partnerState": "Karnataka",
           "category": "Momentum ",
-          "website": "",
+          "website": "https://www.activate1m1b.org/",
           "coordinates": [
             14.300316,
             76.201779
@@ -445,7 +445,7 @@
         },
         {
           "id": "ltts",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/ltts.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/ltts.jpg",
           "alt": "ltts",
           "name": "LTTS",
           "countryName": "India",
@@ -459,7 +459,7 @@
         },
         {
           "id": "hdfc",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/hdfc.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/hdfc.jpg",
           "alt": "hdfc",
           "name": "HDFC",
           "countryName": "India",
@@ -473,7 +473,7 @@
         },
         {
           "id": "axis",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/axis.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/axis.jpg",
           "alt": "axis",
           "name": "AXIS",
           "countryName": "India",
@@ -501,7 +501,7 @@
         },
         {
           "id": "motivation_for_excellence",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/motivation_for_excellence.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/motivation_for_excellence.jpg",
           "alt": "motivation_for_excellence",
           "name": "Motivation for Excellence",
           "countryName": "India",
@@ -509,13 +509,13 @@
           "category": "Strategic",
           "website": "https://motivationforexcellence.org/",
           "coordinates": [
-            19.0080120149813,
-            72.8295562538363
+            20.4032,
+            79.681823
           ]
         },
         {
           "id": "paypal",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/paypal.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/paypal.jpg",
           "alt": "paypal",
           "name": "PayPal",
           "countryName": "India",
@@ -529,7 +529,7 @@
         },
         {
           "id": "amansa_capital",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/amansa_capital.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/amansa_capital.jpg",
           "alt": "amansa_capital",
           "name": "Amansa Capital",
           "countryName": "Singapore",
@@ -543,7 +543,7 @@
         },
         {
           "id": "salesforce",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/salesforce.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/salesforce.jpg",
           "alt": "salesforce",
           "name": "Salesforce",
           "countryName": "India",
@@ -571,7 +571,7 @@
         },
         {
           "id": "aws",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/aws.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/aws.jpg",
           "alt": "aws",
           "name": "AWS",
           "countryName": "India",
@@ -585,7 +585,7 @@
         },
         {
           "id": "rotary_club_of_queens_necklace_mumbai",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/rotary_club_of_queens_necklace_mumbai.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/rotary_club_of_queens_necklace_mumbai.jpg",
           "alt": "rotary_club_of_queens_necklace_mumbai",
           "name": "Rotary club of Queens necklace mumbai",
           "countryName": "India",
@@ -599,7 +599,7 @@
         },
         {
           "id": "wells_fargo",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/wells_fargo.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/wells_fargo.jpg",
           "alt": "wells_fargo",
           "name": "Wells Fargo",
           "countryName": "India",
@@ -613,7 +613,7 @@
         },
         {
           "id": "c4ec",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/c4ec.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/c4ec.jpg",
           "alt": "c4ec",
           "name": "C4EC",
           "countryName": "India",
@@ -627,7 +627,7 @@
         },
         {
           "id": "shikshalokam",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/shikshalokam.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/shikshalokam.jpg",
           "alt": "shikshalokam",
           "name": "ShikshaLokam",
           "countryName": "India",
@@ -641,7 +641,7 @@
         },
         {
           "id": "tekdi_technology_pvt_limited",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/tekdi_technology_pvt_limited.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/tekdi_technology_pvt_limited.jpg",
           "alt": "tekdi_technology_pvt_limited",
           "name": "Tekdi technology pvt. limited",
           "countryName": "India",
@@ -655,7 +655,7 @@
         },
         {
           "id": "gritworks",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/gritworks.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/gritworks.jpg",
           "alt": "gritworks",
           "name": "GritWorks",
           "countryName": "India",
@@ -669,7 +669,7 @@
         },
         {
           "id": "colab",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/colab.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/colab.jpg",
           "alt": "colab",
           "name": "Colab",
           "countryName": "India",
@@ -683,7 +683,7 @@
         },
         {
           "id": "gnothi_seauton",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/gnothi_seauton.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/gnothi_seauton.jpg",
           "alt": "gnothi_seauton",
           "name": "Gnothi Seauton",
           "countryName": "India",
@@ -697,7 +697,7 @@
         },
         {
           "id": "blavatnik_school_of_government",
-          "src": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/blavatnik_school_of_government.jpg",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/blavatnik_school_of_government.jpg",
           "alt": "blavatnik_school_of_government",
           "name": "Blavatnik School of Government",
           "countryName": "United Kingdom (UK)",
@@ -707,6 +707,258 @@
           "coordinates": [
             52.63473,
             -1.165247
+          ]
+        },
+        {
+          "id": "commutiny",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/commutiny.jpg",
+          "alt": "commutiny",
+          "name": "ComMutiny",
+          "countryName": "India",
+          "partnerState": "Delhi",
+          "category": "Momentum ",
+          "website": "https://commutiny.in/",
+          "coordinates": [
+            28.099544,
+            76.97935
+          ]
+        },
+        {
+          "id": "centre_for_wildlife_studies",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/centre_for_wildlife_studies.jpg",
+          "alt": "centre_for_wildlife_studies",
+          "name": "Centre for Wildlife Studies",
+          "countryName": "India",
+          "partnerState": "Karnataka",
+          "category": "Momentum ",
+          "website": "https://cwsindia.org/",
+          "coordinates": [
+            13.101023,
+            77.131512
+          ]
+        },
+        {
+          "id": "deshna_foundation",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/deshna_foundation.jpg",
+          "alt": "deshna_foundation",
+          "name": "Deshna Foundation",
+          "countryName": "India",
+          "partnerState": "Puducherry",
+          "category": "Momentum ",
+          "website": "https://www.deshnafoundation.in/",
+          "coordinates": [
+            11.947534,
+            79.768399
+          ]
+        },
+        {
+          "id": "makerghat",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/makerghat.jpg",
+          "alt": "makerghat",
+          "name": "Makerghat",
+          "countryName": "India",
+          "partnerState": "Maharashtra",
+          "category": "Momentum ",
+          "website": "https://makerghat.org/",
+          "coordinates": [
+            19.660047,
+            74.149135
+          ]
+        },
+        {
+          "id": "national_service_scheme",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/national_service_scheme.jpg",
+          "alt": "national_service_scheme",
+          "name": "National Service Scheme",
+          "countryName": "India",
+          "partnerState": "Puducherry",
+          "category": "Momentum ",
+          "website": "https://schooledn.py.gov.in/aboutus/nss.html",
+          "coordinates": [
+            11.403765,
+            79.603749
+          ]
+        },
+        {
+          "id": "pravah",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/pravah.jpg",
+          "alt": "pravah",
+          "name": "Pravah",
+          "countryName": "India",
+          "partnerState": "Delhi",
+          "category": "Momentum ",
+          "website": "https://www.pravahindia.org/",
+          "coordinates": [
+            28.39795,
+            77.055783
+          ]
+        },
+        {
+          "id": "reap_benefit",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/reap_benefit.jpg",
+          "alt": "reap_benefit",
+          "name": "Reap Benefit",
+          "countryName": "India",
+          "partnerState": "Puducherry",
+          "category": "Momentum ",
+          "website": "https://www.reapbenefit.org/",
+          "coordinates": [
+            11.058136,
+            79.629655
+          ]
+        },
+        {
+          "id": "sols_arc",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/sols_arc.jpg",
+          "alt": "sols_arc",
+          "name": "Sol's Arc",
+          "countryName": "India",
+          "partnerState": "Uttar Pradesh",
+          "category": "Momentum ",
+          "website": "https://solsarc.ngo/",
+          "coordinates": [
+            26.773507,
+            80.990872
+          ]
+        },
+        {
+          "id": "the_apprentice_project",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/the_apprentice_project.jpg",
+          "alt": "the_apprentice_project",
+          "name": "The Apprentice Project",
+          "countryName": "India",
+          "partnerState": "Karnataka",
+          "category": "Momentum ",
+          "website": "https://www.theapprenticeproject.org/",
+          "coordinates": [
+            16.190278,
+            74.942677
+          ]
+        },
+        {
+          "id": "tvarita_arts_collective_india",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/tvarita_arts_collective_india.jpg",
+          "alt": "tvarita_arts_collective_india",
+          "name": "Tvarita Arts Collective India",
+          "countryName": "India",
+          "partnerState": "Karnataka",
+          "category": "Collaborators",
+          "website": "https://tvaritacollective.com/",
+          "coordinates": [
+            12.100424,
+            77.226325
+          ]
+        },
+        {
+          "id": "butterfly_effect_media",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/butterfly_effect_media.jpg",
+          "alt": "butterfly_effect_media",
+          "name": "Butterfly Effect Media",
+          "countryName": "India",
+          "partnerState": "Karnataka",
+          "category": "Collaborators",
+          "website": "https://www.butterflyeffectmedia.in/",
+          "coordinates": [
+            16.653954,
+            76.216389
+          ]
+        },
+        {
+          "id": "social_integrated_rural_development_society",
+          "src": "/assets/partners/default-partner.svg",
+          "alt": "social_integrated_rural_development_society",
+          "name": "Social Integrated Rural development society",
+          "countryName": "",
+          "partnerState": "Karnataka",
+          "category": "Momentum ",
+          "website": "",
+          "coordinates": [
+            14.239759,
+            76.216389
+          ]
+        },
+        {
+          "id": "saturday_art_class",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/saturday_art_class.jpg",
+          "alt": "saturday_art_class",
+          "name": "Saturday Art class",
+          "countryName": "India",
+          "partnerState": "Nagaland",
+          "category": "Momentum ",
+          "website": "https://www.saturdayartclass.com/",
+          "coordinates": [
+            25.764494,
+            94.349884
+          ]
+        },
+        {
+          "id": "tinker_hub",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/tinker_hub.jpg",
+          "alt": "tinker_hub",
+          "name": "Tinker Hub",
+          "countryName": "India",
+          "partnerState": "Kerala",
+          "category": "Momentum ",
+          "website": "https://tinkerhub.org/",
+          "coordinates": [
+            9.93326,
+            76.340456
+          ]
+        },
+        {
+          "id": "vidhyalay_udhyam_association",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/vidhyalay_udhyam_association.jpg",
+          "alt": "vidhyalay_udhyam_association",
+          "name": "Vidhyalay Udhyam Association",
+          "countryName": "India",
+          "partnerState": "Rajasthan",
+          "category": "Momentum ",
+          "website": "",
+          "coordinates": [
+            26.149274,
+            74.12518
+          ]
+        },
+        {
+          "id": "tan90",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/tan90.jpg",
+          "alt": "tan90",
+          "name": "Tan90",
+          "countryName": "India",
+          "partnerState": "Karnataka",
+          "category": "Collaborators",
+          "website": "https://tan-ninety.com/",
+          "coordinates": [
+            15.023551,
+            76.599238
+          ]
+        },
+        {
+          "id": "inqui-lab_foundation",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/inqui-lab_foundation.jpg",
+          "alt": "inqui-lab_foundation",
+          "name": "Inqui-Lab Foundation",
+          "countryName": "India",
+          "partnerState": "Telangana",
+          "category": "Momentum ",
+          "website": "https://inquilabfoundation.org/",
+          "coordinates": [
+            17.032495,
+            78.317939
+          ]
+        },
+        {
+          "id": "ford_foundation",
+          "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/ford_foundation.jpg",
+          "alt": "ford_foundation",
+          "name": "Ford Foundation",
+          "countryName": "India",
+          "partnerState": "Bihar",
+          "category": "Strategic",
+          "website": "https://www.fordfoundation.org/",
+          "coordinates": [
+            26.32973,
+            84.599768
           ]
         }
       ],

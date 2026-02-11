@@ -84,3 +84,35 @@ def delete_file_from_gcs(bucket_name, blob_name):
     blob.delete()
 
 
+def delete_all_community_pie_charts_json(bucket_name):
+    try:
+        credentials = service_account.Credentials.from_service_account_info(
+            service_account_info,
+            scopes=['https://www.googleapis.com/auth/cloud-platform']
+        )
+
+        storage_client = storage.Client(
+            credentials=credentials,
+            project=service_account_info["project_id"]
+        )
+
+        bucket = storage_client.bucket(bucket_name)
+
+        prefix = "sg-dashboard/districts/"
+        deleted = 0
+
+        for blob in storage_client.list_blobs(bucket, prefix=prefix):
+            if blob.name.endswith("community-pie-chart.json"):
+                blob.delete()
+                logger.info(f"🗑️ Deleted {blob.name}")
+                deleted += 1
+
+        logger.info(f"✅ Deleted {deleted} district community-pie-chart.json files")
+        return deleted
+
+    except Exception as e:
+        logger.error(f"❌ Bulk delete failed: {str(e)}")
+        return 0
+
+
+

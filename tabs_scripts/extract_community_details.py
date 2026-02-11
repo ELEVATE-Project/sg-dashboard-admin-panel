@@ -4,6 +4,33 @@ import os
 import importlib.util
 from constants import PAGE_METADATA, TABS_METADATA
 
+
+
+from google.cloud import storage
+
+def delete_district_community_pie_charts():
+    bucket_name = os.environ.get("BUCKET_NAME")
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    state_codes = load_state_codes()
+    if not bucket_name:
+        print("❌ BUCKET_NAME not set")
+        return
+
+    gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+    spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+    gcp_access = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gcp_access)
+
+    gcp_access.delete_all_district_community_pie_charts(
+        bucket_name=os.environ.get("BUCKET_NAME")
+    )
+
+
+if __name__ == "__main__":
+    delete_district_community_pie_charts()
+
+
 def load_state_codes():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     state_codes_file = os.path.join(script_dir, "..", "pages", "state_code_details.json")
@@ -143,17 +170,17 @@ def extract_community_details(excel_file):
             with open(metrics_path, "w", encoding="utf-8") as f:
                 json.dump(metrics_json, f, indent=2, ensure_ascii=False)
 
-            pie_json = {
-                "data": [
-                     {"name": DISPLAY_NAMES.get(k.strip(), k.strip()), "value": pie_totals[k]} 
-                     for k in pie_keys
-                ]
-            }
-            pie_path = os.path.join(district_folder, "community-pie-chart.json")
-            with open(pie_path, "w", encoding="utf-8") as f:
-                json.dump(pie_json, f, indent=2, ensure_ascii=False)
+            # pie_json = {
+            #     "data": [
+            #          {"name": DISPLAY_NAMES.get(k.strip(), k.strip()), "value": pie_totals[k]} 
+            #          for k in pie_keys
+            #     ]
+            # }
+            # pie_path = os.path.join(district_folder, "community-pie-chart.json")
+            # with open(pie_path, "w", encoding="utf-8") as f:
+            #     json.dump(pie_json, f, indent=2, ensure_ascii=False)
 
-            for fname in ["community-metrics.json", "community-pie-chart.json"]:
+            for fname in ["community-metrics.json"]:
                 local_path = os.path.join(district_folder, fname)
                 blob_path = f"sg-dashboard/districts/{district_id}/{fname}"
                 folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
@@ -189,17 +216,19 @@ def extract_community_details(excel_file):
             # pie_json = {
             #     "data": [{"name": k.strip(), "value": v} for k, v in data["pie_totals"].items()]
             # }
-            pie_json = {
-                "data": [
-                    {"name": DISPLAY_NAMES.get(k.strip(), k.strip()), "value": v}
-                    for k, v in data["pie_totals"].items()
-                ]
-            }
-            pie_path = os.path.join(state_folder, "community-pie-chart.json")
-            with open(pie_path, "w", encoding="utf-8") as f:
-                json.dump(pie_json, f, indent=2, ensure_ascii=False)
+            # pie_json = {
+            #     "data": [
+            #         {"name": DISPLAY_NAMES.get(k.strip(), k.strip()), "value": v}
+            #         for k, v in data["pie_totals"].items()
+            #     ]
+            # }
+            # pie_path = os.path.join(state_folder, "community-pie-chart.json")
+            # with open(pie_path, "w", encoding="utf-8") as f:
+            #     json.dump(pie_json, f, indent=2, ensure_ascii=False)
 
-            for fname in ["community-map.json", "community-pie-chart.json"]:
+            # for fname in ["community-map.json", "community-pie-chart.json"]:
+
+            for fname in ["community-map.json"]:
                 local_path = os.path.join(state_folder, fname)
                 blob_path = f"sg-dashboard/states/{state_id}/{fname}"
                 folder_url = gcp_access.upload_file_to_gcs_and_get_directory(

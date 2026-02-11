@@ -14,33 +14,33 @@
     "indicators": [
       {
         "label": "Shiksha \nChaupals",
-        "value": 11971,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/shiksha_chaupals.svg"
+        "value": 21807,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/shiksha_chaupal.svg"
       },
       {
         "label": "Community members \nparticipating in dialogues",
-        "value": 333557,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_member.svg"
+        "value": 598068,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_members.svg"
       },
       {
         "label": "Local challenges \nidentified",
-        "value": 28042,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/mountain.svg"
+        "value": 51359,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_challenges.svg"
       },
       {
         "label": "Community leaders \ndriving improvements",
-        "value": 275,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_leaders.svg"
+        "value": 530,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_leader.svg"
       },
       {
         "label": "Local solutions \nidentified",
-        "value": 24546,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/bulb_light.svg"
+        "value": 45434,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions.svg"
       },
       {
         "label": "Local solutions \nimplemented",
-        "value": 12501,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/solution_improvements.svg"
+        "value": 1934,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions_implemented.svg"
       }
     ],
     "styles": {
@@ -60,7 +60,7 @@
     "type": "section-heading",
     "width": "100%",
     "position": "left",
-    "title": "Voices of improvement",
+    "title": "Voices of Improvements",
     "styles": {
       "title": "section-sub-title mt-0 mt-md-5 ml-2 pl-2 section-heading-spacing",
       "section": "my-5 pl-2"
@@ -73,14 +73,14 @@
     "title": "Story of the week",
     "styles": {
       "section": "ml-2 ml-md-4 p-0",
-      "title": "section-sub-title my-4 community-spacing"
+      "title": "section-sub-title my-4"
     }
   },
   {
     "type": "community-feed",
     "width": "50%",
     "position": "left",
-    "title": "Community Feed",
+    "title": "Community feed",
     "styles": {
       "section": "ml-5 p-0",
       "title": "section-sub-title my-4"
@@ -92,7 +92,7 @@
     "position": "left",
     "title": "Pulse of leadership",
     "styles": {
-      "title": "section-sub-title my-4 ml-5 ",
+      "title": "section-sub-title mt-0 mt-md-5 ml-2 pl-2 mb-4 section-heading-spacing",
       "section": "ml-5 pl-2"
     }
   },
@@ -108,15 +108,15 @@
     "styles": {},
     "data": {
       "Leading Micro Improvements": [
-        284555.0,
-        325989.0,
-        393146.0,
+        34.0,
+        206.0,
+        530.0,
         0
       ],
       "Participating in dialogues": [
-        62.0,
-        74.0,
-        105.0,
+        65026.0,
+        333194.0,
+        598068.0,
         0
       ]
     }
@@ -129,9 +129,9 @@
       {
         "year": 2025,
         "data": [
-          618359.0,
-          763265.0,
-          864757.0
+          663454.0,
+          808551.0,
+          1210780.0
         ]
       }
     ],
