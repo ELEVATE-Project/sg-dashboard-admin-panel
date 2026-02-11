@@ -55,3 +55,5 @@ geopy
 google-auth
 google-auth-oauthlib
 google-api-python-client
+sentence-transformers
+streamlit-ace

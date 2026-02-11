@@ -14,6 +14,7 @@
 
 # Environment files
 /.env
+/myenv/
 
 # Angular CLI and build artefacts
 /.angular-cli.json
@@ -26,3 +27,19 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+
+/private-key.json
+/venv
+/env
+/streamlit-env
+/states
+.env
+/districts
