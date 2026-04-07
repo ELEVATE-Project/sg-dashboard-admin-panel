@@ -55,12 +55,12 @@ def extract_community_details(excel_file):
         workbook = openpyxl.load_workbook(excel_file, data_only=True)
 
         try:
-            sheet = workbook[PAGE_METADATA["COMMUNITY_LED_PROGRAMS"]]
+            sheet = workbook[PAGE_METADATA["NEW_COMMUNITY_LED_PROGRAMS"]]
         except KeyError:
-            print(f"❌ Sheet not found: {PAGE_METADATA['COMMUNITY_LED_PROGRAMS']}")
+            print(f"❌ Sheet not found: {PAGE_METADATA['NEW_COMMUNITY_LED_PROGRAMS']}")
             return
 
-        expected_headers = ["Name of the State","Name of the District","No. of community leaders engaged","Community led improvements","Challenges shared","Solutions shared","Infrastructure and resources","School structure and practices","Leadership","Pedagogy","Assessment and Evaluation","Community Engagement","Districts initiated"]
+        expected_headers = ["Name of the State","Name of the District","Community members participating in dialogues","Local challenges identified","Community leaders driving improvements","Local solutions identified","Local Solutions implemented","Community Engagement","Infrastructure and resources","School structure and practices","Leadership","Pedagogy","Assessment and Evaluation","Districts initiated"]
         column_indices = {}
         for cell in sheet[1]:
             if cell.value and str(cell.value).strip() in expected_headers:
@@ -72,17 +72,19 @@ def extract_community_details(excel_file):
             return
 
         map_keys = [
-            "No. of community leaders engaged",
-            "Community led improvements",
-            "Challenges shared",
-            "Solutions shared"
+            "Community members participating in dialogues",
+            "Local challenges identified",
+            "Community leaders driving improvements",
+            "Local solutions identified",
+            "Local Solutions implemented"
         ]
 
         MAP_DISPLAY_NAMES = {
-            "No. of community leaders engaged": "Community Leaders Engaged",
-            "Community led improvements": "Community led improvements",
-            "Challenges shared": "Challenges shared",
-            "Solutions shared": "Solutions shared"
+            "Community members participating in dialogues": "Community members participating in dialogues",
+            "Local challenges identified": "Local challenges identified",
+            "Community leaders driving improvements": "Community leaders driving improvements",
+            "Local solutions identified": "Local solutions identified",
+            "Local Solutions implemented":"Local Solutions implemented"
         }
 
         # These 6 go into community-pie-chart.json

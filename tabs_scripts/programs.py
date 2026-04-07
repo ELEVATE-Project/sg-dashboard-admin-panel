@@ -11,6 +11,9 @@ from constants import PAGE_METADATA, TABS_METADATA
 import importlib.util
 from dotenv import load_dotenv
 
+import importlib.util
+import subprocess
+
 load_dotenv()
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
@@ -68,6 +71,50 @@ def download_file(file_id, output_dir):
         return None
 
 
+# def download_folder_images(folder_id, output_dir, program_type):
+#     script_dir = os.path.dirname(os.path.abspath(__file__))
+#     gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+#     spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+#     gcp_access = importlib.util.module_from_spec(spec)
+#     spec.loader.exec_module(gcp_access)
+
+#     bucket_name = os.environ.get("BUCKET_NAME")
+#     logo_urls = []
+#     page_token = None
+
+#     while True:
+#         response = drive_service.files().list(
+#             q=f"'{folder_id}' in parents and mimeType contains 'image/'",
+#             spaces='drive',
+#             fields='nextPageToken, files(id, name)',
+#             pageToken=page_token
+#         ).execute()
+
+#         for file in response.get('files', []):
+#             local_file = download_file(file['id'], output_dir)
+#             if local_file:
+#                 local_filename = os.path.basename(local_file)
+#                 destination_blob = f"sg-dashboard/partners/{program_type}/{local_filename}"
+#                 folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+#                     bucket_name=bucket_name,
+#                     source_file_path=local_file,
+#                     destination_blob_name=destination_blob
+#                 )
+#                 if folder_url:
+#                     os.remove(local_file)
+#                     final_url = f"{folder_url.rstrip('/')}/{local_filename}"
+#                     logo_urls.append(final_url)
+#                     print(f"✅ Uploaded {local_filename} → {final_url}")
+#                 else:
+#                     print(f"❌ Failed to upload {local_filename} to GCS")
+
+#         page_token = response.get('nextPageToken')
+#         if not page_token:
+#             break
+
+#     return logo_urls
+
+
 def download_folder_images(folder_id, output_dir, program_type):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
@@ -90,18 +137,42 @@ def download_folder_images(folder_id, output_dir, program_type):
         for file in response.get('files', []):
             local_file = download_file(file['id'], output_dir)
             if local_file:
-                local_filename = os.path.basename(local_file)
+                # --- Face Blurring ---
+                blurred_file = f"{local_file}"
+                try:
+                    print(f"Blurring faces in {local_file}...")
+                    subprocess.run(
+                        ['deface', local_file, '--output', blurred_file],
+                        check=True,
+                        capture_output=True,
+                        text=True,
+                        timeout=120
+                    )
+                    file_to_upload = blurred_file
+                except Exception as e:
+                    print(f"⚠️ Blurring failed for {local_file}: {e}. Uploading original.")
+                    file_to_upload = local_file
+
+                local_filename = os.path.basename(file_to_upload)
                 destination_blob = f"sg-dashboard/partners/{program_type}/{local_filename}"
+                # destination_blob = f"test-program-blur/{program_type}/{local_filename}"
+                
                 folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
                     bucket_name=bucket_name,
-                    source_file_path=local_file,
+                    source_file_path=file_to_upload,
                     destination_blob_name=destination_blob
                 )
+                
                 if folder_url:
-                    os.remove(local_file)
                     final_url = f"{folder_url.rstrip('/')}/{local_filename}"
                     logo_urls.append(final_url)
                     print(f"✅ Uploaded {local_filename} → {final_url}")
+                    
+                    # Cleanup both original and blurred localized files
+                    if os.path.exists(local_file): 
+                        os.remove(local_file)
+                    if file_to_upload != local_file and os.path.exists(file_to_upload): 
+                        os.remove(file_to_upload)
                 else:
                     print(f"❌ Failed to upload {local_filename} to GCS")
 
@@ -215,13 +286,32 @@ def generate_program_reports(excel_file):
                 else:
                     row_dict[partner_key] = []
 
-            # Add to state-level or district-level JSON
-            if is_state_level or not district_code:
-                state_data.setdefault(str(state_code), []).append(row_dict)
+            # # Add to state-level or district-level JSON
+            # if is_state_level or not district_code:
+            #     state_data.setdefault(str(state_code), []).append(row_dict)
+            # else:
+            #     district_data[program_type].setdefault(str(district_code), []).append(row_dict)
+            #     if program_type == "WLC":
+            #         state_wlc_data.setdefault(str(state_code), []).append(row_dict)  # <-- Collect WLC per state
+            #     # target_bucket = "WLC" if program_type == "YLC" else program_type
+            #     # district_data[target_bucket].setdefault(str(district_code), []).append(row_dict)
+            #     # if program_type in ["WLC", "YLC"]:
+            #     #     state_wlc_data.setdefault(str(state_code), []).append(row_dict)
+
+            if program_type == "WLC":
+                # ALWAYS go to district (even if state == district)
+                if district_code:
+                    district_data.setdefault("WLC", {}).setdefault(str(district_code), []).append(row_dict)
+
+                # ALWAYS go to state WLC.json
+                state_wlc_data.setdefault(str(state_code), []).append(row_dict)
+
             else:
-                district_data[program_type].setdefault(str(district_code), []).append(row_dict)
-                if program_type == "WLC":
-                    state_wlc_data.setdefault(str(state_code), []).append(row_dict)  # <-- Collect WLC per state
+                  # Normal logic for other program types
+                if is_state_level or not district_code:
+                    state_data.setdefault(str(state_code), []).append(row_dict)
+                else:
+                    district_data.setdefault(program_type, {}).setdefault(str(district_code), []).append(row_dict)
 
         # District-level JSONs
         districts_dir = os.path.join(script_dir, '..', 'districts')

@@ -41,7 +41,8 @@ TABS_METADATA = {
     "COMMUNITY_LEAD_PROGRAMS":["Name of the State ","Name of the District","No. of community leaders engaged","Community led improvements","Challenges shared","Solutions shared","Infrastructure and resources","School structure and practices","Leadership"," Pedagogy","Assessment and Evaluation","Community Engagement","Districts initiated"],
     "DISTRICT_DETAILS": ["State Name", "District Name", "Indicator", "Definition", "Data"],
     "UPLOAD_IMAGES":['Name of images','Link of images'],
-    "VOICE_TAB_BIG_NUMBERS":['Name of the State ','Name of the District', 'Shiksha Chaupals', 'Community members participating in dialogues', 'Local challenges identified', 'Community leaders driving improvements', 'Local solutions identified', 'Local Solutions implemented']
+    "VOICE_TAB_BIG_NUMBERS":['Name of the State ','Name of the District', 'Shiksha Chaupals', 'Community members participating in dialogues', 'Local challenges identified', 'Community leaders driving improvements', 'Local solutions identified', 'Local Solutions implemented'],
+    "NEW_COMMUNITY_LED_PROGRAMS" :["Name of the State ","Name of the District","Community members participating in dialogues","Local challenges identified","Community leaders driving improvements","Local solutions identified","Local Solutions implemented","Community Engagement","Infrastructure and resources","School structure and practices","Leadership"," Pedagogy ","Assessment and Evaluation","Districts initiated"]
 }
 
 

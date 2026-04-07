@@ -14,32 +14,32 @@
     "indicators": [
       {
         "label": "Shiksha \nChaupals",
-        "value": 21807,
+        "value": 22289,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/shiksha_chaupal.svg"
       },
       {
         "label": "Community members \nparticipating in dialogues",
-        "value": 598068,
+        "value": 612779,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_members.svg"
       },
       {
         "label": "Local challenges \nidentified",
-        "value": 51359,
+        "value": 52586,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_challenges.svg"
       },
       {
         "label": "Community leaders \ndriving improvements",
-        "value": 530,
+        "value": 680,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_leader.svg"
       },
       {
         "label": "Local solutions \nidentified",
-        "value": 45434,
+        "value": 46370,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions.svg"
       },
       {
         "label": "Local solutions \nimplemented",
-        "value": 1934,
+        "value": 3207,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions_implemented.svg"
       }
     ],
@@ -55,6 +55,12 @@
     "position": "center",
     "title": "",
     "styles": {}
+  },
+  {
+    "type": "mitra-text",
+    "width": "100%",
+    "position": "left",
+    "content": "*To explore voices from ongoing programs, visit&nbsp;<a href='https://analytics.gritworks.ai/public/dashboard/5e9ba88d-d974-4ddf-bc97-2d1cc24952ec?date=&state=&tab=158-mitra-overview' target='_blank'><strong>Mitra Public Dashboard</strong></a>. For deeper insights and detailed analysis, refer to&nbsp;<a href='https://analytics.gritworks.ai/auth/login' target='_blank'><strong>Mitra Insights Dashboard</strong></a>."
   },
   {
     "type": "section-heading",
@@ -108,16 +114,16 @@
     "styles": {},
     "data": {
       "Leading Micro Improvements": [
-        34.0,
-        206.0,
-        530.0,
-        0
+        44.0,
+        216.0,
+        541.0,
+        680.0
       ],
       "Participating in dialogues": [
-        65026.0,
-        333194.0,
-        598068.0,
-        0
+        65236.0,
+        333404.0,
+        598424.0,
+        612779.0
       ]
     }
   },
@@ -129,9 +135,10 @@
       {
         "year": 2025,
         "data": [
-          663454.0,
-          808551.0,
-          1210780.0
+          663484.0,
+          808581.0,
+          1210810.0,
+          1370606.0
         ]
       }
     ],
