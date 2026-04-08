@@ -240,18 +240,7 @@ def generate_program_reports(excel_file):
                 else:
                     row_dict[partner_key] = []
 
-            # # Add to state-level or district-level JSON
-            # if is_state_level or not district_code:
-            #     state_data.setdefault(str(state_code), []).append(row_dict)
-            # else:
-            #     district_data[program_type].setdefault(str(district_code), []).append(row_dict)
-            #     if program_type == "WLC":
-            #         state_wlc_data.setdefault(str(state_code), []).append(row_dict)  # <-- Collect WLC per state
-            #     # target_bucket = "WLC" if program_type == "YLC" else program_type
-            #     # district_data[target_bucket].setdefault(str(district_code), []).append(row_dict)
-            #     # if program_type in ["WLC", "YLC"]:
-            #     #     state_wlc_data.setdefault(str(state_code), []).append(row_dict)
-
+            # Add to state-level or district-level JSON
             if program_type == "WLC":
                 # ALWAYS go to district (even if state == district)
                 if district_code:
