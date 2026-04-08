@@ -71,50 +71,6 @@ def download_file(file_id, output_dir):
         return None
 
 
-# def download_folder_images(folder_id, output_dir, program_type):
-#     script_dir = os.path.dirname(os.path.abspath(__file__))
-#     gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
-#     spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
-#     gcp_access = importlib.util.module_from_spec(spec)
-#     spec.loader.exec_module(gcp_access)
-
-#     bucket_name = os.environ.get("BUCKET_NAME")
-#     logo_urls = []
-#     page_token = None
-
-#     while True:
-#         response = drive_service.files().list(
-#             q=f"'{folder_id}' in parents and mimeType contains 'image/'",
-#             spaces='drive',
-#             fields='nextPageToken, files(id, name)',
-#             pageToken=page_token
-#         ).execute()
-
-#         for file in response.get('files', []):
-#             local_file = download_file(file['id'], output_dir)
-#             if local_file:
-#                 local_filename = os.path.basename(local_file)
-#                 destination_blob = f"sg-dashboard/partners/{program_type}/{local_filename}"
-#                 folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
-#                     bucket_name=bucket_name,
-#                     source_file_path=local_file,
-#                     destination_blob_name=destination_blob
-#                 )
-#                 if folder_url:
-#                     os.remove(local_file)
-#                     final_url = f"{folder_url.rstrip('/')}/{local_filename}"
-#                     logo_urls.append(final_url)
-#                     print(f"✅ Uploaded {local_filename} → {final_url}")
-#                 else:
-#                     print(f"❌ Failed to upload {local_filename} to GCS")
-
-#         page_token = response.get('nextPageToken')
-#         if not page_token:
-#             break
-
-#     return logo_urls
-
-
 def download_folder_images(folder_id, output_dir, program_type):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
