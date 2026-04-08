@@ -60,7 +60,7 @@
     "type": "mitra-text",
     "width": "100%",
     "position": "left",
-    "content": "*To explore voices from ongoing programs, visit&nbsp;<a href='https://analytics.gritworks.ai/public/dashboard/5e9ba88d-d974-4ddf-bc97-2d1cc24952ec?date=&state=&tab=158-mitra-overview' target='_blank'><strong>Mitra Public Dashboard</strong></a>. For deeper insights and detailed analysis, refer to&nbsp;<a href='https://analytics.gritworks.ai/auth/login' target='_blank'><strong>Mitra Insights Dashboard</strong></a>."
+    "content": "*To explore voices from ongoing programs, visit the&nbsp;<a href='https://analytics.gritworks.ai/public/dashboard/5e9ba88d-d974-4ddf-bc97-2d1cc24952ec?date=&state=&tab=158-mitra-overview' target='_blank'><strong>MItra Public Dashboard</strong></a>. For deeper insights and detailed analysis, refer to the&nbsp;<a href='https://analytics.gritworks.ai/auth/login' target='_blank'><strong>MItra Insights Dashboard</strong></a>."
   },
   {
     "type": "section-heading",
