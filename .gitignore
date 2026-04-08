@@ -33,3 +33,13 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+
+
+/private-key.json
+/venv
+/env
+/streamlit-env
+/states
+.env
+/districts
