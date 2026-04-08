@@ -10,8 +10,6 @@ from googleapiclient.http import MediaIoBaseDownload
 from constants import PAGE_METADATA, TABS_METADATA
 import importlib.util
 from dotenv import load_dotenv
-
-import importlib.util
 import subprocess
 
 load_dotenv()
