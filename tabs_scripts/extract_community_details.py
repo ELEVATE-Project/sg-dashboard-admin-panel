@@ -1,3 +1,4 @@
+from altair.datasets import data
 import openpyxl
 import json
 import os
@@ -72,21 +73,21 @@ def load_enrollment_data(workbook):
         if district.lower() == "total":
             enrollment_totals_by_state[state] = {
                 "Children enrolled": total_enrolled,
-                "At-risk of dropout children regularized in school": total_regularized
+                "At-risk of dropout children regularised in school": total_regularized
             }
             continue
 
         enrollment_data[(state, district)] = {
             "Children enrolled": total_enrolled,
-            "At-risk of dropout children regularized in school": total_regularized
+            "At-risk of dropout children regularised in school": total_regularized
         }
 
         state_sum = enrollment_sum_by_state.setdefault(state, {
             "Children enrolled": 0,
-            "At-risk of dropout children regularized in school": 0
+            "At-risk of dropout children regularised in school": 0
         })
         state_sum["Children enrolled"] += total_enrolled
-        state_sum["At-risk of dropout children regularized in school"] += total_regularized
+        state_sum["At-risk of dropout children regularised in school"] += total_regularized
 
     for state, totals in enrollment_sum_by_state.items():
         if state not in enrollment_totals_by_state:
@@ -243,7 +244,7 @@ def extract_community_details(excel_file):
                     "overview_totals": {k: 0 for k in map_keys},
                     "enrollment_totals": {
                         "Children enrolled": 0,
-                        "At-risk of dropout children regularized in school": 0
+                        "At-risk of dropout children regularised in school": 0
                     },
                     "documentation_totals": {
                         "Children who got Aadhaar": 0,
@@ -261,7 +262,7 @@ def extract_community_details(excel_file):
 
             enroll_info = enrollment_data.get((state_name, district_name), {
                 "Children enrolled": 0,
-                "At-risk of dropout children regularized in school": 0
+                "At-risk of dropout children regularised in school": 0
             })
 
             doc_info = documentation_data.get((state_name, district_name), {
@@ -271,15 +272,15 @@ def extract_community_details(excel_file):
 
             if enroll_info["Children enrolled"] != 0:
                 details.append({"value": enroll_info["Children enrolled"], "code": "Children enrolled"})
-            if enroll_info["At-risk of dropout children regularized in school"] != 0:
-                details.append({"value": enroll_info["At-risk of dropout children regularized in school"], "code": "At-risk of dropout children regularized in school"})
+            if enroll_info["At-risk of dropout children regularised in school"] != 0:
+                details.append({"value": enroll_info["At-risk of dropout children regularised in school"], "code": "At-risk of dropout children regularised in school"})
             if doc_info["Children who got Aadhaar"] != 0:
                 details.append({"value": doc_info["Children who got Aadhaar"], "code": "Children who got Aadhaar"})
             if doc_info["Children who got Birth Certificate"] != 0:
                 details.append({"value": doc_info["Children who got Birth Certificate"], "code": "Children who got Birth Certificate"})
 
             state_data[state_id]["enrollment_totals"]["Children enrolled"] += enroll_info["Children enrolled"]
-            state_data[state_id]["enrollment_totals"]["At-risk of dropout children regularized in school"] += enroll_info["At-risk of dropout children regularized in school"]
+            state_data[state_id]["enrollment_totals"]["At-risk of dropout children regularised in school"] += enroll_info["At-risk of dropout children regularised in school"]
 
             state_data[state_id]["documentation_totals"]["Children who got Aadhaar"] += doc_info["Children who got Aadhaar"]
             state_data[state_id]["documentation_totals"]["Children who got Birth Certificate"] += doc_info["Children who got Birth Certificate"]
@@ -310,7 +311,7 @@ def extract_community_details(excel_file):
 
             for label, value, identifier in [
                 ("Children enrolled", enroll_info["Children enrolled"], 6),
-                ("At-risk of dropout children regularized in school", enroll_info["At-risk of dropout children regularized in school"], 7),
+                ("At-risk of dropout children regularised in school", enroll_info["At-risk of dropout children regularised in school"], 7),
                 ("Children who got Aadhaar", doc_info["Children who got Aadhaar"], 8),
                 ("Children who got Birth Certificate", doc_info["Children who got Birth Certificate"], 9)
             ]:
@@ -357,25 +358,64 @@ def extract_community_details(excel_file):
 
             state_enroll_totals = enrollment_totals_by_state.get(data["state_name"], data["enrollment_totals"])
 
+            # map_json = {
+            #     "result": {
+            #         "districts": data["districts"],
+            #         "overview": {
+            #             "label": data["state_name"],
+            #             "type": "category_2",
+            #             "details":
+            #                 [{"value": v, "code": MAP_DISPLAY_NAMES.get(k, k)} for k, v in data["overview_totals"].items()]
+            #                 +
+            #                 [
+            #                     {"value": state_enroll_totals["Children enrolled"], "code": "Children enrolled"},
+            #                     {"value": state_enroll_totals["At-risk of dropout children regularised in school"], "code": "At-risk of dropout children regularised in school"},
+            #                     {"value": state_doc_totals["Children who got Aadhaar"], "code": "Children who got Aadhaar"},
+            #                     {"value": state_doc_totals["Children who got Birth Certificate"], "code": "Children who got Birth Certificate"},
+            #                     {"value": len(data["districts"]), "code": "Districts activated"}
+            #                 ]
+            #         }
+            #     }
+            # }
+
+            # build filtered overview details
+            details = []
+
+            # map_keys totals
+            for k, v in data["overview_totals"].items():
+                if v != 0:
+                    details.append({
+                        "value": v,
+                        "code": MAP_DISPLAY_NAMES.get(k, k)
+                   })
+
+            # enrollment + documentation
+            extra_fields = [
+                ("Children enrolled", state_enroll_totals["Children enrolled"]),
+                ("At-risk of dropout children regularised in school", state_enroll_totals["At-risk of dropout children regularised in school"]),
+                ("Children who got Aadhaar", state_doc_totals["Children who got Aadhaar"]),
+                ("Children who got Birth Certificate", state_doc_totals["Children who got Birth Certificate"]),
+                ("Districts activated", len(data["districts"]))
+            ]
+
+            for label, value in extra_fields:
+                if value != 0:
+                    details.append({
+                        "value": value,
+                        "code": label
+                    })
+ 
             map_json = {
                 "result": {
                     "districts": data["districts"],
                     "overview": {
-                        "label": data["state_name"],
-                        "type": "category_2",
-                        "details":
-                            [{"value": v, "code": MAP_DISPLAY_NAMES.get(k, k)} for k, v in data["overview_totals"].items()]
-                            +
-                            [
-                                {"value": state_enroll_totals["Children enrolled"], "code": "Children enrolled"},
-                                {"value": state_enroll_totals["At-risk of dropout children regularized in school"], "code": "At-risk of dropout children regularized in school"},
-                                {"value": state_doc_totals["Children who got Aadhaar"], "code": "Children who got Aadhaar"},
-                                {"value": state_doc_totals["Children who got Birth Certificate"], "code": "Children who got Birth Certificate"},
-                                {"value": len(data["districts"]), "code": "Districts activated"}
-                            ]
+                         "label": data["state_name"],
+                         "type": "category_2",
+                         "details": details
                     }
-                }
+                 }
             }
+
 
             map_path = os.path.join(state_folder, "community-map.json")
             with open(map_path, "w", encoding="utf-8") as f:

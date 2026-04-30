@@ -68,15 +68,15 @@ def load_enrollment_data(workbook):
 
         enrollment_data[key] = {
             "Children enrolled": enrolled,
-            "At-risk of dropout children regularized in school": atrisk
+            "At-risk of dropout children regularised in school": atrisk
         }
 
         state_totals = enrollment_by_state.setdefault(state, {
             "Children enrolled": 0,
-            "At-risk of dropout children regularized in school": 0
+            "At-risk of dropout children regularised in school": 0
         })
         state_totals["Children enrolled"] += enrolled
-        state_totals["At-risk of dropout children regularized in school"] += atrisk
+        state_totals["At-risk of dropout children regularised in school"] += atrisk
 
     return enrollment_data, enrollment_by_state
 
@@ -497,11 +497,11 @@ def community_led_programs_sum_with_codes(excel_file):
                         "Community leaders driving improvements": 0,
                         "Local solutions identified": 0,
                         "Local Solutions implemented": 0,
+                        "Districts activated": set(),
                         "Children enrolled": 0,
-                        "At-risk of dropout children regularized in school": 0,
+                        "At-risk of dropout children regularised in school": 0,
                         "Children who got Aadhaar": 0,
                         "Children who got Birth Certificate": 0,
-                        "Districts activated": set()
                     }
 
                 state_sums[state_name]["Districts activated"].add(district_name)
@@ -509,7 +509,7 @@ def community_led_programs_sum_with_codes(excel_file):
                 # if (state_name, district_name) in enrollment_data:
                 #     enroll_info = enrollment_data[(state_name, district_name)]
                 #     state_sums[state_name]["Children enrolled"] += enroll_info["Children enrolled"]
-                #     state_sums[state_name]["At-risk of dropout children regularized in school"] += enroll_info["At-risk of dropout children regularized in school"]
+                #     state_sums[state_name]["At-risk of dropout children regularised in school"] += enroll_info["At-risk of dropout children regularised in school"]
 
                 # if (state_name, district_name) in documentation_data:
                 #     doc_info = documentation_data[(state_name, district_name)]
@@ -534,8 +534,8 @@ def community_led_programs_sum_with_codes(excel_file):
             state_doc = documentation_by_state.get(state_key, {})
 
             sums["Children enrolled"] = state_enroll.get("Children enrolled", 0)
-            sums["At-risk of dropout children regularized in school"] = state_enroll.get(
-                "At-risk of dropout children regularized in school", 0
+            sums["At-risk of dropout children regularised in school"] = state_enroll.get(
+                "At-risk of dropout children regularised in school", 0
             )
             sums["Children who got Aadhaar"] = state_doc.get("Children who got Aadhaar", 0)
             sums["Children who got Birth Certificate"] = state_doc.get("Children who got Birth Certificate", 0)
@@ -545,25 +545,49 @@ def community_led_programs_sum_with_codes(excel_file):
                 "id": state_codes.get(state, "unknown"),
                 "label": state,
                 "type": "category_1",
-                "details": [
-                    {"code": col_name, "value": int(val) if isinstance(val, float) and val.is_integer() else val}
-                    for col_name, val in sums.items()
-                    if col_name != "Districts activated"
-                    and not (
-                        col_name in [
-                            "Children enrolled",
-                            "At-risk of dropout children regularized in school",
-                            "Children who got Aadhaar",
-                            "Children who got Birth Certificate"
-                        ] and val == 0
-                    )
-                ] + [{
-                    "code": "Districts activated",
-                    "value": len(sums["Districts activated"])
-                }]
+                "details": []
             }
             for state, sums in state_sums.items()
         }
+
+        # Define the order of codes
+        code_order = [
+            "Community members participating in dialogues",
+            "Local challenges identified",
+            "Community leaders driving improvements",
+            "Local solutions identified",
+            "Local Solutions implemented",
+            "Districts activated",
+            "Children enrolled",
+            "At-risk of dropout children regularised in school",
+            "Children who got Aadhaar",
+            "Children who got Birth Certificate"
+        ]
+
+        for state, sums in state_sums.items():
+            state_id = state_codes.get(state, "unknown")
+            details = []
+            for code in code_order:
+                if code == "Districts activated":
+                    value = len(sums["Districts activated"])
+                else:
+                    value = sums.get(code, 0)
+                
+                # Skip if enrollment/documentation is 0
+                if code in [
+                    "Children enrolled",
+                    "At-risk of dropout children regularised in school",
+                    "Children who got Aadhaar",
+                    "Children who got Birth Certificate"
+                ] and value == 0:
+                    continue
+                
+                details.append({
+                    "code": code,
+                    "value": int(value) if isinstance(value, float) and value.is_integer() else value
+                })
+            
+            states_data[state_id]["details"] = details
 
         data = {"result": {"states": states_data}}
 
@@ -681,6 +705,24 @@ def updateOverviewValues():
                 detail['value'] = code_sums[code]
             else:
                 print(f"Warning: Code '{code}' in overview not found in states")
+
+        # Define the order of codes
+        code_order = [
+            "Community members participating in dialogues",
+            "Local challenges identified",
+            "Community leaders driving improvements",
+            "Local solutions identified",
+            "Local Solutions implemented",
+            "Districts activated",
+            "Children enrolled",
+            "At-risk of dropout children regularised in school",
+            "Children who got Aadhaar",
+            "Children who got Birth Certificate"
+        ]
+
+        # Sort overview details to match the order
+        overview_details.sort(key=lambda d: code_order.index(d['code']) if d['code'] in code_order else len(code_order))
+
     except KeyError as e:
         print(f"Error: Missing expected key in overview structure: {str(e)}")
         exit(1)
