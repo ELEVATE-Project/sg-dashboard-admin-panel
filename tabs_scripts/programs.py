@@ -170,6 +170,19 @@ def resolve_codes(state, district, lookup, district_index):
     return None, None
 
 
+def sort_programs_by_status(programs):
+    """Keep JSON structure unchanged while listing ongoing programs before completed ones."""
+    def status_priority(program):
+        status = normalize(program.get('status_of_the_program', ''))
+        if status == 'ongoing':
+            return 0
+        if status == 'completed':
+            return 1
+        return 2
+
+    return sorted(programs, key=status_priority)
+
+
 def generate_program_reports(excel_file):
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -262,6 +275,7 @@ def generate_program_reports(excel_file):
 
         for category_name, data_dict in district_data.items():
             for district_code, programs in data_dict.items():
+                programs = sort_programs_by_status(programs)
                 district_folder = os.path.join(districts_dir, str(district_code))
                 os.makedirs(district_folder, exist_ok=True)
                 out_file = os.path.join(district_folder, f"{category_name}.json")
@@ -285,6 +299,7 @@ def generate_program_reports(excel_file):
         os.makedirs(states_dir, exist_ok=True)
 
         for state_code, programs in state_data.items():
+            programs = sort_programs_by_status(programs)
             state_folder = os.path.join(states_dir, str(state_code))
             os.makedirs(state_folder, exist_ok=True)
             out_file = os.path.join(state_folder, "state-program.json")
@@ -305,6 +320,7 @@ def generate_program_reports(excel_file):
 
         # NEW: State-level WLC.json
         for state_code, wlc_programs in state_wlc_data.items():
+            wlc_programs = sort_programs_by_status(wlc_programs)
             state_folder = os.path.join(states_dir, str(state_code))
             os.makedirs(state_folder, exist_ok=True)
             out_file = os.path.join(state_folder, "WLC.json")
