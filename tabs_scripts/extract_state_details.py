@@ -183,10 +183,11 @@ def update_district_view_indicators(excel_file):
                 })
 
             else:
-                state_collectors[state_code]["map_details"].append({
-                    "code": indicator,
-                    "value": processed_value
-                })
+                if processed_value != 0:
+                    state_collectors[state_code]["map_details"].append({
+                        "code": indicator,
+                        "value": processed_value
+                    })
 
             # --- Existing district-view-indicators.json aggregation ---
             if state_code not in states_data:
@@ -206,7 +207,7 @@ def update_district_view_indicators(excel_file):
                 states_mission_data[state_code]["district_led_missions"] = processed_value
 
             excluded_codes = ["categories", "state led missions", "district led missions", "community led missions"]
-            if code_lower not in excluded_codes:
+            if code_lower not in excluded_codes and processed_value != 0:
                 states_data[state_code]["details"].append({
                     "value": processed_value,
                     "code": indicator

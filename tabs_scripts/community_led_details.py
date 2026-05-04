@@ -573,13 +573,7 @@ def community_led_programs_sum_with_codes(excel_file):
                 else:
                     value = sums.get(code, 0)
                 
-                # Skip if enrollment/documentation is 0
-                if code in [
-                    "Children enrolled",
-                    "At-risk of dropout children regularised in school",
-                    "Children who got Aadhaar",
-                    "Children who got Birth Certificate"
-                ] and value == 0:
+                if value == 0:
                     continue
                 
                 details.append({

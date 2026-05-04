@@ -132,7 +132,7 @@ def extract_district_details(excel_file):
                 district_entry["district_led"] = processed_value
 
             # ✅ Add to metrics (excluding categories/state/district/community led)
-            if code_lower not in excluded_for_metrics:
+            if code_lower not in excluded_for_metrics and processed_value != 0:
                 district_files_map[district_id]["metrics"].append({
                     "label": indicator.replace("\n", " ").strip(),
                     "value": format_metric_value(data_value)
@@ -142,18 +142,20 @@ def extract_district_details(excel_file):
             if code_lower in excluded_codes:
                 # ✅ For pie-chart we still need categories
                 if code_lower == "categories":
-                    district_files_map[district_id]["pie"].append({
-                        "name": str(definition).strip(),
-                        "value": processed_value
-                    })
+                    if processed_value != 0:
+                        district_files_map[district_id]["pie"].append({
+                            "name": str(definition).strip(),
+                            "value": processed_value
+                        })
                 row_num += 1
                 continue
 
             # Add to details
-            district_entry["details"].append({
-                "value": processed_value,
-                "code": indicator
-            })
+            if processed_value != 0:
+                district_entry["details"].append({
+                    "value": processed_value,
+                    "code": indicator
+                })
 
             row_num += 1
 

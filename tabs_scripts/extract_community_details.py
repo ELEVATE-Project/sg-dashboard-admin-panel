@@ -258,7 +258,8 @@ def extract_community_details(excel_file):
             for k in map_keys:
                 val = safe_int(row[column_indices[k] - 1])
                 state_data[state_id]["overview_totals"][k] += val
-                details.append({"value": val, "code": k})
+                if val != 0:
+                    details.append({"value": val, "code": k})
 
             enroll_info = enrollment_data.get((state_name, district_name), {
                 "Children enrolled": 0,
@@ -307,6 +308,7 @@ def extract_community_details(excel_file):
                     "identifier": idx
                 }
                 for idx, k in enumerate(map_keys, start=1)
+                if safe_int(row[column_indices[k] - 1]) != 0
             ]
 
             for label, value, identifier in [
