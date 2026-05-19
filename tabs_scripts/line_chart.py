@@ -78,11 +78,10 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
         print("❌ Sheet not found.")
         return
 
-    QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
-
-    # Initialize sums
-    leading_micro = {q: 0 for q in QUARTERS}
-    participating = {q: 0 for q in QUARTERS}
+    metric_year_map = {
+        "Leading Micro Improvements": {},
+        "Participating in dialogues": {}
+    }
 
     # Iterate over rows
     for row in sheet.iter_rows(min_row=2, values_only=True):
@@ -93,30 +92,23 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
         state = row[0] if len(row) > 0 else None
         district = row[1] if len(row) > 1 else None
         metric = row[2] if len(row) > 2 else None
-        year = row[3] if len(row) > 3 else None
+        year = _normalize_year(row[3] if len(row) > 3 else None)
         q_values = [row[i] if len(row) > i else None for i in range(4, 8)]
 
         if district:
             continue
-        
-        # Only year 2025
-        if year != 2025:
+
+        if year is None or metric not in metric_year_map:
             continue
 
-        # Sum values for each quarter
-        for q, v in zip(QUARTERS, q_values):
-            if v is None:
-                continue
+        _add_quarters(
+            _get_or_create_year_bucket(metric_year_map[metric], year),
+            q_values
+        )
 
-            if metric == "Leading Micro Improvements":
-                leading_micro[q] += float(v)
-            elif metric == "Participating in dialogues":
-                participating[q] += float(v)
-
-    # Final summed data
     chart_data = {
-        "Leading Micro Improvements": [leading_micro[q] for q in QUARTERS],
-        "Participating in dialogues": [participating[q] for q in QUARTERS]
+        metric: _build_line_chart_series(year_map)
+        for metric, year_map in metric_year_map.items()
     }
 
     # Update JSON file

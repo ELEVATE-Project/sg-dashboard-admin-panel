@@ -188,7 +188,6 @@ if uploaded_file is not None:
                     get_network_map_data(uploaded_file)
                     update_district_view_indicators(uploaded_file)
                     extract_district_details(uploaded_file)
-                    goals(uploaded_file)
                     pie_chart(uploaded_file)
                     testimonials(uploaded_file)
                     # pie_chart_community_led(uploaded_file)   #commenting this line as per phase enhancement 1
@@ -200,6 +199,7 @@ if uploaded_file is not None:
                     voices_tab_big_numbers(uploaded_file)
                     update_voices_json_line_chart(uploaded_file)
                     update_leaders_engaged_dual_axis_chart(uploaded_file)
+                    goals(uploaded_file)
                     status.update(label="✅ All files uploaded successfully!", state="complete")
             except Exception as e:
                 st.error(f"❌ Error during full upload: {e}")
