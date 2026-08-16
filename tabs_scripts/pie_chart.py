@@ -36,7 +36,7 @@ def pie_chart(excel_file):
 
         # Extract data rows
         data = []
-        for row_idx, row in enumerate(sheet.iter_rows(min_row=8, values_only=True), start=2):
+        for row_idx, row in enumerate(sheet.iter_rows(min_row=7, values_only=True), start=2):
             try:
                 row_data = {
                     'name': row[cleaned_headers.index(TABS_METADATA["PIE_CHART"][1])] or '',

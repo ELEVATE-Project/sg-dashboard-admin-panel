@@ -137,6 +137,48 @@ def download_folder_images(folder_id, output_dir, program_type):
     return logo_urls
 
 
+def get_folder_image_urls_from_gcs(folder_id, program_type, bucket_name, folder_cache=None):
+    """
+    Return existing GCS URLs for images inside a Drive folder without downloading
+    or re-uploading them.
+    """
+    if not folder_id or not program_type or not bucket_name:
+        return []
+
+    cache_key = (folder_id, program_type, bucket_name)
+    if folder_cache is not None and cache_key in folder_cache:
+        return folder_cache[cache_key]
+
+    logo_urls = []
+    page_token = None
+
+    while True:
+        response = drive_service.files().list(
+            q=f"'{folder_id}' in parents and mimeType contains 'image/'",
+            spaces='drive',
+            fields='nextPageToken, files(name)',
+            pageToken=page_token
+        ).execute()
+
+        for file in response.get('files', []):
+            filename = str(file.get('name', '')).strip()
+            if not filename:
+                continue
+            logo_urls.append(
+                f"https://storage.googleapis.com/{bucket_name}/sg-dashboard/partners/{program_type}/{filename}"
+            )
+
+        page_token = response.get('nextPageToken')
+        if not page_token:
+            break
+
+    logo_urls = sorted(logo_urls)
+    if folder_cache is not None:
+        folder_cache[cache_key] = logo_urls
+
+    return logo_urls
+
+
 def build_lookup(state_code_map):
     """Build lookup for district codes and state codes"""
     lookup = {}
@@ -170,6 +212,19 @@ def resolve_codes(state, district, lookup, district_index):
     return None, None
 
 
+def sort_programs_by_status(programs):
+    """Keep JSON structure unchanged while listing ongoing programs before completed ones."""
+    def status_priority(program):
+        status = normalize(program.get('status_of_the_program', ''))
+        if status == 'ongoing':
+            return 0
+        if status == 'completed':
+            return 1
+        return 2
+
+    return sorted(programs, key=status_priority)
+
+
 def generate_program_reports(excel_file):
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -199,6 +254,7 @@ def generate_program_reports(excel_file):
         gcp_access = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(gcp_access)
         bucket_name = os.environ.get("BUCKET_NAME")
+        folder_image_cache = {}
 
         for row in sheet.iter_rows(min_row=2, values_only=True):
             row_dict = {snake_case(col): row[header_index_map.get(col)] if header_index_map.get(col) is not None else '' 
@@ -222,10 +278,21 @@ def generate_program_reports(excel_file):
             logo_urls = []
             if folder_url:
                 folder_id = extract_folder_id(folder_url)
+                #if dont want to download and update lofo url
+                # if folder_id:
+                #     logo_urls = get_folder_image_urls_from_gcs(
+                #         folder_id=folder_id,
+                #         program_type=program_type,
+                #         bucket_name=bucket_name,
+                #         folder_cache=folder_image_cache
+                #     )
+
+                #if want to download and update lofo url
                 if folder_id:
                     program_folder = os.path.join(base_images_dir, f"{program.replace(' ', '_').lower()}")
                     os.makedirs(program_folder, exist_ok=True)
                     logo_urls = download_folder_images(folder_id, program_folder, program_type)
+
             row_dict['logo_urls'] = logo_urls
 
             # Convert partner field to array
@@ -262,6 +329,7 @@ def generate_program_reports(excel_file):
 
         for category_name, data_dict in district_data.items():
             for district_code, programs in data_dict.items():
+                programs = sort_programs_by_status(programs)
                 district_folder = os.path.join(districts_dir, str(district_code))
                 os.makedirs(district_folder, exist_ok=True)
                 out_file = os.path.join(district_folder, f"{category_name}.json")
@@ -285,6 +353,7 @@ def generate_program_reports(excel_file):
         os.makedirs(states_dir, exist_ok=True)
 
         for state_code, programs in state_data.items():
+            programs = sort_programs_by_status(programs)
             state_folder = os.path.join(states_dir, str(state_code))
             os.makedirs(state_folder, exist_ok=True)
             out_file = os.path.join(state_folder, "state-program.json")
@@ -305,6 +374,7 @@ def generate_program_reports(excel_file):
 
         # NEW: State-level WLC.json
         for state_code, wlc_programs in state_wlc_data.items():
+            wlc_programs = sort_programs_by_status(wlc_programs)
             state_folder = os.path.join(states_dir, str(state_code))
             os.makedirs(state_folder, exist_ok=True)
             out_file = os.path.join(state_folder, "WLC.json")

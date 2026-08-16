@@ -27,6 +27,43 @@ def _add_quarters(bucket, values):
 def _format_year_data(bucket):
     return [bucket[q] for q in QUARTERS if bucket[f'valid_{q}']]
 
+
+def _normalize_year(year):
+    if year is None:
+        return None
+
+    if isinstance(year, str):
+        year = year.strip()
+        if not year:
+            return None
+
+    try:
+        year_num = float(year)
+    except (TypeError, ValueError):
+        return None
+
+    if not year_num.is_integer():
+        return None
+
+    return int(year_num)
+
+
+def _get_or_create_year_bucket(year_map, year):
+    if year not in year_map:
+        year_map[year] = _init_year_bucket()
+    return year_map[year]
+
+
+def _build_line_chart_series(year_map):
+    line_chart_data = []
+
+    for year in sorted(year_map):
+        data = _format_year_data(year_map[year])
+        if data:
+            line_chart_data.append({"year": year, "data": data})
+
+    return line_chart_data
+
 def update_leaders_engaged_dual_axis_chart(excel_file):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     json_path = os.path.join(script_dir, "..", "pages", "voices-from-the-ground.json")
@@ -41,11 +78,10 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
         print("❌ Sheet not found.")
         return
 
-    QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
-
-    # Initialize sums
-    leading_micro = {q: 0 for q in QUARTERS}
-    participating = {q: 0 for q in QUARTERS}
+    metric_year_map = {
+        "Leading Micro Improvements": {},
+        "Participating in dialogues": {}
+    }
 
     # Iterate over rows
     for row in sheet.iter_rows(min_row=2, values_only=True):
@@ -56,30 +92,23 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
         state = row[0] if len(row) > 0 else None
         district = row[1] if len(row) > 1 else None
         metric = row[2] if len(row) > 2 else None
-        year = row[3] if len(row) > 3 else None
+        year = _normalize_year(row[3] if len(row) > 3 else None)
         q_values = [row[i] if len(row) > i else None for i in range(4, 8)]
 
         if district:
             continue
-        
-        # Only year 2025
-        if year != 2025:
+
+        if year is None or metric not in metric_year_map:
             continue
 
-        # Sum values for each quarter
-        for q, v in zip(QUARTERS, q_values):
-            if v is None:
-                continue
+        _add_quarters(
+            _get_or_create_year_bucket(metric_year_map[metric], year),
+            q_values
+        )
 
-            if metric == "Leading Micro Improvements":
-                leading_micro[q] += float(v)
-            elif metric == "Participating in dialogues":
-                participating[q] += float(v)
-
-    # Final summed data
     chart_data = {
-        "Leading Micro Improvements": [leading_micro[q] for q in QUARTERS],
-        "Participating in dialogues": [participating[q] for q in QUARTERS]
+        metric: _build_line_chart_series(year_map)
+        for metric, year_map in metric_year_map.items()
     }
 
     # Update JSON file
@@ -124,6 +153,7 @@ def update_voices_json_line_chart(excel_file):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     json_path_voice = os.path.join(script_dir, "..", "pages", "voices-from-the-ground.json")
+    json_path_dashboard = os.path.join(script_dir, "..", "pages", "dashboard.json")
 
     workbook = openpyxl.load_workbook(excel_file, data_only=True)
     try:
@@ -132,25 +162,25 @@ def update_voices_json_line_chart(excel_file):
         print("❌ Sheet 'Micro improvements progress' not found.")
         return
 
-    sums_2025 = {q: 0 for q in QUARTERS}
-    valid_quarters_2025 = {q: False for q in QUARTERS}
+    year_map = {}
 
     for row in sheet.iter_rows(min_row=2, max_col=7, values_only=True):
         district_name = row[1]
-        year = row[2]
+        year = _normalize_year(row[2])
         q_values = row[3:7]
 
         if district_name:
             continue
-        if year != 2025:
+        if year is None:
             continue
 
+        year_bucket = _get_or_create_year_bucket(year_map, year)
         for q, v in zip(QUARTERS, q_values):
             if v is not None:
-                sums_2025[q] += float(v)
-                valid_quarters_2025[q] = True
+                year_bucket[q] += float(v)
+                year_bucket[f'valid_{q}'] = True
 
-    data_2025 = [sums_2025[q] for q in QUARTERS if valid_quarters_2025[q]]
+    chart_data = _build_line_chart_series(year_map)
 
     try:
         with open(json_path_voice, 'r', encoding='utf-8') as f:
@@ -158,18 +188,38 @@ def update_voices_json_line_chart(excel_file):
 
         for item in voices_data:
             if item.get("type") == "micro-improvements-so-far":
-                item["data"] = [{"year": 2025, "data": data_2025}]
+                item["data"] = chart_data
 
         with open(json_path_voice, 'w', encoding='utf-8') as f:
             json.dump(voices_data, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Updated voices-from-the-ground.json with 2025 data: {data_2025}")
+        print(f"✅ Updated voices-from-the-ground.json with dynamic year data: {chart_data}")
 
     except FileNotFoundError:
         print(f"❌ {json_path_voice} not found.")
         return
     except Exception as e:
         print(f"❌ Error updating voices-from-the-ground.json: {str(e)}")
+        return
+
+    try:
+        with open(json_path_dashboard, 'r', encoding='utf-8') as f:
+            dashboard_data = json.load(f)
+
+        for item in dashboard_data:
+            if item.get("type") == "line-chart":
+                item["data"] = chart_data
+
+        with open(json_path_dashboard, 'w', encoding='utf-8') as f:
+            json.dump(dashboard_data, f, indent=2, ensure_ascii=False)
+
+        print(f"✅ Updated dashboard.json with dynamic year data: {chart_data}")
+
+    except FileNotFoundError:
+        print(f"❌ {json_path_dashboard} not found.")
+        return
+    except Exception as e:
+        print(f"❌ Error updating dashboard.json: {str(e)}")
         return
 
     try:
@@ -188,6 +238,17 @@ def update_voices_json_line_chart(excel_file):
             print(f"✅ Uploaded voices-from-the-ground.json to GCS: {folder_url}")
         else:
             print(f"❌ Failed to upload voices-from-the-ground.json")
+
+        folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+            bucket_name=os.environ.get("BUCKET_NAME"),
+            source_file_path=json_path_dashboard,
+            destination_blob_name="sg-dashboard/dashboard.json"
+        )
+
+        if folder_url:
+            print(f"✅ Uploaded dashboard.json to GCS: {folder_url}")
+        else:
+            print(f"❌ Failed to upload dashboard.json")
     except Exception as e:
         print(f"❌ Error uploading to GCS: {str(e)}")
 
@@ -208,15 +269,12 @@ def extract_micro_improvements(excel_file):
 
     print(workbook, sheet)
 
-    year_map = {
-        2024: _init_year_bucket(),
-        2025: _init_year_bucket()
-    }
+    year_map = {}
 
     for row in sheet.iter_rows(min_row=2, max_col=7, values_only=True):
         print("function called inside", row)
         district_name = row[1]
-        year = row[2]
+        year = _normalize_year(row[2])
         q_values = row[3:7]
         print("data", year, *q_values)
 
@@ -226,14 +284,12 @@ def extract_micro_improvements(excel_file):
         if not any(v is not None for v in q_values):
             continue
 
-        if year in year_map:
-            _add_quarters(year_map[year], q_values)
+        if year is None:
+            continue
 
-    result = []
-    for year in [2024, 2025]:
-        data = _format_year_data(year_map[year])
-        if data:
-            result.append({"year": year, "data": data})
+        _add_quarters(_get_or_create_year_bucket(year_map, year), q_values)
+
+    result = _build_line_chart_series(year_map)
 
     print(result)
 
@@ -317,14 +373,15 @@ def extract_district_line_chart(excel_file):
             if district_id not in district_files_map:
                 district_files_map[district_id] = {
                     "district_name": district_name,
-                    "line_chart": {
-                        2024: _init_year_bucket(),
-                        2025: _init_year_bucket()
-                    }
+                    "line_chart": {}
                 }
 
-            if year in (2024, 2025):
-                _add_quarters(district_files_map[district_id]["line_chart"][year], q_values)
+            year = _normalize_year(year)
+            if year is not None:
+                _add_quarters(
+                    _get_or_create_year_bucket(district_files_map[district_id]["line_chart"], year),
+                    q_values
+                )
 
             row_num += 1
 
@@ -341,11 +398,7 @@ def extract_district_line_chart(excel_file):
             dist_dir = os.path.join(script_dir, "..", "districts", str(dist_id))
             os.makedirs(dist_dir, exist_ok=True)
 
-            line_chart_data = []
-            for year in [2024, 2025]:
-                data = _format_year_data(dist_data["line_chart"][year])
-                if data:
-                    line_chart_data.append({"year": year, "data": data})
+            line_chart_data = _build_line_chart_series(dist_data["line_chart"])
 
             line_chart_path = os.path.join(dist_dir, "line-chart.json")
             with open(line_chart_path, "w", encoding="utf-8") as f:
@@ -433,14 +486,15 @@ def extract_state_line_chart(excel_file):
             if state_id not in state_line_chart_map:
                 state_line_chart_map[state_id] = {
                     "state_name": state_name,
-                    "line_chart": {
-                        2024: _init_year_bucket(),
-                        2025: _init_year_bucket()
-                    }
+                    "line_chart": {}
                 }
 
-            if year in (2024, 2025):
-                _add_quarters(state_line_chart_map[state_id]["line_chart"][year], q_values)
+            year = _normalize_year(year)
+            if year is not None:
+                _add_quarters(
+                    _get_or_create_year_bucket(state_line_chart_map[state_id]["line_chart"], year),
+                    q_values
+                )
 
             row_num += 1
 
@@ -457,15 +511,7 @@ def extract_state_line_chart(excel_file):
         # ✅ SAVE STATE LINE-CHART.JSON HERE
         for state_id, state_data in state_line_chart_map.items():
 
-            line_chart_data = []
-
-            for year in [2024, 2025]:
-                data = _format_year_data(state_data["line_chart"][year])
-                if data:
-                    line_chart_data.append({
-                        "year": year,
-                        "data": data
-                    })
+            line_chart_data = _build_line_chart_series(state_data["line_chart"])
 
             if not line_chart_data:
                 continue

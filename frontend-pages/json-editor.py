@@ -4,6 +4,25 @@ import streamlit as st
 from streamlit_ace import st_ace
 import importlib.util
 
+
+def load_gcp_access():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+    spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+    gcp_access = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gcp_access)
+    return gcp_access
+
+
+def normalize_json_icon_urls(json_data):
+    gcp_access = load_gcp_access()
+    bucket_name = os.environ.get("BUCKET_NAME")
+    if not bucket_name:
+        return json_data
+
+    return gcp_access.normalize_icon_urls(json_data, bucket_name)
+
+
 # -------------------------------
 # Function to upload JSON to GCS
 # -------------------------------
@@ -12,10 +31,7 @@ def upload_json_to_gcs(json_path, tab_name):
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
         # Dynamically import gcp_access
-        gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
-        spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
-        gcp_access = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(gcp_access)
+        gcp_access = load_gcp_access()
 
         # Set credentials if needed
         private_key_path = os.path.join(script_dir, "..", "private-key.json")
@@ -147,6 +163,7 @@ for i, name in enumerate(json_tabs):
             if st.button(f"💾 Save {name}", key=f"save_btn_{i}"):
                 try:
                     parsed = json.loads(edited_json)
+                    parsed = normalize_json_icon_urls(parsed)
                     with open(file_path, "w") as f:
                         json.dump(parsed, f, indent=2)
                     st.success(f"✅ {name} JSON saved successfully!")
@@ -162,6 +179,7 @@ for i, name in enumerate(json_tabs):
                 if st.button(f"⬆️ Upload {name}", key=f"upload_btn_{i}"):
                     try:
                         parsed = json.loads(edited_json)
+                        parsed = normalize_json_icon_urls(parsed)
                         with open(file_path, "w") as f:
                             json.dump(parsed, f, indent=2)
 

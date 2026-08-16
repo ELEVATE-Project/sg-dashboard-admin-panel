@@ -31,6 +31,8 @@ TABS_METADATA = {
         "Name of the Program",
         "About the Program/ Objective",
         "Impact of the program",
+        "Learn how Micro improvements are contributing to mega impact  ( Impact achieved)",
+        "Download to read more",
         "Stakeholders doing the program",
         "Pictures from the program",
         "MI inititated from the program ( Total no. of MI started+inprogress+submitted OR if done via google form then no. of responses submitted)",
