@@ -6,9 +6,9 @@
     "title": "Voices of Change testing GCP update",
     "slides": [
       {
-        "header": "Shikshagraha",
+        "header": "",
         "subHeader": "",
-        "description": "India has one of the world's largest education systems with 1 million public schools. Through the leadership of government, civil society, and market actors, Indian public schools are steadily improving. This dashboard tracks that journey of continuous improvements."
+        "description": "India has one of the world's largest education systems with 1 million public schools. Through the leadership of government, civil society, and market actors, Indian public schools are steadily improving. This dashboard shows how indian public education system is improving."
       }
     ],
     "styles": {
@@ -44,43 +44,38 @@
     "indicators": [
       {
         "label": "Micro Improvements initiated\n\n",
-        "value": 1210780,
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/micro_improvements_initiated.svg"
+        "value": 1561611,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/micro_improvements_initiated.svg"
       },
       {
         "label": "Leaders driving \nimprovements\n",
-        "value": 343711,
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/leaders_driving_improvements.svg"
+        "value": 392396,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/leaders_driving_improvements.svg"
       },
       {
         "label": "Schools driving improvements",
-        "value": 171330,
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/schools_driving_improvements.svg"
+        "value": 212899,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/schools_driving_improvements.svg"
       },
       {
         "label": "Community led improvements",
-        "value": 23741,
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/community_led_improvements.svg"
+        "value": 37956,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/community_led_improvements.svg"
       },
       {
         "label": "Momentum partners ",
-        "value": 43,
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/momentum_partners.svg"
+        "value": 44,
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/momentum_partners.svg"
       },
       {
         "label": "Strategic partners",
         "value": 15,
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/strategic_partners.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/strategic_partners.svg"
       },
       {
         "label": "Funds mobilised (INR)",
-        "value": "27 crore",
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/funds_mobilised_inr.svg"
-      },
-      {
-        "label": "NAS Grade 3",
-        "value": "59",
-        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/nas_grade_3.svg"
+        "value": "44 crore",
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/funds_mobilised_inr.svg"
       }
     ],
     "styles": {
