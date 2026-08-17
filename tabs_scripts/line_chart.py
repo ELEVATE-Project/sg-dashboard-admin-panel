@@ -64,6 +64,53 @@ def _build_line_chart_series(year_map):
 
     return line_chart_data
 
+
+def _normalize_header(value):
+    return str(value).strip().lower().replace(" ", "").replace("_", "") if value else ""
+
+
+def _get_sheet_column_indexes(sheet):
+    headers = [_normalize_header(cell.value) for cell in sheet[1]]
+
+    year_index = next((i for i, header in enumerate(headers) if header == "year"), 2)
+    district_index = next((i for i, header in enumerate(headers) if header == "district"), 1)
+    quarter_indexes = [
+        next((i for i, header in enumerate(headers) if header == q.lower()), fallback)
+        for q, fallback in zip(QUARTERS, range(3, 7))
+    ]
+
+    return district_index, year_index, quarter_indexes
+
+
+def _extract_line_chart_data_from_sheet(workbook, sheet_name, skip_district_rows=True):
+    try:
+        sheet = workbook[sheet_name]
+    except KeyError:
+        print(f"❌ Sheet '{sheet_name}' not found.")
+        return None
+
+    year_map = {}
+    district_index, year_index, quarter_indexes = _get_sheet_column_indexes(sheet)
+
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        district_name = row[district_index] if len(row) > district_index else None
+        year = _normalize_year(row[year_index] if len(row) > year_index else None)
+        q_values = [
+            row[index] if len(row) > index else None
+            for index in quarter_indexes
+        ]
+
+        if skip_district_rows and district_name:
+            continue
+        if year is None:
+            continue
+
+        _add_quarters(_get_or_create_year_bucket(year_map, year), q_values)
+
+    chart_data = _build_line_chart_series(year_map)
+    print(f"✅ Extracted {sheet_name} line chart data: {chart_data}")
+    return chart_data
+
 def update_leaders_engaged_dual_axis_chart(excel_file):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     json_path = os.path.join(script_dir, "..", "pages", "voices-from-the-ground.json")
@@ -156,31 +203,16 @@ def update_voices_json_line_chart(excel_file):
     json_path_dashboard = os.path.join(script_dir, "..", "pages", "dashboard.json")
 
     workbook = openpyxl.load_workbook(excel_file, data_only=True)
-    try:
-        sheet = workbook["Micro improvements progress"]
-    except KeyError:
-        print("❌ Sheet 'Micro improvements progress' not found.")
+
+    voices_chart_data = _extract_line_chart_data_from_sheet(
+        workbook,
+        "Graph_VoiceTab_MI",
+        skip_district_rows=False
+    )
+    dashboard_chart_data = _extract_line_chart_data_from_sheet(workbook, "Micro improvements progress")
+
+    if voices_chart_data is None or dashboard_chart_data is None:
         return
-
-    year_map = {}
-
-    for row in sheet.iter_rows(min_row=2, max_col=7, values_only=True):
-        district_name = row[1]
-        year = _normalize_year(row[2])
-        q_values = row[3:7]
-
-        if district_name:
-            continue
-        if year is None:
-            continue
-
-        year_bucket = _get_or_create_year_bucket(year_map, year)
-        for q, v in zip(QUARTERS, q_values):
-            if v is not None:
-                year_bucket[q] += float(v)
-                year_bucket[f'valid_{q}'] = True
-
-    chart_data = _build_line_chart_series(year_map)
 
     try:
         with open(json_path_voice, 'r', encoding='utf-8') as f:
@@ -188,12 +220,12 @@ def update_voices_json_line_chart(excel_file):
 
         for item in voices_data:
             if item.get("type") == "micro-improvements-so-far":
-                item["data"] = chart_data
+                item["data"] = voices_chart_data
 
         with open(json_path_voice, 'w', encoding='utf-8') as f:
             json.dump(voices_data, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Updated voices-from-the-ground.json with dynamic year data: {chart_data}")
+        print(f"✅ Updated voices-from-the-ground.json with dynamic year data: {voices_chart_data}")
 
     except FileNotFoundError:
         print(f"❌ {json_path_voice} not found.")
@@ -208,12 +240,12 @@ def update_voices_json_line_chart(excel_file):
 
         for item in dashboard_data:
             if item.get("type") == "line-chart":
-                item["data"] = chart_data
+                item["data"] = dashboard_chart_data
 
         with open(json_path_dashboard, 'w', encoding='utf-8') as f:
             json.dump(dashboard_data, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Updated dashboard.json with dynamic year data: {chart_data}")
+        print(f"✅ Updated dashboard.json with dynamic year data: {dashboard_chart_data}")
 
     except FileNotFoundError:
         print(f"❌ {json_path_dashboard} not found.")

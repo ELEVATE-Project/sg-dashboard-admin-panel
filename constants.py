@@ -52,7 +52,8 @@ TABS_METADATA = {
 ALLOWED_TABS = [
     "Data on homepage", "Dashboard first page", "Goals", "States details",
     "District Details", "Programs", "Micro improvements progress",
-    "Partners", "Network Map", "Testimonials", "Images/icons", "Voices Tab Big Numbers"
+    "Graph_VoiceTab_MI", "Partners", "Network Map", "Testimonials",
+    "Images/icons", "Voices Tab Big Numbers"
 ]
 
 BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
