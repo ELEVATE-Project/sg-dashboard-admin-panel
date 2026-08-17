@@ -36,6 +36,7 @@ TABS_METADATA = {
         "Stakeholders doing the program",
         "Pictures from the program",
         "MI inititated from the program ( Total no. of MI started+inprogress+submitted OR if done via google form then no. of responses submitted)",
+        "Leaders Driving Improvements",
         "Status of the program",
         "Name of the Partner leading the program",
         "Report Link"
