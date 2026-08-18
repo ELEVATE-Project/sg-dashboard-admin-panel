@@ -1,12 +1,27 @@
-import openpyxl
+import re
+import importlib.util
 import json
 import os
-import importlib.util
 
-from constants import PAGE_METADATA, TABS_METADATA
+import openpyxl
 
+from constants import (
+    ATRISK_CHILDREN_REGULARISED,
+    CHILDREN_ENROLLED,
+    CHILDREN_GOT_AADHAAR,
+    CHILDREN_GOT_BIRTH_CERTIFICATE,
+    COMMUNITY_COUNTRY_VIEW_CODE_ORDER,
+    COMMUNITY_DISTRICT_COLUMN,
+    COMMUNITY_MAP_COLUMNS,
+    COMMUNITY_PIE_COLUMNS,
+    COMMUNITY_PIE_DISPLAY_NAMES,
+    COMMUNITY_STATE_COLUMN,
+    DISTRICTS_ACTIVATED,
+    DOCUMENTATION_COLUMNS,
+    ENROLLMENT_COLUMNS,
+    TOTAL_ROW_LABEL,
+)
 
-import re
 
 def normalize(text):
     if text is None:
@@ -35,7 +50,6 @@ def safe_int(value):
         return int(float(value))
     except:
         return 0
-    
 
 
 def load_enrollment_data(workbook):
@@ -47,38 +61,33 @@ def load_enrollment_data(workbook):
     except KeyError:
         return enrollment_data, enrollment_by_state
 
-    # FIXED COLUMN INDEXES (0-based)
-    STATE_IDX = 1
-    DISTRICT_IDX = 2
-    CHILDREN_TOTAL_IDX = 6   # column G - "Total" under "Children enrolled"
-    ATRISK_TOTAL_IDX = 10    # column K - "Total" under "At-risk of dropout"
-
     # Start from row 4 (skip title row 1, main headers row 2, detailed headers row 3)
     for row in sheet.iter_rows(min_row=4, values_only=True):
-        state = normalize(row[STATE_IDX])
-        district = normalize(row[DISTRICT_IDX])
+        state = normalize(row[ENROLLMENT_COLUMNS["state"]])
+        district = normalize(row[ENROLLMENT_COLUMNS["district"]])
 
         # Skip empty rows or total rows (where district name might be empty)
-        if not state or not district or district == "total":
+        if not state or not district or district == TOTAL_ROW_LABEL:
             continue
 
         key = (state, district)
-        enrolled = safe_int(row[CHILDREN_TOTAL_IDX])
-        atrisk = safe_int(row[ATRISK_TOTAL_IDX])
+        enrolled = safe_int(row[ENROLLMENT_COLUMNS["children_total"]])
+        atrisk = safe_int(row[ENROLLMENT_COLUMNS["atrisk_total"]])
 
         enrollment_data[key] = {
-            "Children enrolled": enrolled,
-            "At-risk of dropout children regularised in school": atrisk
+            CHILDREN_ENROLLED: enrolled,
+            ATRISK_CHILDREN_REGULARISED: atrisk
         }
 
         state_totals = enrollment_by_state.setdefault(state, {
-            "Children enrolled": 0,
-            "At-risk of dropout children regularised in school": 0
+            CHILDREN_ENROLLED: 0,
+            ATRISK_CHILDREN_REGULARISED: 0
         })
-        state_totals["Children enrolled"] += enrolled
-        state_totals["At-risk of dropout children regularised in school"] += atrisk
+        state_totals[CHILDREN_ENROLLED] += enrolled
+        state_totals[ATRISK_CHILDREN_REGULARISED] += atrisk
 
     return enrollment_data, enrollment_by_state
+
 
 def load_documentation_data(workbook):
     documentation_data = {}
@@ -90,27 +99,32 @@ def load_documentation_data(workbook):
         return documentation_data, documentation_by_state
 
     for row in sheet.iter_rows(min_row=2, values_only=True):
-        state = str(row[0]).strip() if row[0] else None
-        district = str(row[1]).strip() if row[1] else None
+        state_value = row[DOCUMENTATION_COLUMNS["state"]]
+        district_value = row[DOCUMENTATION_COLUMNS["district"]]
+        state = str(state_value).strip() if state_value else None
+        district = str(district_value).strip() if district_value else None
 
         if not state or not district:
             continue
 
+        if district.lower() == TOTAL_ROW_LABEL:
+            continue
+
         key = (normalize(state), normalize(district))
-        aadhaar = safe_int(row[2])
-        birth = safe_int(row[3])
+        aadhaar = safe_int(row[DOCUMENTATION_COLUMNS["aadhaar"]])
+        birth = safe_int(row[DOCUMENTATION_COLUMNS["birth_certificate"]])
 
         documentation_data[key] = {
-            "Children who got Aadhaar": aadhaar,
-            "Children who got Birth Certificate": birth
+            CHILDREN_GOT_AADHAAR: aadhaar,
+            CHILDREN_GOT_BIRTH_CERTIFICATE: birth
         }
 
         state_totals = documentation_by_state.setdefault(normalize(state), {
-            "Children who got Aadhaar": 0,
-            "Children who got Birth Certificate": 0
+            CHILDREN_GOT_AADHAAR: 0,
+            CHILDREN_GOT_BIRTH_CERTIFICATE: 0
         })
-        state_totals["Children who got Aadhaar"] += aadhaar
-        state_totals["Children who got Birth Certificate"] += birth
+        state_totals[CHILDREN_GOT_AADHAAR] += aadhaar
+        state_totals[CHILDREN_GOT_BIRTH_CERTIFICATE] += birth
 
     return documentation_data, documentation_by_state
 
@@ -138,23 +152,8 @@ def pie_chart_community_led(excel_file):
             str(cell).strip() if cell is not None else '' for cell in headers
         ]
 
-        expected_columns = [
-            "Community Engagement",
-            "Infrastructure and resources",
-            "School structure and practices",
-            "Leadership",
-            "Pedagogy",
-            "Assessment and Evaluation",
-        ]
-
-        DISPLAY_NAMES = {
-            "Infrastructure and resources": "Infrastructure and Resources",
-            "School structure and practices": "School Structure and Practices",
-            "Leadership": "Leadership",
-            "Pedagogy": "Pedagogy",
-            "Assessment and Evaluation": "Assessment and Evaluation",
-            "Community Engagement": "Community Engagement"
-        }
+        expected_columns = COMMUNITY_PIE_COLUMNS
+        display_names = COMMUNITY_PIE_DISPLAY_NAMES
 
         if not all(col in cleaned_headers for col in expected_columns):
             print(f"Error: Excel file must contain columns: {expected_columns}")
@@ -182,7 +181,7 @@ def pie_chart_community_led(excel_file):
                 col_sum = int(col_sum)
 
             data.append({
-                'name': DISPLAY_NAMES.get(col_name.strip(), col_name.strip()),
+                'name': display_names.get(col_name.strip(), col_name.strip()),
                 'value': col_sum
             })
 
@@ -241,181 +240,6 @@ def pie_chart_community_led(excel_file):
     except Exception as e:
         print(f"Error: {str(e)}")
 
-
-# def community_led_programs_sum_with_codes(excel_file):
-#     try:
-#         # Get the directory of the current script
-#         script_dir = os.path.dirname(os.path.abspath(__file__))
-#         print(script_dir)
-#         # Define the path to the JSON file
-#         json_path = os.path.join(script_dir, "..", "pages", "community-country-view.json")
-
-#         # Open the Excel file
-#         workbook = openpyxl.load_workbook(excel_file, data_only=True)
-
-#         # Load "Community Led Programs" sheet
-#         try:
-#             community_sheet = workbook["Community Led Programs"]
-#         except KeyError:
-#             print("Error: Sheet 'Community Led Programs' not found in the Excel file.")
-#             print(f"Available sheets: {workbook.sheetnames}")
-#             return
-
-#         # Load "State_district details" sheet for state codes
-#         try:
-#             state_district_sheet = workbook["State_district details"]
-#         except KeyError:
-#             print("Error: Sheet 'State_district details' not found in the Excel file.")
-#             print(f"Available sheets: {workbook.sheetnames}")
-#             return
-
-#         # Get headers for Community Led Programs
-#         community_headers = [cell.value for cell in community_sheet[1]]
-#         community_cleaned_headers = [str(cell).strip() if cell is not None else '' for cell in community_headers]
-#         expected_community_columns = [
-#             "Name of the State",
-#             "Name of the District",  # Added district column
-#             "No. of community leaders engaged",
-#             "Community led improvements",
-#             "Challenges shared",
-#             "Solutions shared"
-#         ]
-#         if not all(col in community_cleaned_headers for col in expected_community_columns):
-#             print(f"Error: Excel file must contain columns in Community Led Programs: {expected_community_columns}")
-#             print(f"Found: {community_cleaned_headers}")
-#             return
-
-#         # Get headers for State_district details
-#         state_district_headers = [cell.value for cell in state_district_sheet[1]]
-#         state_district_cleaned_headers = [str(cell).strip() if cell is not None else '' for cell in state_district_headers]
-#         expected_state_columns = ["state name", "state code"]
-#         if not all(col in state_district_cleaned_headers for col in expected_state_columns):
-#             print(f"Error: Excel file must contain columns in State_district details: {expected_state_columns}")
-#             print(f"Found: {state_district_cleaned_headers}")
-#             return
-
-#         # Extract state codes from State_district details
-#         state_codes = {}
-#         for row in state_district_sheet.iter_rows(min_row=2, max_col=len(state_district_headers), values_only=True):
-#             try:
-#                 state_name = row[state_district_cleaned_headers.index("state name")] or ''
-#                 state_code = row[state_district_cleaned_headers.index("state code")]
-#                 if state_name and state_code:
-#                     state_codes[state_name] = str(state_code)
-#             except Exception as e:
-#                 print(f"Error processing state code row: {str(e)}")
-#                 continue
-
-#         # Initialize dictionary to store sums and district counts by state
-#         state_sums = {}
-
-#         # Extract and sum data for specified columns and count unique districts
-#         for row in community_sheet.iter_rows(min_row=2, max_col=len(community_headers), values_only=True):
-#             try:
-#                 state_name = row[community_cleaned_headers.index("Name of the State")] or ''
-#                 district_name = row[community_cleaned_headers.index("Name of the District")] or ''
-#                 if not state_name or not district_name:
-#                     continue
-
-#                 # Initialize state entry if not exists
-#                 if state_name not in state_sums:
-#                     state_sums[state_name] = {
-#                         "No. of community leaders engaged": 0,
-#                         "Community led improvements": 0,
-#                         "Challenges shared": 0,
-#                         "Solutions shared": 0,
-#                         "Districts activated": set()  # Use a set to store unique district names
-#                     }
-
-#                 # Add district to the set
-#                 state_sums[state_name]["Districts activated"].add(district_name)
-
-#                 # Sum values for specified columns
-#                 for col_name in expected_community_columns[2:]:  # Skip State Name and District
-#                     col_index = community_cleaned_headers.index(col_name)
-#                     value = row[col_index]
-#                     if isinstance(value, (int, float)) and value is not None:
-#                         state_sums[state_name][col_name] += value
-
-#             except Exception as e:
-#                 print(f"Error processing row in Community Led Programs: {str(e)}")
-#                 continue
-
-#         # Format data as object of objects with state code as key
-#         states_data = {
-#             state_codes.get(state, "unknown"): {
-#                 "id": state_codes.get(state, "unknown"),
-#                 "label": state,
-#                 "type": "category_1",
-#                 "details": [
-#                     {"code": col_name, "value": int(val) if isinstance(val, float) and val.is_integer() else val}
-#                     for col_name, val in sums.items() if col_name != "Districts activated"  # Exclude Districts Activated temporarily
-#                 ] + [{"code": "Districts activated", "value": len(sums["Districts activated"])}]  # Add district count
-#             }
-#             for state, sums in state_sums.items()
-#         }
-
-#         # Create the final data structure
-#         data = {
-#             "result": {
-#                 "states": states_data
-#             }
-#         }
-
-#         # Read the existing JSON file
-#         try:
-#             with open(json_path, 'r', encoding='utf-8') as json_file:
-#                 raw_content = json_file.read()
-#                 json_file.seek(0)
-#                 try:
-#                     json_data = json.load(json_file)
-#                 except json.JSONDecodeError:
-#                     try:
-#                         json_data = json.loads(raw_content)
-#                     except json.JSONDecodeError:
-#                         json_data = {}
-#         except FileNotFoundError:
-#             json_data = {}
-
-#         # Ensure json_data is a dictionary with a "result" key
-#         if not isinstance(json_data, dict):
-#             json_data = {"result": {}}
-#         if "result" not in json_data:
-#             json_data["result"] = {}
-#         if "states" not in json_data["result"]:
-#             json_data["result"]["states"] = {}
-
-#         # Update the states data
-#         print(states_data)
-#         json_data["result"]["states"].update(states_data)
-
-#         # Write back to the file
-#         with open(json_path, 'w', encoding='utf-8') as json_file:
-#             json.dump(json_data, json_file, indent=2, ensure_ascii=False)
-
-#         # Dynamically import gcp_access module and upload file
-#         gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
-#         spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
-#         gcp_access = importlib.util.module_from_spec(spec)
-#         spec.loader.exec_module(gcp_access)
-
-#         folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
-#             bucket_name=os.environ.get("BUCKET_NAME"),
-#             source_file_path=json_path,
-#             destination_blob_name="sg-dashboard/community-country-view.json"
-#         )
-
-#         if folder_url:
-#             print(f"Successfully uploaded and got public folder URL: {folder_url}")
-#             updateOverviewValues()
-#         else:
-#             print("Failed to upload file to GCS. Check logs for details.")
-
-#     except Exception as e:
-#         print(f"Error: {str(e)}")
-
-
-
 def community_led_programs_sum_with_codes(excel_file):
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -450,13 +274,9 @@ def community_led_programs_sum_with_codes(excel_file):
         ]
 
         expected_community_columns = [
-            "Name of the State",
-            "Name of the District",
-            "Community members participating in dialogues",
-            "Local challenges identified",
-            "Community leaders driving improvements",
-            "Local solutions identified",
-            "Local Solutions implemented"
+            COMMUNITY_STATE_COLUMN,
+            COMMUNITY_DISTRICT_COLUMN,
+            *COMMUNITY_MAP_COLUMNS,
         ]
 
         if not all(col in community_cleaned_headers for col in expected_community_columns):
@@ -484,27 +304,23 @@ def community_led_programs_sum_with_codes(excel_file):
 
         for row in community_sheet.iter_rows(min_row=2, values_only=True):
             try:
-                state_name = row[community_cleaned_headers.index("Name of the State")] or ''
-                district_name = row[community_cleaned_headers.index("Name of the District")] or ''
+                state_name = row[community_cleaned_headers.index(COMMUNITY_STATE_COLUMN)] or ''
+                district_name = row[community_cleaned_headers.index(COMMUNITY_DISTRICT_COLUMN)] or ''
 
                 if not state_name or not district_name:
                     continue
 
                 if state_name not in state_sums:
                     state_sums[state_name] = {
-                        "Community members participating in dialogues": 0,
-                        "Local challenges identified": 0,
-                        "Community leaders driving improvements": 0,
-                        "Local solutions identified": 0,
-                        "Local Solutions implemented": 0,
-                        "Districts activated": set(),
-                        "Children enrolled": 0,
-                        "At-risk of dropout children regularised in school": 0,
-                        "Children who got Aadhaar": 0,
-                        "Children who got Birth Certificate": 0,
+                        **{column: 0 for column in COMMUNITY_MAP_COLUMNS},
+                        DISTRICTS_ACTIVATED: set(),
+                        CHILDREN_ENROLLED: 0,
+                        ATRISK_CHILDREN_REGULARISED: 0,
+                        CHILDREN_GOT_AADHAAR: 0,
+                        CHILDREN_GOT_BIRTH_CERTIFICATE: 0,
                     }
 
-                state_sums[state_name]["Districts activated"].add(district_name)
+                state_sums[state_name][DISTRICTS_ACTIVATED].add(district_name)
 
                 # if (state_name, district_name) in enrollment_data:
                 #     enroll_info = enrollment_data[(state_name, district_name)]
@@ -533,16 +349,24 @@ def community_led_programs_sum_with_codes(excel_file):
             state_enroll = enrollment_by_state.get(state_key, {})
             state_doc = documentation_by_state.get(state_key, {})
 
-            sums["Children enrolled"] = state_enroll.get("Children enrolled", 0)
-            sums["At-risk of dropout children regularised in school"] = state_enroll.get(
-                "At-risk of dropout children regularised in school", 0
+            sums[CHILDREN_ENROLLED] = state_enroll.get(CHILDREN_ENROLLED, 0)
+            sums[ATRISK_CHILDREN_REGULARISED] = state_enroll.get(
+                ATRISK_CHILDREN_REGULARISED, 0
             )
-            sums["Children who got Aadhaar"] = state_doc.get("Children who got Aadhaar", 0)
-            sums["Children who got Birth Certificate"] = state_doc.get("Children who got Birth Certificate", 0)
+            sums[CHILDREN_GOT_AADHAAR] = state_doc.get(CHILDREN_GOT_AADHAAR, 0)
+            sums[CHILDREN_GOT_BIRTH_CERTIFICATE] = state_doc.get(
+                CHILDREN_GOT_BIRTH_CERTIFICATE,
+                0
+            )
+
+        unmapped_states = sorted(state for state in state_sums if state not in state_codes)
+        if unmapped_states:
+            print(f"Error: Missing state codes for: {', '.join(unmapped_states)}")
+            return
 
         states_data = {
-            state_codes.get(state, "unknown"): {
-                "id": state_codes.get(state, "unknown"),
+            state_codes[state]: {
+                "id": state_codes[state],
                 "label": state,
                 "type": "category_1",
                 "details": []
@@ -550,26 +374,12 @@ def community_led_programs_sum_with_codes(excel_file):
             for state, sums in state_sums.items()
         }
 
-        # Define the order of codes
-        code_order = [
-            "Community members participating in dialogues",
-            "Local challenges identified",
-            "Community leaders driving improvements",
-            "Local solutions identified",
-            "Local Solutions implemented",
-            "Districts activated",
-            "Children enrolled",
-            "At-risk of dropout children regularised in school",
-            "Children who got Aadhaar",
-            "Children who got Birth Certificate"
-        ]
-
         for state, sums in state_sums.items():
-            state_id = state_codes.get(state, "unknown")
+            state_id = state_codes[state]
             details = []
-            for code in code_order:
-                if code == "Districts activated":
-                    value = len(sums["Districts activated"])
+            for code in COMMUNITY_COUNTRY_VIEW_CODE_ORDER:
+                if code == DISTRICTS_ACTIVATED:
+                    value = len(sums[DISTRICTS_ACTIVATED])
                 else:
                     value = sums.get(code, 0)
                 
@@ -700,22 +510,14 @@ def updateOverviewValues():
             else:
                 print(f"Warning: Code '{code}' in overview not found in states")
 
-        # Define the order of codes
-        code_order = [
-            "Community members participating in dialogues",
-            "Local challenges identified",
-            "Community leaders driving improvements",
-            "Local solutions identified",
-            "Local Solutions implemented",
-            "Districts activated",
-            "Children enrolled",
-            "At-risk of dropout children regularised in school",
-            "Children who got Aadhaar",
-            "Children who got Birth Certificate"
-        ]
-
         # Sort overview details to match the order
-        overview_details.sort(key=lambda d: code_order.index(d['code']) if d['code'] in code_order else len(code_order))
+        overview_details.sort(
+            key=lambda d: (
+                COMMUNITY_COUNTRY_VIEW_CODE_ORDER.index(d['code'])
+                if d['code'] in COMMUNITY_COUNTRY_VIEW_CODE_ORDER
+                else len(COMMUNITY_COUNTRY_VIEW_CODE_ORDER)
+            )
+        )
 
     except KeyError as e:
         print(f"Error: Missing expected key in overview structure: {str(e)}")

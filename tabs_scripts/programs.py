@@ -7,7 +7,7 @@ from difflib import get_close_matches
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from constants import PAGE_METADATA, TABS_METADATA
+from constants import GCS_STORAGE_BASE_URL, PAGE_METADATA, TABS_METADATA
 import importlib.util
 from dotenv import load_dotenv
 import subprocess
@@ -165,7 +165,7 @@ def get_folder_image_urls_from_gcs(folder_id, program_type, bucket_name, folder_
             if not filename:
                 continue
             logo_urls.append(
-                f"https://storage.googleapis.com/{bucket_name}/sg-dashboard/partners/{program_type}/{filename}"
+                f"{GCS_STORAGE_BASE_URL}/{bucket_name}/sg-dashboard/partners/{program_type}/{filename}"
             )
 
         page_token = response.get('nextPageToken')

@@ -6,6 +6,8 @@ import json
 import re
 from dotenv import load_dotenv
 
+from constants import GCS_CLOUD_PLATFORM_SCOPE, GCS_STORAGE_BASE_URL
+
 load_dotenv()
 
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
@@ -34,7 +36,7 @@ def get_storage_client():
         logger.info("Initializing GCS client with service account credentials from environment variables")
         credentials = service_account.Credentials.from_service_account_info(
             service_account_info,
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
+            scopes=[GCS_CLOUD_PLATFORM_SCOPE]
         )
         return storage.Client(credentials=credentials, project=service_account_info["project_id"])
 
@@ -46,7 +48,7 @@ def get_public_bucket_url(bucket_name):
     configured_url = os.getenv("GCS_PUBLIC_BASE_URL") or os.getenv("BUCKET_URL")
     if configured_url:
         return configured_url.strip().strip('"').rstrip("/")
-    return f"https://storage.googleapis.com/{bucket_name}"
+    return f"{GCS_STORAGE_BASE_URL}/{bucket_name}"
 
 
 def normalize_icon_urls(data, bucket_name):

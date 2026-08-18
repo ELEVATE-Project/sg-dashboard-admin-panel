@@ -4,28 +4,32 @@ import json
 import os
 import importlib.util
 
-from constants import PAGE_METADATA
-
-
-QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4']
+from constants import (
+    LEADERS_ENGAGED_METRICS,
+    LEADERS_ENGAGED_SHEET,
+    LINE_CHART_DEFAULT_INDEXES,
+    LINE_CHART_QUARTERS,
+    MICRO_IMPROVEMENTS_PROGRESS_SHEET,
+    VOICE_MICRO_IMPROVEMENTS_SHEET,
+)
 
 
 def _init_year_bucket():
     return {
-        'Q1': 0, 'Q2': 0, 'Q3': 0, 'Q4': 0,
-        'valid_Q1': False, 'valid_Q2': False, 'valid_Q3': False, 'valid_Q4': False
+        **{quarter: 0 for quarter in LINE_CHART_QUARTERS},
+        **{f'valid_{quarter}': False for quarter in LINE_CHART_QUARTERS},
     }
 
 
 def _add_quarters(bucket, values):
-    for q, v in zip(QUARTERS, values):
+    for q, v in zip(LINE_CHART_QUARTERS, values):
         if v is not None:
             bucket[q] += float(v)
             bucket[f'valid_{q}'] = True
 
 
 def _format_year_data(bucket):
-    return [bucket[q] for q in QUARTERS if bucket[f'valid_{q}']]
+    return [bucket[q] for q in LINE_CHART_QUARTERS if bucket[f'valid_{q}']]
 
 
 def _normalize_year(year):
@@ -66,17 +70,32 @@ def _build_line_chart_series(year_map):
 
 
 def _normalize_header(value):
-    return str(value).strip().lower().replace(" ", "").replace("_", "") if value else ""
+    if not value:
+        return ""
+    return str(value).strip().lower().replace(" ", "").replace("_", "")
 
 
 def _get_sheet_column_indexes(sheet):
     headers = [_normalize_header(cell.value) for cell in sheet[1]]
 
-    year_index = next((i for i, header in enumerate(headers) if header == "year"), 2)
-    district_index = next((i for i, header in enumerate(headers) if header == "district"), 1)
+    year_index = next(
+        (i for i, header in enumerate(headers) if header == "year"),
+        LINE_CHART_DEFAULT_INDEXES["year"]
+    )
+    district_index = next(
+        (i for i, header in enumerate(headers) if header == "district"),
+        LINE_CHART_DEFAULT_INDEXES["district"]
+    )
     quarter_indexes = [
         next((i for i, header in enumerate(headers) if header == q.lower()), fallback)
-        for q, fallback in zip(QUARTERS, range(3, 7))
+        for q, fallback in zip(
+            LINE_CHART_QUARTERS,
+            range(
+                LINE_CHART_DEFAULT_INDEXES["quarter_start"],
+                LINE_CHART_DEFAULT_INDEXES["quarter_start"]
+                + len(LINE_CHART_QUARTERS)
+            )
+        )
     ]
 
     return district_index, year_index, quarter_indexes
@@ -120,15 +139,12 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
 
     # Access sheet safely
     try:
-        sheet = workbook["Leaders and community members_v"]
+        sheet = workbook[LEADERS_ENGAGED_SHEET]
     except KeyError:
         print("❌ Sheet not found.")
         return
 
-    metric_year_map = {
-        "Leading Micro Improvements": {},
-        "Participating in dialogues": {}
-    }
+    metric_year_map = {metric: {} for metric in LEADERS_ENGAGED_METRICS}
 
     # Iterate over rows
     for row in sheet.iter_rows(min_row=2, values_only=True):
@@ -136,11 +152,18 @@ def update_leaders_engaged_dual_axis_chart(excel_file):
             continue
 
         # Get relevant columns safely
-        state = row[0] if len(row) > 0 else None
-        district = row[1] if len(row) > 1 else None
-        metric = row[2] if len(row) > 2 else None
-        year = _normalize_year(row[3] if len(row) > 3 else None)
-        q_values = [row[i] if len(row) > i else None for i in range(4, 8)]
+        district_index = LINE_CHART_DEFAULT_INDEXES["district"]
+        metric_index = LINE_CHART_DEFAULT_INDEXES["metric"]
+        year_index = LINE_CHART_DEFAULT_INDEXES["leaders_year"]
+        quarter_start = LINE_CHART_DEFAULT_INDEXES["leaders_quarter_start"]
+
+        district = row[district_index] if len(row) > district_index else None
+        metric = row[metric_index] if len(row) > metric_index else None
+        year = _normalize_year(row[year_index] if len(row) > year_index else None)
+        q_values = [
+            row[i] if len(row) > i else None
+            for i in range(quarter_start, quarter_start + len(LINE_CHART_QUARTERS))
+        ]
 
         if district:
             continue
@@ -206,10 +229,13 @@ def update_voices_json_line_chart(excel_file):
 
     voices_chart_data = _extract_line_chart_data_from_sheet(
         workbook,
-        "Graph_VoiceTab_MI",
+        VOICE_MICRO_IMPROVEMENTS_SHEET,
         skip_district_rows=False
     )
-    dashboard_chart_data = _extract_line_chart_data_from_sheet(workbook, "Micro improvements progress")
+    dashboard_chart_data = _extract_line_chart_data_from_sheet(
+        workbook,
+        MICRO_IMPROVEMENTS_PROGRESS_SHEET
+    )
 
     if voices_chart_data is None or dashboard_chart_data is None:
         return
@@ -293,9 +319,12 @@ def extract_micro_improvements(excel_file):
 
     workbook = openpyxl.load_workbook(excel_file, data_only=True)
     try:
-        sheet = workbook["Micro improvements progress"]
+        sheet = workbook[MICRO_IMPROVEMENTS_PROGRESS_SHEET]
     except KeyError:
-        print("Error: Sheet 'Micro improvements progress' not found in the Excel file.")
+        print(
+            f"Error: Sheet '{MICRO_IMPROVEMENTS_PROGRESS_SHEET}' "
+            "not found in the Excel file."
+        )
         print(f"Available sheets: {workbook.sheetnames}")
         return
 
@@ -305,9 +334,10 @@ def extract_micro_improvements(excel_file):
 
     for row in sheet.iter_rows(min_row=2, max_col=7, values_only=True):
         print("function called inside", row)
-        district_name = row[1]
-        year = _normalize_year(row[2])
-        q_values = row[3:7]
+        district_name = row[LINE_CHART_DEFAULT_INDEXES["district"]]
+        year = _normalize_year(row[LINE_CHART_DEFAULT_INDEXES["year"]])
+        quarter_start = LINE_CHART_DEFAULT_INDEXES["quarter_start"]
+        q_values = row[quarter_start:quarter_start + len(LINE_CHART_QUARTERS)]
         print("data", year, *q_values)
 
         if district_name:
@@ -366,9 +396,12 @@ def extract_district_line_chart(excel_file):
 
         workbook = openpyxl.load_workbook(excel_file, data_only=True)
         try:
-            sheet = workbook["Micro improvements progress"]
+            sheet = workbook[MICRO_IMPROVEMENTS_PROGRESS_SHEET]
         except KeyError:
-            print("Error: Sheet 'Micro improvements progress' not found in the Excel file.")
+            print(
+                f"Error: Sheet '{MICRO_IMPROVEMENTS_PROGRESS_SHEET}' "
+                "not found in the Excel file."
+            )
             print(f"Available sheets: {workbook.sheetnames}")
             return
 
@@ -376,11 +409,26 @@ def extract_district_line_chart(excel_file):
 
         row_num = 2
         while True:
-            state_name = sheet.cell(row=row_num, column=1).value
-            district_name = sheet.cell(row=row_num, column=2).value
-            year = sheet.cell(row=row_num, column=3).value
+            state_name = sheet.cell(
+                row=row_num,
+                column=LINE_CHART_DEFAULT_INDEXES["state"] + 1
+            ).value
+            district_name = sheet.cell(
+                row=row_num,
+                column=LINE_CHART_DEFAULT_INDEXES["district"] + 1
+            ).value
+            year = sheet.cell(
+                row=row_num,
+                column=LINE_CHART_DEFAULT_INDEXES["year"] + 1
+            ).value
             q_values = [
-                sheet.cell(row=row_num, column=i).value for i in range(4, 8)
+                sheet.cell(row=row_num, column=i).value
+                for i in range(
+                    LINE_CHART_DEFAULT_INDEXES["quarter_start"] + 1,
+                    LINE_CHART_DEFAULT_INDEXES["quarter_start"]
+                    + len(LINE_CHART_QUARTERS)
+                    + 1
+                )
             ]
 
             if not state_name and not district_name:
@@ -483,9 +531,12 @@ def extract_state_line_chart(excel_file):
 
         workbook = openpyxl.load_workbook(excel_file, data_only=True)
         try:
-            sheet = workbook["Micro improvements progress"]
+            sheet = workbook[MICRO_IMPROVEMENTS_PROGRESS_SHEET]
         except KeyError:
-            print("Error: Sheet 'Micro improvements progress' not found in the Excel file.")
+            print(
+                f"Error: Sheet '{MICRO_IMPROVEMENTS_PROGRESS_SHEET}' "
+                "not found in the Excel file."
+            )
             print(f"Available sheets: {workbook.sheetnames}")
             return
 
@@ -493,11 +544,26 @@ def extract_state_line_chart(excel_file):
 
         row_num = 2
         while True:
-            state_name = sheet.cell(row=row_num, column=1).value
-            district_name = sheet.cell(row=row_num, column=2).value
-            year = sheet.cell(row=row_num, column=3).value
+            state_name = sheet.cell(
+                row=row_num,
+                column=LINE_CHART_DEFAULT_INDEXES["state"] + 1
+            ).value
+            district_name = sheet.cell(
+                row=row_num,
+                column=LINE_CHART_DEFAULT_INDEXES["district"] + 1
+            ).value
+            year = sheet.cell(
+                row=row_num,
+                column=LINE_CHART_DEFAULT_INDEXES["year"] + 1
+            ).value
             q_values = [
-                sheet.cell(row=row_num, column=i).value for i in range(4, 8)
+                sheet.cell(row=row_num, column=i).value
+                for i in range(
+                    LINE_CHART_DEFAULT_INDEXES["quarter_start"] + 1,
+                    LINE_CHART_DEFAULT_INDEXES["quarter_start"]
+                    + len(LINE_CHART_QUARTERS)
+                    + 1
+                )
             ]
 
             if not state_name:
