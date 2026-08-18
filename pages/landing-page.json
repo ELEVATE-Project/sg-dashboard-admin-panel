@@ -8,7 +8,7 @@
       {
         "header": "",
         "subHeader": "",
-        "description": "India has one of the world's largest education systems with 1 million public schools. Through the leadership of government, civil society, and market actors, Indian public schools are steadily improving. This dashboard shows how indian public education system is improving."
+        "description": "India has one of the world's largest education systems with 1 million public schools. Through the leadership of government, civil society, and market actors, Indian public schools are steadily improving. This dashboard shows how Indian public education system is improving."
       }
     ],
     "styles": {
@@ -44,22 +44,22 @@
     "indicators": [
       {
         "label": "Micro Improvements initiated\n\n",
-        "value": 1561611,
+        "value": 1665868,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/micro_improvements_initiated.svg"
       },
       {
         "label": "Leaders driving \nimprovements\n",
-        "value": 392396,
+        "value": 393205,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/leaders_driving_improvements.svg"
       },
       {
         "label": "Schools driving improvements",
-        "value": 212899,
+        "value": 213539,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/schools_driving_improvements.svg"
       },
       {
         "label": "Community led improvements",
-        "value": 37956,
+        "value": 51148,
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/community_led_improvements.svg"
       },
       {
@@ -74,7 +74,7 @@
       },
       {
         "label": "Funds mobilised (INR)",
-        "value": "44 crore",
+        "value": "56.23 crore",
         "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/partners/funds_mobilised_inr.svg"
       }
     ],

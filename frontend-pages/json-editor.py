@@ -15,11 +15,11 @@ def load_gcp_access():
 
 
 def normalize_json_icon_urls(json_data):
-    gcp_access = load_gcp_access()
     bucket_name = os.environ.get("BUCKET_NAME")
     if not bucket_name:
         return json_data
 
+    gcp_access = load_gcp_access()
     return gcp_access.normalize_icon_urls(json_data, bucket_name)
 
 

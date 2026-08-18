@@ -29,6 +29,19 @@ logger = logging.getLogger(__name__)
 GCS_BUCKET_URL_RE = re.compile(r"https://storage\.googleapis\.com/[^/]+")
 
 
+def get_storage_client():
+    if PRIVATE_KEY:
+        logger.info("Initializing GCS client with service account credentials from environment variables")
+        credentials = service_account.Credentials.from_service_account_info(
+            service_account_info,
+            scopes=['https://www.googleapis.com/auth/cloud-platform']
+        )
+        return storage.Client(credentials=credentials, project=service_account_info["project_id"])
+
+    logger.info("Initializing GCS client with application default credentials")
+    return storage.Client(project=service_account_info["project_id"] or None)
+
+
 def get_public_bucket_url(bucket_name):
     configured_url = os.getenv("GCS_PUBLIC_BASE_URL") or os.getenv("BUCKET_URL")
     if configured_url:
@@ -77,14 +90,7 @@ def upload_file_to_gcs_and_get_directory(bucket_name, source_file_path, destinat
             logger.error(f"Source file not found: {source_file_path}")
             return None
 
-        # Initialize GCS client with service account credentials from environment variables
-        logger.info("Initializing GCS client with service account credentials from environment variables")
-        credentials = service_account.Credentials.from_service_account_info(
-            service_account_info,
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
-
-        storage_client = storage.Client(credentials=credentials, project=service_account_info["project_id"])
+        storage_client = get_storage_client()
         bucket = storage_client.bucket(bucket_name)
 
         logger.info(f"Uploading {source_file_path} to {bucket_name}/{destination_blob_name}")
@@ -121,16 +127,7 @@ def upload_file_to_gcs_and_get_directory(bucket_name, source_file_path, destinat
 
 
 def delete_file_from_gcs(bucket_name, blob_name):
-    credentials = service_account.Credentials.from_service_account_info(
-        service_account_info,
-        scopes=['https://www.googleapis.com/auth/cloud-platform']
-    )
-
-    storage_client = storage.Client(
-        credentials=credentials,
-        project=service_account_info["project_id"]
-    )
-
+    storage_client = get_storage_client()
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
 
@@ -139,16 +136,7 @@ def delete_file_from_gcs(bucket_name, blob_name):
 
 def delete_all_community_pie_charts_json(bucket_name):
     try:
-        credentials = service_account.Credentials.from_service_account_info(
-            service_account_info,
-            scopes=['https://www.googleapis.com/auth/cloud-platform']
-        )
-
-        storage_client = storage.Client(
-            credentials=credentials,
-            project=service_account_info["project_id"]
-        )
-
+        storage_client = get_storage_client()
         bucket = storage_client.bucket(bucket_name)
 
         prefix = "sg-dashboard/districts/"
@@ -166,4 +154,3 @@ def delete_all_community_pie_charts_json(bucket_name):
     except Exception as e:
         logger.error(f"❌ Bulk delete failed: {str(e)}")
         return 0
-

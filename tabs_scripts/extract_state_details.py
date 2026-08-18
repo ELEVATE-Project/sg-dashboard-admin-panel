@@ -1,6 +1,7 @@
 import openpyxl
 import json
 import os
+import sys
 from collections import defaultdict
 from constants import PAGE_METADATA, TABS_METADATA
 import importlib.util
@@ -319,4 +320,13 @@ def update_district_view_indicators(excel_file):
         print(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
-    update_district_view_indicators()
+    if len(sys.argv) < 2:
+        print("Usage: python3 tabs_scripts/extract_state_details.py <excel_file>")
+        sys.exit(1)
+
+    excel_file = sys.argv[1]
+    if not os.path.exists(excel_file):
+        print(f"Excel file not found: {excel_file}")
+        sys.exit(1)
+
+    update_district_view_indicators(excel_file)
