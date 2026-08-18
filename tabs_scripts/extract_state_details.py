@@ -1,6 +1,7 @@
 import openpyxl
 import json
 import os
+import sys
 from collections import defaultdict
 from constants import PAGE_METADATA, TABS_METADATA
 import importlib.util
@@ -183,10 +184,11 @@ def update_district_view_indicators(excel_file):
                 })
 
             else:
-                state_collectors[state_code]["map_details"].append({
-                    "code": indicator,
-                    "value": processed_value
-                })
+                if processed_value != 0:
+                    state_collectors[state_code]["map_details"].append({
+                        "code": indicator,
+                        "value": processed_value
+                    })
 
             # --- Existing district-view-indicators.json aggregation ---
             if state_code not in states_data:
@@ -206,7 +208,7 @@ def update_district_view_indicators(excel_file):
                 states_mission_data[state_code]["district_led_missions"] = processed_value
 
             excluded_codes = ["categories", "state led missions", "district led missions", "community led missions"]
-            if code_lower not in excluded_codes:
+            if code_lower not in excluded_codes and processed_value != 0:
                 states_data[state_code]["details"].append({
                     "value": processed_value,
                     "code": indicator
@@ -318,4 +320,13 @@ def update_district_view_indicators(excel_file):
         print(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
-    update_district_view_indicators()
+    if len(sys.argv) < 2:
+        print("Usage: python3 tabs_scripts/extract_state_details.py <excel_file>")
+        sys.exit(1)
+
+    excel_file = sys.argv[1]
+    if not os.path.exists(excel_file):
+        print(f"Excel file not found: {excel_file}")
+        sys.exit(1)
+
+    update_district_view_indicators(excel_file)

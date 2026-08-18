@@ -31,9 +31,12 @@ TABS_METADATA = {
         "Name of the Program",
         "About the Program/ Objective",
         "Impact of the program",
+        "Learn how Micro improvements are contributing to mega impact  ( Impact achieved)",
+        "Download to read more",
         "Stakeholders doing the program",
         "Pictures from the program",
         "MI inititated from the program ( Total no. of MI started+inprogress+submitted OR if done via google form then no. of responses submitted)",
+        "Leaders Driving Improvements",
         "Status of the program",
         "Name of the Partner leading the program",
         "Report Link"
@@ -49,14 +52,123 @@ TABS_METADATA = {
 ALLOWED_TABS = [
     "Data on homepage", "Dashboard first page", "Goals", "States details",
     "District Details", "Programs", "Micro improvements progress",
-    "Partners", "Network Map", "Testimonials", "Images/icons", "Voices Tab Big Numbers"
+    "Graph_VoiceTab_MI", "Partners", "Network Map", "Testimonials",
+    "Images/icons", "Voices Tab Big Numbers"
 ]
 
 BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
 
+GCS_STORAGE_BASE_URL = "https://storage.googleapis.com"
+
+GCS_CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
+
 DRIVE_IMAGE_URL = "https://drive.google.com/uc?export=view&id="
 
 DRIVE_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id="
+
+TOTAL_ROW_LABEL = "total"
+
+COMMUNITY_STATE_COLUMN = "Name of the State"
+COMMUNITY_DISTRICT_COLUMN = "Name of the District"
+
+COMMUNITY_MAP_COLUMNS = [
+    "Community members participating in dialogues",
+    "Local challenges identified",
+    "Community leaders driving improvements",
+    "Local solutions identified",
+    "Local Solutions implemented",
+]
+
+COMMUNITY_PIE_COLUMNS = [
+    "Infrastructure and resources",
+    "School structure and practices",
+    "Leadership",
+    "Pedagogy",
+    "Assessment and Evaluation",
+    "Community Engagement",
+]
+
+COMMUNITY_PIE_DISPLAY_NAMES = {
+    "Infrastructure and resources": "Infrastructure and Resources",
+    "School structure and practices": "School Structure and Practices",
+    "Leadership": "Leadership",
+    "Pedagogy": "Pedagogy",
+    "Assessment and Evaluation": "Assessment and Evaluation",
+    "Community Engagement": "Community Engagement",
+}
+
+CHILDREN_ENROLLED = "Children enrolled"
+ATRISK_CHILDREN_REGULARISED = "At-risk of dropout children regularised in school"
+CHILDREN_GOT_AADHAAR = "Children who got Aadhaar"
+CHILDREN_GOT_BIRTH_CERTIFICATE = "Children who got Birth Certificate"
+DISTRICTS_ACTIVATED = "Districts activated"
+
+ENROLLMENT_COLUMNS = {
+    "state": 1,
+    "district": 2,
+    "children_total": 6,
+    "atrisk_total": 10,
+}
+
+DOCUMENTATION_COLUMNS = {
+    "state": 0,
+    "district": 1,
+    "aadhaar": 2,
+    "birth_certificate": 3,
+}
+
+COMMUNITY_COUNTRY_VIEW_CODE_ORDER = (
+    COMMUNITY_MAP_COLUMNS
+    + [
+        DISTRICTS_ACTIVATED,
+        CHILDREN_ENROLLED,
+        ATRISK_CHILDREN_REGULARISED,
+        CHILDREN_GOT_AADHAAR,
+        CHILDREN_GOT_BIRTH_CERTIFICATE,
+    ]
+)
+
+COMMUNITY_DETAILS_REQUIRED_COLUMNS = [
+    COMMUNITY_STATE_COLUMN,
+    COMMUNITY_DISTRICT_COLUMN,
+    *COMMUNITY_MAP_COLUMNS,
+    "Community Engagement",
+    "Infrastructure and resources",
+    "School structure and practices",
+    "Leadership",
+    "Pedagogy",
+    "Assessment and Evaluation",
+    "Districts initiated",
+]
+
+COMMUNITY_DISTRICT_METRICS = [
+    (CHILDREN_ENROLLED, 6),
+    (ATRISK_CHILDREN_REGULARISED, 7),
+    (CHILDREN_GOT_AADHAAR, 8),
+    (CHILDREN_GOT_BIRTH_CERTIFICATE, 9),
+]
+
+LINE_CHART_QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
+
+LINE_CHART_DEFAULT_INDEXES = {
+    "state": 0,
+    "district": 1,
+    "metric": 2,
+    "year": 2,
+    "leaders_year": 3,
+    "quarter_start": 3,
+    "leaders_quarter_start": 4,
+}
+
+LEADERS_ENGAGED_SHEET = "Leaders and community members_v"
+VOICE_MICRO_IMPROVEMENTS_SHEET = "Graph_VoiceTab_MI"
+MICRO_IMPROVEMENTS_PROGRESS_SHEET = "Micro improvements progress"
+LEADING_MICRO_IMPROVEMENTS = "Leading Micro Improvements"
+PARTICIPATING_IN_DIALOGUES = "Participating in dialogues"
+LEADERS_ENGAGED_METRICS = [
+    LEADING_MICRO_IMPROVEMENTS,
+    PARTICIPATING_IN_DIALOGUES,
+]
 
 ANIMATIONS_REQUIRED_COLUMNS = ['challenge_id', 'challenge_user_role', 'challenge_district', 'challenge_state', 'challenge', 'add_to_frontend', 'solution_id', 'solutions', 'solution_user_role', 'solution_district', 'solution_state']
 
