@@ -16,6 +16,7 @@ from tabs_scripts.programs import generate_program_reports
 from tabs_scripts.extract_district_details import extract_district_details
 from tabs_scripts.extract_community_details import extract_community_details , delete_district_community_pie_charts
 from tabs_scripts.upload_images_from_excel import upload_images_from_excel
+from tabs_scripts.upload_excel_to_gcs import upload_excel_to_gcs
 from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
 
 from constants import ALLOWED_TABS as allowed_tabs
@@ -129,6 +130,23 @@ if uploaded_file is not None:
 
         # ✅ Handle XLSX preview and tab-wise uploads
         elif file_type == 'xlsx':
+            excel_upload_key = (
+                uploaded_file.name,
+                uploaded_file.size,
+                getattr(uploaded_file, "file_id", None)
+            )
+            if st.session_state.get("uploaded_excel_gcs_key") != excel_upload_key:
+                uploaded_excel_details = upload_excel_to_gcs(uploaded_file)
+                st.session_state["uploaded_excel_gcs_key"] = excel_upload_key
+                st.session_state["uploaded_excel_gcs_path"] = (
+                    uploaded_excel_details["gcs_path"]
+                    if uploaded_excel_details
+                    else None
+                )
+
+            if st.session_state.get("uploaded_excel_gcs_path"):
+                st.info(f"📦 Source Excel stored at {st.session_state['uploaded_excel_gcs_path']}")
+
             excel_data = pd.read_excel(uploaded_file, sheet_name=None)
             sheet_names = list(excel_data.keys())
 

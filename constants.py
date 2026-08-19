@@ -62,6 +62,8 @@ GCS_STORAGE_BASE_URL = "https://storage.googleapis.com"
 
 GCS_CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
 
+GCS_EXCEL_UPLOAD_PREFIX = "sg-dashboard/source-excels"
+
 DRIVE_IMAGE_URL = "https://drive.google.com/uc?export=view&id="
 
 DRIVE_DOWNLOAD_URL = "https://drive.google.com/uc?export=download&id="
