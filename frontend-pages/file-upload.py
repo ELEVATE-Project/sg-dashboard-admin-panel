@@ -17,6 +17,7 @@ from tabs_scripts.extract_district_details import extract_district_details
 from tabs_scripts.extract_community_details import extract_community_details , delete_district_community_pie_charts
 from tabs_scripts.upload_images_from_excel import upload_images_from_excel
 from tabs_scripts.upload_excel_to_gcs import upload_excel_to_gcs
+from tabs_scripts.outcomes_model_from_excel import generate_outcomes_model_json
 from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
 
 from constants import ALLOWED_TABS as allowed_tabs
@@ -48,7 +49,8 @@ upload_actions = {
     "Network Map": get_network_map_data,
     "Testimonials": testimonials,
     "Imagesicons": upload_images_from_excel,
-    "Voices Tab Big Numbers": voices_tab_big_numbers
+    "Voices Tab Big Numbers": voices_tab_big_numbers,
+    "Content Requirements": generate_outcomes_model_json
 }
 
 # ✅ Create a mapping of normalized names → clean display names
@@ -184,8 +186,11 @@ if uploaded_file is not None:
                                                 break
 
                                         if upload_function:
-                                            upload_function(uploaded_file)
+                                            result = upload_function(uploaded_file)
                                             status.update(label=f"✅ `{display_name}` uploaded successfully!", state="complete")
+                                            if normalize_name(display_name) == normalize_name("Content Requirements") and result:
+                                                st.success(f"Generated JSON: {result['output_file']}")
+                                                st.json(result["data"])
                                         else:
                                             status.update(label=f"⚠️ No function mapped for `{display_name}`", state="error")
                                 except Exception as e:
@@ -209,13 +214,14 @@ if uploaded_file is not None:
                     extract_district_details(uploaded_file)
                     pie_chart(uploaded_file)
                     testimonials(uploaded_file)
-                    pie_chart_community_led(uploaded_file)   #commenting this line as per phase enhancement 1
+                    # pie_chart_community_led(uploaded_file)   #commenting this line as per phase enhancement 1
                     community_led_programs_sum_with_codes(uploaded_file)
                     generate_program_reports(uploaded_file)
                     extract_community_details(uploaded_file)
                     extract_micro_improvements(uploaded_file)
                     upload_images_from_excel(uploaded_file)
                     voices_tab_big_numbers(uploaded_file)
+                    generate_outcomes_model_json(uploaded_file)
                     update_voices_json_line_chart(uploaded_file)
                     update_leaders_engaged_dual_axis_chart(uploaded_file)
                     goals(uploaded_file)

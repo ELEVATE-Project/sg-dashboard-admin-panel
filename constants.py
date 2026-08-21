@@ -53,7 +53,7 @@ ALLOWED_TABS = [
     "Data on homepage", "Dashboard first page", "Goals", "States details",
     "District Details", "Programs", "Micro improvements progress",
     "Graph_VoiceTab_MI", "Partners", "Network Map", "Testimonials",
-    "Images/icons", "Voices Tab Big Numbers"
+    "Images/icons", "Voices Tab Big Numbers", "Content Requirements"
 ]
 
 BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
