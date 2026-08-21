@@ -18,6 +18,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 OUTPUT_FILE = os.path.join(PROJECT_ROOT, "pages", "outcomes-model-config.json")
 DEFAULT_SHEET_NAME = "Content Requirements"
+CONTENT_START_ROW = 60
 
 LAYER_ACTIONS = {
     "learner": "students",
@@ -494,8 +495,8 @@ def apply_layer_definition(layer, content):
     if not lines:
         return
 
-    if layer.get("key") == "network" and normalize_text(lines[0]) == "voicesfromtheground":
-        print("⚠️ Skipping network narrative row mapped from Voices from the Ground content.")
+    if layer.get("key") == "network":
+        print("⚠️ Keeping default network narrative copy.")
         return
 
     layer["heading"] = lines[0]
@@ -535,7 +536,7 @@ def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, outp
         print(f"⚠️ {e}. Skipping outcomes model JSON generation.")
         return None
 
-    for row in sheet.iter_rows(min_row=2, values_only=True):
+    for row in sheet.iter_rows(min_row=CONTENT_START_ROW, values_only=True):
         action = row[1] if len(row) > 1 else None
         section = row[2] if len(row) > 2 else None
         content = row[3] if len(row) > 3 else None
