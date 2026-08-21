@@ -53,7 +53,7 @@ ALLOWED_TABS = [
     "Data on homepage", "Dashboard first page", "Goals", "States details",
     "District Details", "Programs", "Micro improvements progress",
     "Graph_VoiceTab_MI", "Partners", "Network Map", "Testimonials",
-    "Images/icons", "Voices Tab Big Numbers"
+    "Images/icons", "Voices Tab Big Numbers", "Content Requirements"
 ]
 
 BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
@@ -61,6 +61,8 @@ BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"
 GCS_STORAGE_BASE_URL = "https://storage.googleapis.com"
 
 GCS_CLOUD_PLATFORM_SCOPE = "https://www.googleapis.com/auth/cloud-platform"
+
+GCS_EXCEL_UPLOAD_PREFIX = "sg-dashboard/source-excels"
 
 DRIVE_IMAGE_URL = "https://drive.google.com/uc?export=view&id="
 

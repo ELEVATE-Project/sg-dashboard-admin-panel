@@ -79,7 +79,14 @@ with col2:
 # =========================
 # 🗂️ TWO MAIN TABS
 # =========================
-tabs = st.tabs(["📁 File Upload Dashboard", "🧩 JSON Editor Section", "Upload image from local device","Handle all images", "Backend Data Uploader"])
+tabs = st.tabs([
+    "📁 File Upload Dashboard",
+    "🧩 JSON Editor Section",
+    "Upload image from local device",
+    "Handle all images",
+    "Source Excels",
+    "Backend Data Uploader"
+])
 
 
 # =========================
@@ -132,11 +139,17 @@ with tabs[3]:
     st.caption("Upload svg images and get url of gcs")
     run_page("frontend-pages/handle-all-images.py")
 
-# =========================
-# TAB 4 → Backend Data Uploader
-# =========================
 
 with tabs[4]:
+    st.markdown("### 📦 Source Excels")
+    st.caption("View uploaded Excel source files and delete old ones.")
+    run_page("frontend-pages/source-excels.py")
+
+# =========================
+# TAB 6 → Backend Data Uploader
+# =========================
+
+with tabs[5]:
     st.markdown("### 📤 Upload Your Backend CSV File")
     
     col1, col2 = st.columns(2)
