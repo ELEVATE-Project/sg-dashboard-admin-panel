@@ -455,7 +455,7 @@ def resolve_asset_urls(value, base_url=None):
         return [resolve_asset_urls(item, base_url) for item in value]
 
     if isinstance(value, str) and value.startswith("assets/") and base_url:
-        return f"{base_url}/{value}"
+        return f"{base_url}/{os.path.basename(value)}"
 
     return value
 
