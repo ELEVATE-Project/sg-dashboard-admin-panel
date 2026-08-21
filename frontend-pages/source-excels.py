@@ -60,10 +60,29 @@ for item in excel_uploads:
             st.error(f"Download failed: {e}")
 
     with col_delete:
+        confirm_key = f"confirm_delete_excel_{item['blob_name']}"
         if st.button("Delete", key=f"delete_excel_{item['blob_name']}"):
-            try:
-                delete_uploaded_excel(item["blob_name"])
-                st.success(f"Deleted {item['file_name']}")
+            st.session_state[confirm_key] = True
+
+        if st.session_state.get(confirm_key):
+            st.warning(f"Delete {item['file_name']}?")
+            confirm_col, cancel_col = st.columns(2)
+
+            with confirm_col:
+                confirm_delete = st.button("Confirm", key=f"confirm_btn_{item['blob_name']}")
+
+            with cancel_col:
+                cancel_delete = st.button("Cancel", key=f"cancel_btn_{item['blob_name']}")
+
+            if cancel_delete:
+                st.session_state[confirm_key] = False
                 rerun_app()
-            except Exception as e:
-                st.error(f"❌ Error deleting {item['file_name']}: {e}")
+
+            if confirm_delete:
+                st.session_state[confirm_key] = False
+                try:
+                    delete_uploaded_excel(item["blob_name"])
+                    st.success(f"Deleted {item['file_name']}")
+                    rerun_app()
+                except Exception as e:
+                    st.error(f"❌ Error deleting {item['file_name']}: {e}")

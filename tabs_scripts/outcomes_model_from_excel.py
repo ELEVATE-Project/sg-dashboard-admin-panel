@@ -8,7 +8,9 @@ import re
 import openpyxl
 
 
-OUTPUT_FILE = os.path.join("pages", "outcomes-model-config.json")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+OUTPUT_FILE = os.path.join(PROJECT_ROOT, "pages", "outcomes-model-config.json")
 DEFAULT_SHEET_NAME = "Content Requirements"
 
 LAYER_ACTIONS = {
@@ -167,7 +169,7 @@ OUTCOMES_MODEL_TEMPLATE = {
             "subheading": "",
             "body": (
                 "Schools and anganwadi centres - where teaching happens and children spend "
-                "most of their day. (placeholder definition)"
+                "most of their day."
             ),
             "listItems": [],
         },
@@ -213,7 +215,7 @@ OUTCOMES_MODEL_TEMPLATE = {
             "subheading": "",
             "body": (
                 "Families and local networks that support and demand good education for "
-                "their children. (placeholder definition)"
+                "their children."
             ),
             "listItems": [],
         },
@@ -256,8 +258,7 @@ OUTCOMES_MODEL_TEMPLATE = {
             "imgPath": "",
             "eyebrow": "Society",
             "body": (
-                "The broader social norms and structures that surround the community. "
-                "(placeholder definition)"
+                "The broader social norms and structures that surround the community."
             ),
             "frameworkNote": "Framework being defined.",
             "cta": {
@@ -308,10 +309,11 @@ OUTCOMES_MODEL_TEMPLATE = {
             "panelType": "list",
             "imgPath": "",
             "eyebrow": "System Institutions",
-            "subheading": "Placeholder Header",
+            "heading": "System Institutions",
+            "subheading": "Strengthening public education systems",
             "body": (
                 "The governance, policy and institutions that enable and resource education. "
-                "(placeholder definition)"
+                "These institutions create the conditions for improvement at scale."
             ),
             "listItems": [
                 {
@@ -392,10 +394,10 @@ OUTCOMES_MODEL_TEMPLATE = {
             "panelType": "story",
             "eyebrow": "Network",
             "heading": "Network",
-            "subheading": "Network Placeholder",
+            "subheading": "Partners and collaborators",
             "body": (
                 "The wider web of actors and movements connecting everything. "
-                "(placeholder definition)"
+                "This layer reflects the relationships that help ideas, resources and learning move across the ecosystem."
             ),
             "frameworkNote": "Framework being defined.",
             "cta": {
@@ -417,6 +419,10 @@ def normalize_text(value):
 
 def split_content(value):
     return [line.strip() for line in str(value or "").splitlines() if line.strip()]
+
+
+def strip_list_marker(value):
+    return re.sub(r"^[-•]\s*", "", value).strip()
 
 
 def get_layer_from_action(action):
@@ -450,8 +456,12 @@ def build_list_items(layer_key, content):
 
 
 def apply_layer_definition(layer, content):
-    lines = split_content(content)
+    lines = [strip_list_marker(line) for line in split_content(content)]
     if not lines:
+        return
+
+    if layer.get("key") == "network" and normalize_text(lines[0]) == "voicesfromtheground":
+        print("⚠️ Skipping network narrative row mapped from Voices from the Ground content.")
         return
 
     layer["heading"] = lines[0]
@@ -459,6 +469,12 @@ def apply_layer_definition(layer, content):
         layer["subheading"] = lines[1]
     if len(lines) > 2:
         layer["body"] = " ".join(lines[2:])
+
+
+def resolve_output_file(output_file):
+    if os.path.isabs(output_file):
+        return output_file
+    return os.path.join(PROJECT_ROOT, output_file)
 
 
 def get_sheet(workbook, sheet_name):
@@ -474,11 +490,16 @@ def get_sheet(workbook, sheet_name):
 
 
 def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, output_file=OUTPUT_FILE):
+    output_file = resolve_output_file(output_file)
     config = copy.deepcopy(OUTCOMES_MODEL_TEMPLATE)
     layers_by_key = {layer["key"]: layer for layer in config["layers"]}
 
     workbook = openpyxl.load_workbook(excel_file, data_only=True)
-    sheet = get_sheet(workbook, sheet_name)
+    try:
+        sheet = get_sheet(workbook, sheet_name)
+    except KeyError as e:
+        print(f"⚠️ {e}. Skipping outcomes model JSON generation.")
+        return None
 
     for row in sheet.iter_rows(min_row=2, values_only=True):
         action = row[1] if len(row) > 1 else None
@@ -497,25 +518,31 @@ def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, outp
         else:
             apply_layer_definition(layer, content)
 
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as json_file:
         json.dump(config, json_file, indent=2, ensure_ascii=False)
 
     print(f"✅ Outcomes model JSON generated: {output_file}")
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    folder_url = None
+    bucket_name = os.environ.get("BUCKET_NAME")
 
-    # Dynamically import gcp_access module and upload file
-    gcp_access_path = os.path.join(script_dir, "..", "cloud-scripts", "gcp_access.py")
-    spec = importlib.util.spec_from_file_location("gcp_access", gcp_access_path)
-    gcp_access = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(gcp_access)
+    try:
+        # Dynamically import gcp_access module and upload file
+        gcp_access_path = os.path.join(SCRIPT_DIR, "..", "cloud-scripts", "gcp_access.py")
+        spec = importlib.util.spec_from_file_location("gcp_access", gcp_access_path)
+        gcp_access = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gcp_access)
 
-    folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
-        bucket_name=os.environ.get("BUCKET_NAME"),
-        source_file_path=output_file,
-        destination_blob_name="sg-dashboard/outcomes-model-config.json",
-    )
+        folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+            bucket_name=bucket_name,
+            source_file_path=output_file,
+            destination_blob_name="sg-dashboard/outcomes-model-config.json",
+        )
+    except Exception as e:
+        print(f"❌ Failed to upload outcomes-model-config.json to GCS. Continuing: {e}")
 
     if folder_url:
         print(f"Successfully uploaded and got public folder URL: {folder_url}")
@@ -525,7 +552,11 @@ def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, outp
     return {
         "output_file": output_file,
         "data": config,
-        "gcs_path": f"gs://{os.environ.get('BUCKET_NAME')}/sg-dashboard/outcomes-model-config.json",
+        "gcs_path": (
+            f"gs://{bucket_name}/sg-dashboard/outcomes-model-config.json"
+            if bucket_name
+            else ""
+        ),
         "folder_url": folder_url,
     }
 

@@ -157,7 +157,7 @@
       "imgPath": "assets/icons/school-solid.svg",
       "heading": "Schools & Anganwadi Centres",
       "subheading": "Measures whether schools and Anganwadi centres are fostering quality learning through effective leadership, enabling learning environments, and strong teaching and learning practices.",
-      "body": "Schools and anganwadi centres - where teaching happens and children spend most of their day. (placeholder definition)",
+      "body": "Schools and anganwadi centres - where teaching happens and children spend most of their day.",
       "listItems": [
         {
           "letter": "E",
@@ -219,7 +219,7 @@
       "eyebrow": "Community",
       "heading": "Community",
       "subheading": "Measures whether communities are actively supporting education through leadership, participation, and positive perceptions of public schools.",
-      "body": "Families and local networks that support and demand good education for their children. (placeholder definition)",
+      "body": "Families and local networks that support and demand good education for their children.",
       "listItems": [
         {
           "letter": "P",
@@ -273,7 +273,7 @@
       "panelType": "story",
       "imgPath": "",
       "eyebrow": "Society",
-      "body": "The broader social norms and structures that surround the community. (placeholder definition)",
+      "body": "The broader social norms and structures that surround the community.",
       "frameworkNote": "Framework being defined.",
       "cta": {
         "label": "Explore Voices on the Ground",
@@ -323,8 +323,9 @@
       "panelType": "list",
       "imgPath": "",
       "eyebrow": "System Institutions",
-      "subheading": "Placeholder Header",
-      "body": "The governance, policy and institutions that enable and resource education. (placeholder definition)",
+      "heading": "System Institutions",
+      "subheading": "Strengthening public education systems",
+      "body": "The governance, policy and institutions that enable and resource education. These institutions create the conditions for improvement at scale.",
       "listItems": [
         {
           "letter": "B",
@@ -391,9 +392,9 @@
       "imgPath": "assets/icons/network-users.svg",
       "panelType": "story",
       "eyebrow": "Network",
-      "heading": "Voices from the ground",
-      "subheading": "- Strategic Partners",
-      "body": "- Collaborators",
+      "heading": "Network",
+      "subheading": "Partners and collaborators",
+      "body": "The wider web of actors and movements connecting everything. This layer reflects the relationships that help ideas, resources and learning move across the ecosystem.",
       "frameworkNote": "Framework being defined.",
       "cta": {
         "label": "Explore Network Health",

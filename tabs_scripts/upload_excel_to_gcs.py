@@ -46,32 +46,36 @@ def _format_blob_details(bucket_name, blob):
 
 
 def upload_excel_to_gcs(uploaded_file):
-    bucket_name, bucket = _get_bucket()
-    if not bucket:
-        print("❌ BUCKET_NAME not set. Skipping Excel source upload.")
+    try:
+        bucket_name, bucket = _get_bucket()
+        if not bucket:
+            print("❌ BUCKET_NAME not set. Skipping Excel source upload.")
+            return None
+
+        if not uploaded_file or not uploaded_file.name.lower().endswith(".xlsx"):
+            return None
+
+        current_position = uploaded_file.tell()
+        uploaded_file.seek(0)
+        file_bytes = uploaded_file.read()
+        uploaded_file.seek(current_position)
+
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        filename = f"{timestamp}_{_safe_filename(uploaded_file.name)}"
+        destination_blob_name = f"{GCS_EXCEL_UPLOAD_PREFIX}/{filename}"
+
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_string(
+            file_bytes,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        print(f"✅ Uploaded source Excel to gs://{bucket_name}/{destination_blob_name}")
+        blob.reload()
+        return _format_blob_details(bucket_name, blob)
+    except Exception as e:
+        print(f"❌ Failed to upload source Excel to GCS. Continuing without archive: {e}")
         return None
-
-    if not uploaded_file or not uploaded_file.name.lower().endswith(".xlsx"):
-        return None
-
-    current_position = uploaded_file.tell()
-    uploaded_file.seek(0)
-    file_bytes = uploaded_file.read()
-    uploaded_file.seek(current_position)
-
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    filename = f"{timestamp}_{_safe_filename(uploaded_file.name)}"
-    destination_blob_name = f"{GCS_EXCEL_UPLOAD_PREFIX}/{filename}"
-
-    blob = bucket.blob(destination_blob_name)
-    blob.upload_from_string(
-        file_bytes,
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-
-    print(f"✅ Uploaded source Excel to gs://{bucket_name}/{destination_blob_name}")
-    blob.reload()
-    return _format_blob_details(bucket_name, blob)
 
 
 def list_uploaded_excels():
