@@ -8,7 +8,7 @@ import re
 import openpyxl
 from dotenv import load_dotenv
 
-from constants import GCS_STORAGE_BASE_URL
+from constants import BUCKET_PREFIX_FOR_IMAGES, GCS_STORAGE_BASE_URL
 
 
 load_dotenv()
@@ -455,7 +455,7 @@ def resolve_asset_urls(value, base_url=None):
         return [resolve_asset_urls(item, base_url) for item in value]
 
     if isinstance(value, str) and value.startswith("assets/") and base_url:
-        return f"{base_url}/{os.path.basename(value)}"
+        return f"{base_url}/{BUCKET_PREFIX_FOR_IMAGES}{os.path.basename(value)}"
 
     return value
 
