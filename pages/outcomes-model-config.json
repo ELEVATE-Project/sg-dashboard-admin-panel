@@ -14,7 +14,7 @@
   "programChipFootnote": "* Click on any of the above tile to read more about it.",
   "defaultNarrativeBody": "Tap a layer to see what it means.",
   "defaultCtaLabel": "Know more",
-  "defaultPartnerImage": "assets/partners/default-partner.svg",
+  "defaultPartnerImage": "https://storage.googleapis.com/dev-sg-dashboard/assets/partners/default-partner.svg",
   "defaultCardLabelPrefix": "Card ",
   "ctaIcon": "north_east",
   "staticTexts": {
@@ -66,7 +66,7 @@
         "dataLayerAttr": "learner",
         "icon": {
           "type": "material",
-          "value": "assets/icons/learner.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/learner.svg",
           "color": "#ff9911",
           "width": 50,
           "height": 34
@@ -80,7 +80,7 @@
         }
       },
       "panelType": "list",
-      "imgPath": "assets/icons/student.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/student.svg",
       "heading": "Learner Outcomes",
       "subheading": "Measures whether children are experiencing improved learning outcomes through better access, learning, well-being, aspirations, and future readiness.",
       "body": "The learner at the centre - their learning, well-being and aspirations are what every layer works toward.",
@@ -140,7 +140,7 @@
         "labelForAttr": "school & anganwadi",
         "icon": {
           "type": "material",
-          "value": "assets/icons/school.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/school.svg",
           "color": "#5b6ee0",
           "width": 50,
           "height": 34
@@ -154,7 +154,7 @@
         }
       },
       "panelType": "list",
-      "imgPath": "assets/icons/school-solid.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/school-solid.svg",
       "heading": "Schools & Anganwadi Centres",
       "subheading": "Measures whether schools and Anganwadi centres are fostering quality learning through effective leadership, enabling learning environments, and strong teaching and learning practices.",
       "body": "Schools and anganwadi centres - where teaching happens and children spend most of their day.",
@@ -201,7 +201,7 @@
         "curvedLabelPath": "M219.82,209.38 A121,121 0 0 1 380.18,209.38",
         "icon": {
           "type": "material",
-          "value": "assets/icons/community.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/community.svg",
           "color": "#e0338a",
           "width": 50,
           "height": 34
@@ -215,7 +215,7 @@
         }
       },
       "panelType": "story",
-      "imgPath": "assets/icons/community-group.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/community-group.svg",
       "eyebrow": "Community",
       "heading": "Community",
       "subheading": "Measures whether communities are actively supporting education through leadership, participation, and positive perceptions of public schools.",
@@ -257,7 +257,7 @@
         "curvedLabelPath": "M233.70,127.29 A185,185 0 0 1 366.30,127.29",
         "icon": {
           "type": "material",
-          "value": "assets/icons/society.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/society.svg",
           "color": "#99459a",
           "width": 34,
           "height": 34
@@ -307,7 +307,7 @@
         "labelForAttr": "system institutions",
         "icon": {
           "type": "material",
-          "value": "assets/icons/system-institutions.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/system-institutions.svg",
           "color": "#562f91",
           "width": 34,
           "height": 34
@@ -376,7 +376,7 @@
         "isHitTarget": true,
         "icon": {
           "type": "material",
-          "value": "assets/icons/network.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/network.svg",
           "color": "#961c00",
           "width": 34,
           "height": 34
@@ -389,7 +389,7 @@
           "fontWeight": 600
         }
       },
-      "imgPath": "assets/icons/network-users.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/network-users.svg",
       "panelType": "story",
       "eyebrow": "Network",
       "heading": "Network",

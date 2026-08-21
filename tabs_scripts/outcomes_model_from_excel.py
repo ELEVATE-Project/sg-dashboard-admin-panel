@@ -6,6 +6,12 @@ import os
 import re
 
 import openpyxl
+from dotenv import load_dotenv
+
+from constants import GCS_STORAGE_BASE_URL
+
+
+load_dotenv()
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -425,6 +431,34 @@ def strip_list_marker(value):
     return re.sub(r"^[-•]\s*", "", value).strip()
 
 
+def get_public_asset_base_url():
+    configured_url = os.getenv("GCS_PUBLIC_BASE_URL") or os.getenv("BUCKET_URL")
+    if configured_url:
+        return configured_url.strip().strip('"').rstrip("/")
+
+    bucket_name = os.getenv("BUCKET_NAME")
+    if not bucket_name:
+        return ""
+
+    return f"{GCS_STORAGE_BASE_URL}/{bucket_name}"
+
+
+def resolve_asset_urls(value, base_url=None):
+    if base_url is None:
+        base_url = get_public_asset_base_url()
+
+    if isinstance(value, dict):
+        return {key: resolve_asset_urls(item, base_url) for key, item in value.items()}
+
+    if isinstance(value, list):
+        return [resolve_asset_urls(item, base_url) for item in value]
+
+    if isinstance(value, str) and value.startswith("assets/") and base_url:
+        return f"{base_url}/{value}"
+
+    return value
+
+
 def get_layer_from_action(action):
     normalized_action = normalize_text(action)
     for action_key, layer_key in LAYER_ACTIONS.items():
@@ -517,6 +551,8 @@ def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, outp
                 layer["listItems"] = list_items
         else:
             apply_layer_definition(layer, content)
+
+    config = resolve_asset_urls(config)
 
     output_dir = os.path.dirname(output_file)
     if output_dir:
