@@ -8,6 +8,7 @@ PAGE_METADATA = {
     "DASHBOARD_FIRST_PAGE":"Dashboard first page",
     "TESTIMONIALS":"Testimonials",
     "PROGRAMS":"Programs",
+    "IMPACT_PROGRAMS": "Impact_Programs",
     "COMMUNITY_LED_PROGRAMS":"Community Led Programs",
     "DISTRICT_DETAILS": "District Details",
     "UPLOAD_IMAGES":"Imagesicons",
@@ -41,6 +42,16 @@ TABS_METADATA = {
         "Name of the Partner leading the program",
         "Report Link"
     ],
+    "IMPACT_PROGRAMS": [
+        "State Name",
+        "District Name",
+        "Program Type",
+        "Name of the Program",
+        "Impact Layer",
+        "Framework Dimension / Change",
+        "Impact Explanation / Points",
+        "Evidence Link",
+    ],
     "COMMUNITY_LEAD_PROGRAMS":["Name of the State ","Name of the District","No. of community leaders engaged","Community led improvements","Challenges shared","Solutions shared","Infrastructure and resources","School structure and practices","Leadership"," Pedagogy","Assessment and Evaluation","Community Engagement","Districts initiated"],
     "DISTRICT_DETAILS": ["State Name", "District Name", "Indicator", "Definition", "Data"],
     "UPLOAD_IMAGES":['Name of images','Link of images'],
@@ -53,7 +64,8 @@ ALLOWED_TABS = [
     "Data on homepage", "Dashboard first page", "Goals", "States details",
     "District Details", "Programs", "Micro improvements progress",
     "Graph_VoiceTab_MI", "Partners", "Network Map", "Testimonials",
-    "Images/icons", "Voices Tab Big Numbers", "Content Requirements"
+    "Images/icons", "Voices Tab Big Numbers", "Content Requirements",
+    "Impact_Programs"
 ]
 
 BUCKET_PREFIX_FOR_IMAGES= "sg-dashboard/assets/icons/"

@@ -39,6 +39,28 @@ def normalize(text):
     return re.sub(r'[^a-z0-9]', '', str(text).strip().lower())
 
 
+def clean_cell(value):
+    if value is None:
+        return ""
+    text = clean_text(value)
+    return "" if normalize(text) in {"", "none", "nan"} else text
+
+
+def clean_text(value):
+    lines = []
+    for line in str(value or "").splitlines():
+        line = re.sub(r"[ \t]+", " ", line).strip()
+        if line:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def clean_json_value(value):
+    if isinstance(value, str):
+        return clean_text(value)
+    return value
+
+
 def snake_case(text):
     """Convert string to snake_case for JSON keys."""
     text = re.sub(r'\s+', '_', text.strip())
@@ -225,6 +247,18 @@ def sort_programs_by_status(programs):
     return sorted(programs, key=status_priority)
 
 
+def get_state_code(state, state_code_map, fallback_state_code=None):
+    if state in state_code_map:
+        return str(state_code_map[state].get("id", "")).strip()
+
+    normalized_state = normalize(state)
+    for state_name, state_info in state_code_map.items():
+        if normalize(state_name) == normalized_state:
+            return str(state_info.get("id", "")).strip()
+
+    return fallback_state_code or ""
+
+
 def generate_program_reports(excel_file):
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -257,13 +291,17 @@ def generate_program_reports(excel_file):
         folder_image_cache = {}
 
         for row in sheet.iter_rows(min_row=2, values_only=True):
-            row_dict = {snake_case(col): row[header_index_map.get(col)] if header_index_map.get(col) is not None else '' 
-                        for col in TABS_METADATA["PROGRAMS"]}
+            row_dict = {
+                snake_case(col): clean_json_value(
+                    row[header_index_map.get(col)] if header_index_map.get(col) is not None else ''
+                )
+                for col in TABS_METADATA["PROGRAMS"]
+            }
 
-            state = str(row_dict.get('state_name', '')).strip()
-            district = str(row_dict.get('district_name', '')).strip()
-            program = str(row_dict.get('name_of_the_program', '')).strip()
-            program_type = str(row_dict.get('program_type', '')).strip().upper()
+            state = clean_cell(row_dict.get('state_name'))
+            district = clean_cell(row_dict.get('district_name'))
+            program = clean_cell(row_dict.get('name_of_the_program'))
+            program_type = clean_cell(row_dict.get('program_type')).upper()
 
             if not (state and program):
                 continue
@@ -272,7 +310,10 @@ def generate_program_reports(excel_file):
             state_code, district_code = resolve_codes(state, district if not is_state_level else state, district_lookup, district_index)
 
             # Use state id from JSON if available
-            state_code = state_code_map.get(state, {}).get("id", state_code or normalize(state))
+            state_code = get_state_code(state, state_code_map, state_code)
+            if not state_code:
+                print(f"⚠️ State code not found for '{state}'. Skipping program '{program}'.")
+                continue
 
             folder_url = row_dict.get('pictures_from_the_program', '')
             logo_urls = []

@@ -1,20 +1,20 @@
 {
   "layerHeading": "Impact Narrative",
-  "title": "What Shapes Student Outcomes",
-  "description": "A learner's education is shaped across multiple layers:",
-  "layerFootnote": "Click on any of the above Layer to read more about it.",
-  "chipFootnote": "Click on any of the above quick chip to read more about it.",
+  "title": "What Shapes Learner Outcomes?",
+  "description": "A learner’s outcomes are shaped across multiple, interconnected layers.",
+  "layerFootnote": "*Click any layer or tile to know more.",
+  "chipFootnote": "*Click any layer or tile to know more.",
   "defaultLayer": "students",
   "programChipLabel": "Learner Outcomes:",
-  "programColor": "#ff9911",
+  "programColor": "#D11F44",
   "frameworkHeading": "Impact Framework",
-  "frameworkTitle": "Measuring Impact Across Layers",
-  "frameworkLead": "The Shikshagraha movement measures impact across these interconnected layers, each a level through which micro-improvements contribute to systemic transformation.",
+  "frameworkTitle": "Our framework for measuring impact",
+  "frameworkLead": "Accordingly, the Shikshagraha movement defines and measures impact across four interconnected layers, each representing a critical level through which micro-improvements contribute to systemic transformation:",
   "evidenceHeading": "Evidences and Resources",
   "programChipFootnote": "* Click on any of the above tile to read more about it.",
   "defaultNarrativeBody": "Tap a layer to see what it means.",
   "defaultCtaLabel": "Know more",
-  "defaultPartnerImage": "https://storage.googleapis.com/dev-sg-dashboard/assets/partners/default-partner.svg",
+  "defaultPartnerImage": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/default-partner.svg",
   "defaultCardLabelPrefix": "Card ",
   "ctaIcon": "north_east",
   "staticTexts": {
@@ -51,8 +51,8 @@
       "chipLabel": "Learner",
       "diagramLabel": "Learner",
       "icon": "child_care",
-      "color": "#ff9911",
-      "fill": "#fff3e2",
+      "color": "#D11F44",
+      "fill": "#FDE8ED",
       "diagram": {
         "shape": "full",
         "innerRadius": 0,
@@ -66,8 +66,8 @@
         "dataLayerAttr": "learner",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/learner.svg",
-          "color": "#ff9911",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/learner.svg",
+          "color": "#D11F44",
           "width": 50,
           "height": 34
         },
@@ -80,7 +80,7 @@
         }
       },
       "panelType": "list",
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/student.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/student.svg",
       "heading": "Learner Outcomes",
       "subheading": "Measures whether children are experiencing improved learning outcomes through better access, learning, well-being, aspirations, and future readiness.",
       "body": "The learner at the centre - their learning, well-being and aspirations are what every layer works toward.",
@@ -100,13 +100,13 @@
         {
           "letter": "L",
           "icon": "menu_book",
-          "title": "Learning & Future readiness",
+          "title": "Learning & future readiness",
           "description": "Are children demonstrating improved academic and holistic learning outcomes along with future ready skills?"
         },
         {
           "letter": "A",
           "icon": "star",
-          "title": "Aspiration and Agency",
+          "title": "Aspiration and agency",
           "description": "Are children developing confidence, future aspirations, and awareness of opportunities?"
         },
         {
@@ -125,7 +125,7 @@
       "color": "#5b6ee0",
       "fill": "#eff0fc",
       "diagram": {
-        "shape": "top",
+        "shape": "bottom",
         "innerRadius": 58,
         "outerRadius": 152,
         "labelX": 300,
@@ -140,7 +140,7 @@
         "labelForAttr": "school & anganwadi",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/school.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/school.svg",
           "color": "#5b6ee0",
           "width": 50,
           "height": 34
@@ -154,7 +154,7 @@
         }
       },
       "panelType": "list",
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/school-solid.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/school-solid.svg",
       "heading": "Schools & Anganwadi Centres",
       "subheading": "Measures whether schools and Anganwadi centres are fostering quality learning through effective leadership, enabling learning environments, and strong teaching and learning practices.",
       "body": "Schools and anganwadi centres - where teaching happens and children spend most of their day.",
@@ -162,13 +162,13 @@
         {
           "letter": "E",
           "icon": "workspace_premium",
-          "title": "Enabling Learning Environment",
+          "title": "Enabling learning environment",
           "description": "Do schools and Anganwadi centres provide a safe, inclusive, and well-resourced environment that enables children to learn?"
         },
         {
           "letter": "E",
           "icon": "menu_book",
-          "title": "Effective Teaching & learning practices",
+          "title": "Effective teaching & learning practices",
           "description": "Are teaching and learning practices engaging, inclusive, and responsive to the diverse learning needs of children?"
         },
         {
@@ -187,7 +187,7 @@
       "color": "#e0338a",
       "fill": "#fcebf3",
       "diagram": {
-        "shape": "bottom",
+        "shape": "top",
         "innerRadius": 58,
         "outerRadius": 152,
         "labelX": 300,
@@ -201,7 +201,7 @@
         "curvedLabelPath": "M219.82,209.38 A121,121 0 0 1 380.18,209.38",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/community.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community.svg",
           "color": "#e0338a",
           "width": 50,
           "height": 34
@@ -215,7 +215,7 @@
         }
       },
       "panelType": "story",
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/community-group.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community-group.svg",
       "eyebrow": "Community",
       "heading": "Community",
       "subheading": "Measures whether communities are actively supporting education through leadership, participation, and positive perceptions of public schools.",
@@ -224,7 +224,7 @@
         {
           "letter": "P",
           "icon": "groups",
-          "title": "Parent & Community Participation and Perception",
+          "title": "Parent & community participation and perception",
           "description": "Are parents and communities actively engaged in supporting schools and children's learning?"
         },
         {
@@ -257,7 +257,7 @@
         "curvedLabelPath": "M233.70,127.29 A185,185 0 0 1 366.30,127.29",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/society.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/society.svg",
           "color": "#99459a",
           "width": 34,
           "height": 34
@@ -282,7 +282,17 @@
       "frameworkCta": {
         "label": "Explore Voices from the Ground",
         "link": "/voices-from-the-ground"
-      }
+      },
+      "heading": "Society",
+      "subheading": "Measures whether social norms and perceptions are shifting towards public schools.",
+      "listItems": [
+        {
+          "letter": "S",
+          "icon": "article",
+          "title": "Society",
+          "description": "Measures whether social norms and perceptions are shifting towards public schools."
+        }
+      ]
     },
     {
       "key": "system",
@@ -307,7 +317,7 @@
         "labelForAttr": "system institutions",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/system-institutions.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/system-institutions.svg",
           "color": "#562f91",
           "width": 34,
           "height": 34
@@ -376,7 +386,7 @@
         "isHitTarget": true,
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/network.svg",
+          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/network.svg",
           "color": "#961c00",
           "width": 34,
           "height": 34
@@ -389,11 +399,11 @@
           "fontWeight": 600
         }
       },
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/assets/icons/network-users.svg",
+      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/network-users.svg",
       "panelType": "story",
       "eyebrow": "Network",
       "heading": "Network",
-      "subheading": "Partners and collaborators",
+      "subheading": "Measures whether the network is growing, strengthening connections, enabling meaningful value exchange, and collectively contributing to education transformation.",
       "body": "The wider web of actors and movements connecting everything. This layer reflects the relationships that help ideas, resources and learning move across the ecosystem.",
       "frameworkNote": "Framework being defined.",
       "cta": {
@@ -403,7 +413,15 @@
       "frameworkCta": {
         "label": "Explore Network Health",
         "link": "/network-health"
-      }
+      },
+      "listItems": [
+        {
+          "letter": "N",
+          "icon": "article",
+          "title": "Network",
+          "description": "Measures whether the network is growing, strengthening connections, enabling meaningful value exchange, and collectively contributing to education transformation."
+        }
+      ]
     }
   ]
 }

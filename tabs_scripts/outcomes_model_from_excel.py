@@ -4,11 +4,12 @@ import importlib.util
 import json
 import os
 import re
+from urllib.parse import urlparse
 
 import openpyxl
 from dotenv import load_dotenv
 
-from constants import BUCKET_PREFIX_FOR_IMAGES, GCS_STORAGE_BASE_URL
+from constants import GCS_STORAGE_BASE_URL
 
 
 load_dotenv()
@@ -18,7 +19,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 OUTPUT_FILE = os.path.join(PROJECT_ROOT, "pages", "outcomes-model-config.json")
 DEFAULT_SHEET_NAME = "Content Requirements"
-CONTENT_START_ROW = 60
+CONTENT_START_ROW = 62
+OUTCOMES_ASSET_PREFIX = "sg-dashboard/assets/icons/"
 
 LAYER_ACTIONS = {
     "learner": "students",
@@ -44,11 +46,11 @@ OUTCOMES_MODEL_TEMPLATE = {
     "layerHeading": "Impact Narrative",
     "title": "What Shapes Student Outcomes",
     "description": "A learner's education is shaped across multiple layers:",
-    "layerFootnote": "Click on any of the above Layer to read more about it.",
-    "chipFootnote": "Click on any of the above quick chip to read more about it.",
+    "layerFootnote": "*Click any layer or tile to know more.",
+    "chipFootnote": "*Click any layer or tile to know more.",
     "defaultLayer": "students",
     "programChipLabel": "Learner Outcomes:",
-    "programColor": "#ff9911",
+    "programColor": "#D11F44",
     "frameworkHeading": "Impact Framework",
     "frameworkTitle": "Measuring Impact Across Layers",
     "frameworkLead": (
@@ -96,8 +98,8 @@ OUTCOMES_MODEL_TEMPLATE = {
             "chipLabel": "Learner",
             "diagramLabel": "Learner",
             "icon": "child_care",
-            "color": "#ff9911",
-            "fill": "#fff3e2",
+            "color": "#D11F44",
+            "fill": "#FDE8ED",
             "diagram": {
                 "shape": "full",
                 "innerRadius": 0,
@@ -112,7 +114,7 @@ OUTCOMES_MODEL_TEMPLATE = {
                 "icon": {
                     "type": "material",
                     "value": "assets/icons/learner.svg",
-                    "color": "#ff9911",
+                    "color": "#D11F44",
                     "width": 50,
                     "height": 34,
                 },
@@ -142,7 +144,7 @@ OUTCOMES_MODEL_TEMPLATE = {
             "color": "#5b6ee0",
             "fill": "#eff0fc",
             "diagram": {
-                "shape": "top",
+                "shape": "bottom",
                 "innerRadius": 58,
                 "outerRadius": 152,
                 "labelX": 300,
@@ -188,7 +190,7 @@ OUTCOMES_MODEL_TEMPLATE = {
             "color": "#e0338a",
             "fill": "#fcebf3",
             "diagram": {
-                "shape": "bottom",
+                "shape": "top",
                 "innerRadius": 58,
                 "outerRadius": 152,
                 "labelX": 300,
@@ -424,12 +426,28 @@ def normalize_text(value):
     return re.sub(r"[^a-z0-9]", "", str(value or "").strip().lower())
 
 
+def clean_display_text(value):
+    lines = []
+    for line in str(value or "").splitlines():
+        line = re.sub(r"[ \t]+", " ", line).strip()
+        if line:
+            lines.append(line)
+    return "\n".join(lines)
+
+
 def split_content(value):
-    return [line.strip() for line in str(value or "").splitlines() if line.strip()]
+    return [line for line in clean_display_text(value).splitlines() if line]
 
 
 def strip_list_marker(value):
     return re.sub(r"^[-•]\s*", "", value).strip()
+
+
+def ensure_leading_asterisk(value):
+    text = clean_display_text(value)
+    if not text:
+        return text
+    return text if text.startswith("*") else f"*{text}"
 
 
 def get_public_asset_base_url():
@@ -454,10 +472,32 @@ def resolve_asset_urls(value, base_url=None):
     if isinstance(value, list):
         return [resolve_asset_urls(item, base_url) for item in value]
 
-    if isinstance(value, str) and value.startswith("assets/") and base_url:
-        return f"{base_url}/{BUCKET_PREFIX_FOR_IMAGES}{os.path.basename(value)}"
+    if (
+        isinstance(value, str)
+        and base_url
+        and (
+            value.startswith("assets/")
+            or is_bare_gcs_asset_url(value)
+        )
+    ):
+        return f"{base_url}/{OUTCOMES_ASSET_PREFIX}{os.path.basename(value)}"
 
     return value
+
+
+def is_bare_gcs_asset_url(value):
+    parsed = urlparse(value)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    if parsed.netloc != "storage.googleapis.com":
+        return False
+
+    path_parts = [part for part in parsed.path.split("/") if part]
+    if len(path_parts) != 2:
+        return False
+
+    _, filename = path_parts
+    return bool(re.search(r"\.(svg|png|jpe?g|webp|gif)$", filename, re.IGNORECASE))
 
 
 def get_layer_from_action(action):
@@ -495,15 +535,45 @@ def apply_layer_definition(layer, content):
     if not lines:
         return
 
-    if layer.get("key") == "network":
-        print("⚠️ Keeping default network narrative copy.")
-        return
-
     layer["heading"] = lines[0]
     if len(lines) > 1:
         layer["subheading"] = lines[1]
     if len(lines) > 2:
         layer["body"] = " ".join(lines[2:])
+
+
+def apply_homepage_content(config, action, section, content):
+    if "homepage" != normalize_text(section):
+        return False
+
+    normalized_action = normalize_text(action)
+    content = clean_display_text(content)
+    if not content:
+        return False
+
+    if "belowthebignumbers" in normalized_action or "abovethediagram" in normalized_action:
+        config["title"] = content
+        return True
+
+    if "tagline" in normalized_action and "belowthetitle" in normalized_action:
+        config["description"] = content
+        return True
+
+    if "onscrolling" in normalized_action or "belowthetagline" in normalized_action:
+        config["frameworkTitle"] = content
+        return True
+
+    if "instructionfornavigation" in normalized_action:
+        content = ensure_leading_asterisk(content)
+        config["layerFootnote"] = content
+        config["chipFootnote"] = content
+        return True
+
+    if "descriptionbelowthetitle" in normalized_action:
+        config["frameworkLead"] = content
+        return True
+
+    return False
 
 
 def resolve_output_file(output_file):
@@ -540,6 +610,9 @@ def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, outp
         action = row[1] if len(row) > 1 else None
         section = row[2] if len(row) > 2 else None
         content = row[3] if len(row) > 3 else None
+
+        if apply_homepage_content(config, action, section, content):
+            continue
 
         layer_key = get_layer_from_action(action)
         if not layer_key or not content:
