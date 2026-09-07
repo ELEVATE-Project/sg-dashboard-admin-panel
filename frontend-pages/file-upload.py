@@ -19,6 +19,7 @@ from tabs_scripts.upload_images_from_excel import upload_images_from_excel
 from tabs_scripts.upload_excel_to_gcs import upload_excel_to_gcs
 from tabs_scripts.outcomes_model_from_excel import generate_outcomes_model_json
 from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
+from tabs_scripts.impact_programs import update_impact_program_frameworks
 
 from constants import ALLOWED_TABS as allowed_tabs
 
@@ -50,7 +51,8 @@ upload_actions = {
     "Testimonials": testimonials,
     "Imagesicons": upload_images_from_excel,
     "Voices Tab Big Numbers": voices_tab_big_numbers,
-    "Content Requirements": generate_outcomes_model_json
+    "Content Requirements": generate_outcomes_model_json,
+    "Impact_Programs": update_impact_program_frameworks
 }
 
 # ✅ Create a mapping of normalized names → clean display names
@@ -225,6 +227,7 @@ if uploaded_file is not None:
                     update_voices_json_line_chart(uploaded_file)
                     update_leaders_engaged_dual_axis_chart(uploaded_file)
                     goals(uploaded_file)
+                    update_impact_program_frameworks(uploaded_file)
                     status.update(label="✅ All files uploaded successfully!", state="complete")
             except Exception as e:
                 st.error(f"❌ Error during full upload: {e}")
