@@ -8,27 +8,43 @@
         "details": [
           {
             "code": "Community members participating in dialogues",
-            "value": 583273
+            "value": 1273039
           },
           {
             "code": "Local challenges identified",
-            "value": 50053
+            "value": 119024
           },
           {
             "code": "Community leaders driving improvements",
-            "value": 510
+            "value": 585
           },
           {
             "code": "Local solutions identified",
-            "value": 44170
+            "value": 107436
           },
           {
             "code": "Local Solutions implemented",
-            "value": 1034
+            "value": 3581
           },
           {
             "code": "Districts activated",
             "value": 14
+          },
+          {
+            "code": "Children enrolled",
+            "value": 813
+          },
+          {
+            "code": "At-risk of dropout children regularised in school",
+            "value": 901
+          },
+          {
+            "code": "Children who got Aadhaar",
+            "value": 482
+          },
+          {
+            "code": "Children who got Birth Certificate",
+            "value": 516
           }
         ]
       },
@@ -39,27 +55,58 @@
         "details": [
           {
             "code": "Community members participating in dialogues",
-            "value": 14795
+            "value": 42565
           },
           {
             "code": "Local challenges identified",
-            "value": 1306
+            "value": 4130
           },
           {
             "code": "Community leaders driving improvements",
-            "value": 20
+            "value": 205
           },
           {
             "code": "Local solutions identified",
-            "value": 1264
+            "value": 3543
           },
           {
             "code": "Local Solutions implemented",
-            "value": 900
+            "value": 2393
           },
           {
             "code": "Districts activated",
-            "value": 6
+            "value": 7
+          }
+        ]
+      },
+      "34": {
+        "id": "34",
+        "label": "Puducherry",
+        "type": "category_1",
+        "details": [
+          {
+            "code": "Community members participating in dialogues",
+            "value": 210
+          },
+          {
+            "code": "Local challenges identified",
+            "value": 20
+          },
+          {
+            "code": "Community leaders driving improvements",
+            "value": 10
+          },
+          {
+            "code": "Local solutions identified",
+            "value": 15
+          },
+          {
+            "code": "Local Solutions implemented",
+            "value": 30
+          },
+          {
+            "code": "Districts activated",
+            "value": 1
           }
         ]
       }
@@ -70,27 +117,43 @@
       "details": [
         {
           "code": "Community members participating in dialogues",
-          "value": 598068
+          "value": 1315814
         },
         {
           "code": "Local challenges identified",
-          "value": 51359
+          "value": 123174
         },
         {
           "code": "Community leaders driving improvements",
-          "value": 530
+          "value": 800
         },
         {
           "code": "Local solutions identified",
-          "value": 45434
+          "value": 110994
         },
         {
           "code": "Local Solutions implemented",
-          "value": 1934
+          "value": 6004
         },
         {
           "code": "Districts activated",
-          "value": 20
+          "value": 22
+        },
+        {
+          "code": "Children enrolled",
+          "value": 813
+        },
+        {
+          "code": "At-risk of dropout children regularised in school",
+          "value": 901
+        },
+        {
+          "code": "Children who got Aadhaar",
+          "value": 482
+        },
+        {
+          "code": "Children who got Birth Certificate",
+          "value": 516
         }
       ]
     },

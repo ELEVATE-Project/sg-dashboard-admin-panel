@@ -23,18 +23,25 @@ CONTENT_START_ROW = 62
 OUTCOMES_ASSET_PREFIX = "sg-dashboard/assets/icons/"
 
 LAYER_ACTIONS = {
-    "learner": "students",
+    "learner": "learner_outcomes",
     "schoolandaanganwadi": "schools",
     "schoolandanganwadi": "schools",
     "community": "community",
     "society": "society",
     "systeminstitution": "system",
     "systeminstitutions": "system",
+    "educationinstitution": "system",
+    "educationinstitutions": "system",
+    "educationinstitute": "system",
+    "educationinstitutes": "system",
+    "educationinsititution": "system",
+    "schoolanganwadi": "schools",
+    "schools": "schools",
     "network": "network",
 }
 
 DEFAULT_LIST_ICONS = {
-    "students": ["fact_check", "accessibility_new", "menu_book", "star", "favorite_border"],
+    "learner_outcomes": ["fact_check", "accessibility_new", "menu_book", "star", "favorite_border"],
     "schools": ["workspace_premium", "menu_book", "co_present"],
     "community": ["groups", "workspace_premium"],
     "system": ["account_balance_wallet", "rate_review", "emoji_objects", "hub"],
@@ -48,7 +55,7 @@ OUTCOMES_MODEL_TEMPLATE = {
     "description": "A learner's education is shaped across multiple layers:",
     "layerFootnote": "*Click any layer or tile to know more.",
     "chipFootnote": "*Click any layer or tile to know more.",
-    "defaultLayer": "students",
+    "defaultLayer": "learner_outcomes",
     "programChipLabel": "Learner Outcomes:",
     "programColor": "#D11F44",
     "frameworkHeading": "Impact Framework",
@@ -79,7 +86,7 @@ OUTCOMES_MODEL_TEMPLATE = {
         "school": "School and Anganwadi",
         "community": "Community",
         "society": "Society",
-        "system": "System Institutions",
+        "system": "Education Institutions",
         "network": "Network",
         "layerTiles": "Outcome layer tiles",
         "narrativeFilters": "Outcome narrative layer filters",
@@ -94,7 +101,7 @@ OUTCOMES_MODEL_TEMPLATE = {
     },
     "layers": [
         {
-            "key": "students",
+            "key": "learner_outcomes",
             "chipLabel": "Learner",
             "diagramLabel": "Learner",
             "icon": "child_care",
@@ -128,7 +135,7 @@ OUTCOMES_MODEL_TEMPLATE = {
             },
             "panelType": "list",
             "imgPath": "assets/icons/student.svg",
-            "heading": "Learners Outcomes",
+            "heading": "Learner Outcomes",
             "subheading": "",
             "body": (
                 "The learner at the centre - their learning, well-being and aspirations "
@@ -281,8 +288,8 @@ OUTCOMES_MODEL_TEMPLATE = {
         },
         {
             "key": "system",
-            "chipLabel": "System Institutions",
-            "diagramLabel": "System Institutions",
+            "chipLabel": "Education Institutions",
+            "diagramLabel": "Education Institutions",
             "icon": "article",
             "color": "#562f91",
             "fill": "#e9e4f1",
@@ -317,8 +324,8 @@ OUTCOMES_MODEL_TEMPLATE = {
             },
             "panelType": "list",
             "imgPath": "",
-            "eyebrow": "System Institutions",
-            "heading": "System Institutions",
+            "eyebrow": "Education Institutions",
+            "heading": "Education Institutions",
             "subheading": "Strengthening public education systems",
             "body": (
                 "The governance, policy and institutions that enable and resource education. "
@@ -501,9 +508,13 @@ def is_bare_gcs_asset_url(value):
 
 
 def get_layer_from_action(action):
-    normalized_action = normalize_text(action)
+    # Match the selected layer, excluding references to the section title such
+    # as "school ... under What shapes learner outcomes".
+    target = re.sub(r"^\s*(?:when\s+selected|clicking\s+on)\s+", "", str(action or ""), flags=re.I)
+    target = re.split(r"\s+(?:under|in)\s+", target, maxsplit=1, flags=re.I)[0]
+    normalized_action = normalize_text(target)
     for action_key, layer_key in LAYER_ACTIONS.items():
-        if action_key in normalized_action:
+        if normalized_action.startswith(action_key):
             return layer_key
     return None
 
@@ -536,10 +547,14 @@ def apply_layer_definition(layer, content):
         return
 
     layer["heading"] = lines[0]
-    if len(lines) > 1:
-        layer["subheading"] = lines[1]
-    if len(lines) > 2:
-        layer["body"] = " ".join(lines[2:])
+    if layer.get("key") == "system" and normalize_text(lines[0]) in {"systeminstitution", "systeminstitutions", "educationinstitute", "educationinstitutes"}:
+        layer["heading"] = "Education Institutions"
+    description = "\n".join(lines[1:])
+    layer["subheading"] = description
+    layer["impact_subheading"] = description
+    # These layers display frameworkNote before other framework fields.
+    if "frameworkNote" in layer:
+        layer["frameworkNote"] = description
 
 
 def apply_homepage_content(config, action, section, content):
@@ -594,17 +609,10 @@ def get_sheet(workbook, sheet_name):
     raise KeyError(f"Sheet not found: {sheet_name}")
 
 
-def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, output_file=OUTPUT_FILE):
-    output_file = resolve_output_file(output_file)
+def build_outcomes_model(sheet):
+    """Map spreadsheet copy separately from the diagram's static presentation."""
     config = copy.deepcopy(OUTCOMES_MODEL_TEMPLATE)
     layers_by_key = {layer["key"]: layer for layer in config["layers"]}
-
-    workbook = openpyxl.load_workbook(excel_file, data_only=True)
-    try:
-        sheet = get_sheet(workbook, sheet_name)
-    except KeyError as e:
-        print(f"⚠️ {e}. Skipping outcomes model JSON generation.")
-        return None
 
     for row in sheet.iter_rows(min_row=CONTENT_START_ROW, values_only=True):
         action = row[1] if len(row) > 1 else None
@@ -623,10 +631,31 @@ def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, outp
             list_items = build_list_items(layer_key, content)
             if list_items:
                 layer["listItems"] = list_items
+        elif normalize_text(section) == "homepage" and normalize_text(row[0]) == "description":
+            layer["learner_subheading"] = clean_display_text(content)
+            layer["body"] = clean_display_text(content)
         else:
             apply_layer_definition(layer, content)
 
-    config = resolve_asset_urls(config)
+    order = {key: index for index, key in enumerate(
+        ("learner_outcomes", "schools", "community", "system", "society", "network")
+    )}
+    config["layers"].sort(key=lambda layer: order[layer["key"]])
+    return resolve_asset_urls(config)
+
+
+def generate_outcomes_model_json(excel_file, sheet_name=DEFAULT_SHEET_NAME, output_file=OUTPUT_FILE):
+    output_file = resolve_output_file(output_file)
+    workbook = openpyxl.load_workbook(excel_file, data_only=True)
+    try:
+        try:
+            sheet = get_sheet(workbook, sheet_name)
+        except KeyError as e:
+            print(f"⚠️ {e}. Skipping outcomes model JSON generation.")
+            return None
+        config = build_outcomes_model(sheet)
+    finally:
+        workbook.close()
 
     output_dir = os.path.dirname(output_file)
     if output_dir:

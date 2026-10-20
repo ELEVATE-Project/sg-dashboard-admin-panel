@@ -45,7 +45,7 @@ def key_progress_indicators(excel_file):
         os.makedirs(images_dir, exist_ok=True)
 
         # Open the Excel file
-        workbook = openpyxl.load_workbook(excel_file, data_only=False)  # data_only=False to get formatted values
+        workbook = openpyxl.load_workbook(excel_file, data_only=True)
         try:
             sheet = workbook[PAGE_METADATA["HOME_PAGE"]]
         except KeyError:
@@ -72,6 +72,7 @@ def key_progress_indicators(excel_file):
 
                 raw_src = row[cleaned_headers.index(TABS_METADATA["HOME_PAGE"][3])].value or ''
                 logo_url = convert_drive_link_to_direct_url(raw_src)
+                final_src = logo_url
 
                 file_match = re.search(r"id=([a-zA-Z0-9_-]+)", logo_url)
                 if not file_match:
@@ -107,7 +108,7 @@ def key_progress_indicators(excel_file):
                 value_cell = row[cleaned_headers.index(TABS_METADATA["HOME_PAGE"][2])]
                 row_data = {
                     'label': raw_name or '',
-                    'value': value_cell.value or '',  # Start with raw value
+                    'value': value_cell.value if value_cell.value is not None else '',
                     'icon': final_src or ''
                 }
                 # For 'NAS Grade 3', get the formatted text (e.g., "59%")

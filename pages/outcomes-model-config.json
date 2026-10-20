@@ -4,7 +4,7 @@
   "description": "A learner’s outcomes are shaped across multiple, interconnected layers.",
   "layerFootnote": "*Click any layer or tile to know more.",
   "chipFootnote": "*Click any layer or tile to know more.",
-  "defaultLayer": "students",
+  "defaultLayer": "learner_outcomes",
   "programChipLabel": "Learner Outcomes:",
   "programColor": "#D11F44",
   "frameworkHeading": "Impact Framework",
@@ -14,7 +14,7 @@
   "programChipFootnote": "* Click on any of the above tile to read more about it.",
   "defaultNarrativeBody": "Tap a layer to see what it means.",
   "defaultCtaLabel": "Know more",
-  "defaultPartnerImage": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/default-partner.svg",
+  "defaultPartnerImage": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/default-partner.svg",
   "defaultCardLabelPrefix": "Card ",
   "ctaIcon": "north_east",
   "staticTexts": {
@@ -32,7 +32,7 @@
     "school": "School and Anganwadi",
     "community": "Community",
     "society": "Society",
-    "system": "System Institutions",
+    "system": "Education Institutions",
     "network": "Network",
     "layerTiles": "Outcome layer tiles",
     "narrativeFilters": "Outcome narrative layer filters",
@@ -47,7 +47,7 @@
   },
   "layers": [
     {
-      "key": "students",
+      "key": "learner_outcomes",
       "chipLabel": "Learner",
       "diagramLabel": "Learner",
       "icon": "child_care",
@@ -66,7 +66,7 @@
         "dataLayerAttr": "learner",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/learner.svg",
+          "value": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/learner.svg",
           "color": "#D11F44",
           "width": 50,
           "height": 34
@@ -80,10 +80,10 @@
         }
       },
       "panelType": "list",
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/student.svg",
+      "imgPath": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/student.svg",
       "heading": "Learner Outcomes",
       "subheading": "Measures whether children are experiencing improved learning outcomes through better access, learning, well-being, aspirations, and future readiness.",
-      "body": "The learner at the centre - their learning, well-being and aspirations are what every layer works toward.",
+      "body": "The learner is at the centre of change and actively shapes their own learning journey. Their participation, engagement, agency and time spent meaningfully involved in learning directly influence the outcomes they experience.",
       "listItems": [
         {
           "letter": "E",
@@ -100,13 +100,13 @@
         {
           "letter": "L",
           "icon": "menu_book",
-          "title": "Learning & future readiness",
+          "title": "Learning",
           "description": "Are children demonstrating improved academic and holistic learning outcomes along with future ready skills?"
         },
         {
           "letter": "A",
           "icon": "star",
-          "title": "Aspiration and agency",
+          "title": "Aspiration & agency",
           "description": "Are children developing confidence, future aspirations, and awareness of opportunities?"
         },
         {
@@ -115,7 +115,9 @@
           "title": "Well-being",
           "description": "Are children experiencing emotional, physical, and social well-being in school?"
         }
-      ]
+      ],
+      "learner_subheading": "The learner is at the centre of change and actively shapes their own learning journey. Their participation, engagement, agency and time spent meaningfully involved in learning directly influence the outcomes they experience.",
+      "impact_subheading": "Measures whether children are experiencing improved learning outcomes through better access, learning, well-being, aspirations, and future readiness."
     },
     {
       "key": "schools",
@@ -140,7 +142,7 @@
         "labelForAttr": "school & anganwadi",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/school.svg",
+          "value": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/school.svg",
           "color": "#5b6ee0",
           "width": 50,
           "height": 34
@@ -154,10 +156,10 @@
         }
       },
       "panelType": "list",
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/school-solid.svg",
+      "imgPath": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/school-solid.svg",
       "heading": "Schools & Anganwadi Centres",
       "subheading": "Measures whether schools and Anganwadi centres are fostering quality learning through effective leadership, enabling learning environments, and strong teaching and learning practices.",
-      "body": "Schools and anganwadi centres - where teaching happens and children spend most of their day.",
+      "body": "Schools and Anganwadi centres shape learner outcomes by creating the day-to-day conditions in which learner learn, participate and develop. The quality of leadership, teaching and learning practices, relationships, and learning environment determines whether learner’s needs are understood and supported and whether they have meaningful opportunities to learn and thrive.",
       "listItems": [
         {
           "letter": "E",
@@ -177,7 +179,9 @@
           "title": "Leadership",
           "description": "Are school and Anganwadi leaders driving continuous improvements?"
         }
-      ]
+      ],
+      "learner_subheading": "Schools and Anganwadi centres shape learner outcomes by creating the day-to-day conditions in which learner learn, participate and develop. The quality of leadership, teaching and learning practices, relationships, and learning environment determines whether learner’s needs are understood and supported and whether they have meaningful opportunities to learn and thrive.",
+      "impact_subheading": "Measures whether schools and Anganwadi centres are fostering quality learning through effective leadership, enabling learning environments, and strong teaching and learning practices."
     },
     {
       "key": "community",
@@ -201,7 +205,7 @@
         "curvedLabelPath": "M219.82,209.38 A121,121 0 0 1 380.18,209.38",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community.svg",
+          "value": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/community.svg",
           "color": "#e0338a",
           "width": 50,
           "height": 34
@@ -215,11 +219,11 @@
         }
       },
       "panelType": "story",
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community-group.svg",
+      "imgPath": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/community-group.svg",
       "eyebrow": "Community",
       "heading": "Community",
       "subheading": "Measures whether communities are actively supporting education through leadership, participation, and positive perceptions of public schools.",
-      "body": "Families and local networks that support and demand good education for their children.",
+      "body": "Communities act as a bridge between schools and learner: when parents and community actors are informed, engaged and invested in learner’s education, they strengthen support for learning at home and in the community, reinforce aspirations, help schools respond to their needs, and contribute to ongoing school improvement.",
       "listItems": [
         {
           "letter": "P",
@@ -233,7 +237,80 @@
           "title": "Leadership",
           "description": "Are community leaders continuously identifying, implementing, and sustaining improvements in their contexts?"
         }
-      ]
+      ],
+      "learner_subheading": "Communities act as a bridge between schools and learner: when parents and community actors are informed, engaged and invested in learner’s education, they strengthen support for learning at home and in the community, reinforce aspirations, help schools respond to their needs, and contribute to ongoing school improvement.",
+      "impact_subheading": "Measures whether communities are actively supporting education through leadership, participation, and positive perceptions of public schools."
+    },
+    {
+      "key": "system",
+      "chipLabel": "Education Institutions",
+      "diagramLabel": "Education Institutions",
+      "icon": "article",
+      "color": "#562f91",
+      "fill": "#e9e4f1",
+      "diagram": {
+        "shape": "bottom",
+        "innerRadius": 152,
+        "outerRadius": 216,
+        "labelX": 300,
+        "labelY": 482,
+        "labelLayout": "inline",
+        "labelAnchor": "start",
+        "textOffsetX": 34,
+        "textOffsetY": 4,
+        "iconX": 195,
+        "iconY": 460,
+        "curvedLabelPath": "M138.95,423.58 A203,203 0 0 0 461.05,423.58",
+        "labelForAttr": "system institutions",
+        "icon": {
+          "type": "material",
+          "value": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/system-institutions.svg",
+          "color": "#562f91",
+          "width": 34,
+          "height": 34
+        },
+        "text": {
+          "x": 300,
+          "y": 482,
+          "fill": "#1a1622",
+          "fontSize": 23,
+          "fontWeight": 600
+        }
+      },
+      "panelType": "list",
+      "imgPath": "",
+      "eyebrow": "Education Institutions",
+      "heading": "Education Institutions",
+      "subheading": "Measures whether education institutions are enabling continuous improvement through collaboration, innovation, effective resource mobilisation, and evidence-based decision-making.",
+      "body": "Education institutions enable and accelerate improvement across education by strengthening the ability of leaders, schools and communities to identify challenges, learn from evidence, take action and sustain what works—helping effective local practices spread across the system.",
+      "listItems": [
+        {
+          "letter": "B",
+          "icon": "account_balance_wallet",
+          "title": "Budget allocation & resource mobilisation",
+          "description": "Are institutions effectively mobilising and utilising resources to strengthen education outcomes?"
+        },
+        {
+          "letter": "R",
+          "icon": "rate_review",
+          "title": "Review, monitoring & feedback",
+          "description": "Are institutions continuously reviewing progress, learning from evidence, and adapting their actions?"
+        },
+        {
+          "letter": "I",
+          "icon": "emoji_objects",
+          "title": "Innovation & new projects",
+          "description": "Are institutions fostering innovation by initiating, experimenting, and scaling what works?"
+        },
+        {
+          "letter": "C",
+          "icon": "hub",
+          "title": "Co-creation with diverse stakeholders",
+          "description": "Are institutions meaningfully collaborating with communities, schools, CSOs, and other stakeholders to design and implement improvement programmes?"
+        }
+      ],
+      "learner_subheading": "Education institutions enable and accelerate improvement across education by strengthening the ability of leaders, schools and communities to identify challenges, learn from evidence, take action and sustain what works—helping effective local practices spread across the system.",
+      "impact_subheading": "Measures whether education institutions are enabling continuous improvement through collaboration, innovation, effective resource mobilisation, and evidence-based decision-making."
     },
     {
       "key": "society",
@@ -257,7 +334,7 @@
         "curvedLabelPath": "M233.70,127.29 A185,185 0 0 1 366.30,127.29",
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/society.svg",
+          "value": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/society.svg",
           "color": "#99459a",
           "width": 34,
           "height": 34
@@ -273,8 +350,8 @@
       "panelType": "story",
       "imgPath": "",
       "eyebrow": "Society",
-      "body": "The broader social norms and structures that surround the community.",
-      "frameworkNote": "Framework being defined.",
+      "body": "Society shapes the aspirations, norms and opportunities that surround learner. It shapes the broader demand for quality education and the collective willingness to invest in learner’s development.",
+      "frameworkNote": "Measures whether social norms and perceptions are shifting towards public schools.",
       "cta": {
         "label": "Explore Voices on the Ground",
         "link": "/voices-from-the-ground"
@@ -283,83 +360,16 @@
         "label": "Explore Voices from the Ground",
         "link": "/voices-from-the-ground"
       },
+      "learner_subheading": "Society shapes the aspirations, norms and opportunities that surround learner. It shapes the broader demand for quality education and the collective willingness to invest in learner’s development.",
       "heading": "Society",
       "subheading": "Measures whether social norms and perceptions are shifting towards public schools.",
+      "impact_subheading": "Measures whether social norms and perceptions are shifting towards public schools.",
       "listItems": [
         {
           "letter": "S",
           "icon": "article",
           "title": "Society",
           "description": "Measures whether social norms and perceptions are shifting towards public schools."
-        }
-      ]
-    },
-    {
-      "key": "system",
-      "chipLabel": "System Institutions",
-      "diagramLabel": "System Institutions",
-      "icon": "article",
-      "color": "#562f91",
-      "fill": "#e9e4f1",
-      "diagram": {
-        "shape": "bottom",
-        "innerRadius": 152,
-        "outerRadius": 216,
-        "labelX": 300,
-        "labelY": 482,
-        "labelLayout": "inline",
-        "labelAnchor": "start",
-        "textOffsetX": 34,
-        "textOffsetY": 4,
-        "iconX": 195,
-        "iconY": 460,
-        "curvedLabelPath": "M138.95,423.58 A203,203 0 0 0 461.05,423.58",
-        "labelForAttr": "system institutions",
-        "icon": {
-          "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/system-institutions.svg",
-          "color": "#562f91",
-          "width": 34,
-          "height": 34
-        },
-        "text": {
-          "x": 300,
-          "y": 482,
-          "fill": "#1a1622",
-          "fontSize": 23,
-          "fontWeight": 600
-        }
-      },
-      "panelType": "list",
-      "imgPath": "",
-      "eyebrow": "System Institutions",
-      "heading": "System Institutions",
-      "subheading": "Strengthening public education systems",
-      "body": "The governance, policy and institutions that enable and resource education. These institutions create the conditions for improvement at scale.",
-      "listItems": [
-        {
-          "letter": "B",
-          "icon": "account_balance_wallet",
-          "title": "Budget allocation and resource mobilization",
-          "description": "Are institutions effectively mobilising and utilising resources to strengthen education outcomes?"
-        },
-        {
-          "letter": "R",
-          "icon": "rate_review",
-          "title": "Review, monitoring and feedback",
-          "description": "Are institutions continuously reviewing progress, learning from evidence, and adapting their actions?"
-        },
-        {
-          "letter": "I",
-          "icon": "emoji_objects",
-          "title": "Innovation and new projects",
-          "description": "Are institutions fostering innovation by initiating, experimenting, and scaling what works?"
-        },
-        {
-          "letter": "C",
-          "icon": "hub",
-          "title": "Co-creation with diverse stakeholders",
-          "description": "Are institutions meaningfully collaborating with communities, schools, CSOs, and other stakeholders to design and implement improvement programmes?"
         }
       ]
     },
@@ -386,7 +396,7 @@
         "isHitTarget": true,
         "icon": {
           "type": "material",
-          "value": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/network.svg",
+          "value": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/network.svg",
           "color": "#961c00",
           "width": 34,
           "height": 34
@@ -399,13 +409,13 @@
           "fontWeight": 600
         }
       },
-      "imgPath": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/network-users.svg",
+      "imgPath": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/network-users.svg",
       "panelType": "story",
       "eyebrow": "Network",
       "heading": "Network",
       "subheading": "Measures whether the network is growing, strengthening connections, enabling meaningful value exchange, and collectively contributing to education transformation.",
-      "body": "The wider web of actors and movements connecting everything. This layer reflects the relationships that help ideas, resources and learning move across the ecosystem.",
-      "frameworkNote": "Framework being defined.",
+      "body": "The network brings together partners and collaborators beyond any single institution or layer to enable meaningful value exchange and collective action. Stronger relationships, collaboration and learning across the network can accelerate problem-solving, spread what works while sustaining collective progress towards education transformation and better learner outcomes.",
+      "frameworkNote": "Measures whether the network is growing, strengthening connections, enabling meaningful value exchange, and collectively contributing to education transformation.",
       "cta": {
         "label": "Explore Network Health",
         "link": "/network-health"
@@ -414,6 +424,8 @@
         "label": "Explore Network Health",
         "link": "/network-health"
       },
+      "learner_subheading": "The network brings together partners and collaborators beyond any single institution or layer to enable meaningful value exchange and collective action. Stronger relationships, collaboration and learning across the network can accelerate problem-solving, spread what works while sustaining collective progress towards education transformation and better learner outcomes.",
+      "impact_subheading": "Measures whether the network is growing, strengthening connections, enabling meaningful value exchange, and collectively contributing to education transformation.",
       "listItems": [
         {
           "letter": "N",

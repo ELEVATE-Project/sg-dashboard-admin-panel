@@ -14,33 +14,33 @@
     "indicators": [
       {
         "label": "Shiksha \nChaupals",
-        "value": 22289,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/shiksha_chaupal.svg"
+        "value": 51078,
+        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/shiksha_chaupal.svg"
       },
       {
         "label": "Community members \nparticipating in dialogues",
-        "value": 612779,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_members.svg"
+        "value": 1315814,
+        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/community_members.svg"
       },
       {
         "label": "Local challenges \nidentified",
-        "value": 52586,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_challenges.svg"
+        "value": 123174,
+        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/local_challenges.svg"
       },
       {
         "label": "Community leaders \ndriving improvements",
-        "value": 680,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_leader.svg"
+        "value": 800,
+        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/community_leader.svg"
       },
       {
         "label": "Local solutions \nidentified",
-        "value": 46370,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions.svg"
+        "value": 110994,
+        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/local_solutions.svg"
       },
       {
         "label": "Local solutions \nimplemented",
-        "value": 3207,
-        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions_implemented.svg"
+        "value": 6004,
+        "icon": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/assets/icons/local_solutions_implemented.svg"
       }
     ],
     "styles": {
@@ -60,7 +60,7 @@
     "type": "mitra-text",
     "width": "100%",
     "position": "left",
-    "content": "*To explore voices from ongoing programs, visit the&nbsp;<a href='https://analytics.gritworks.ai/public/dashboard/5e9ba88d-d974-4ddf-bc97-2d1cc24952ec?date=&state=&tab=158-mitra-overview' target='_blank'><strong>MItra Public Dashboard</strong></a>. For deeper insights and detailed analysis, refer to the&nbsp;<a href='https://analytics.gritworks.ai/auth/login' target='_blank'><strong>MItra Insights Dashboard</strong></a>."
+    "content": "*To explore voices from ongoing programs, visit the&nbsp;<a href='https://analytics.mitra.shikshalokam.org/public/dashboard/5e9ba88d-d974-4ddf-bc97-2d1cc24952ec?date=&state=&tab=158-mitra-overview' target='_blank'><strong>MItra Public Dashboard</strong></a>. For deeper insights and detailed analysis, refer to the&nbsp;<a href='https://analytics.mitra.shikshalokam.org/auth/login' target='_blank'><strong>MItra Insights Dashboard</strong></a>."
   },
   {
     "type": "section-heading",
@@ -114,16 +114,40 @@
     "styles": {},
     "data": {
       "Leading Micro Improvements": [
-        44.0,
-        216.0,
-        541.0,
-        680.0
+        {
+          "year": 2025,
+          "data": [
+            44.0,
+            216.0,
+            541.0,
+            680.0
+          ]
+        },
+        {
+          "year": 2026,
+          "data": [
+            785.0,
+            800.0
+          ]
+        }
       ],
       "Participating in dialogues": [
-        65236.0,
-        333404.0,
-        598424.0,
-        612779.0
+        {
+          "year": 2025,
+          "data": [
+            65236.0,
+            333454.0,
+            598424.0,
+            612779.0
+          ]
+        },
+        {
+          "year": 2026,
+          "data": [
+            1058375.0,
+            1315814.0
+          ]
+        }
       ]
     }
   },
@@ -135,10 +159,17 @@
       {
         "year": 2025,
         "data": [
-          663484.0,
-          808581.0,
-          1210810.0,
-          1370606.0
+          2950.0,
+          12747.0,
+          24922.0,
+          26217.0
+        ]
+      },
+      {
+        "year": 2026,
+        "data": [
+          38936.0,
+          57082.0
         ]
       }
     ],

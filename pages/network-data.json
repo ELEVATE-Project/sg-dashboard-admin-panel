@@ -3176,6 +3176,62 @@
         26.32973,
         84.599768
       ]
+    },
+    {
+      "id": "key_education_foundation",
+      "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/key_education_foundation.jpg",
+      "alt": "key_education_foundation",
+      "name": "Key Education Foundation",
+      "countryName": "India",
+      "partnerState": "Nagaland",
+      "category": "Momentum ",
+      "website": "https://www.keyeducationfoundation.org/",
+      "coordinates": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "elevate_foundation",
+      "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/elevate_foundation.jpg",
+      "alt": "elevate_foundation",
+      "name": "Elevate Foundation",
+      "countryName": "India ",
+      "partnerState": "Nagaland",
+      "category": "Momentum ",
+      "website": "https://www.elevatefoundation.in/",
+      "coordinates": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "education_above_all",
+      "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/education_above_all.jpg",
+      "alt": "education_above_all",
+      "name": "Education Above All",
+      "countryName": "India",
+      "partnerState": "Nagaland",
+      "category": "Momentum ",
+      "website": "https://www.educationaboveall.org/",
+      "coordinates": [
+        "",
+        ""
+      ]
+    },
+    {
+      "id": "teach_for_change",
+      "src": "https://storage.googleapis.com/prod-sg-dashbaord/sg-dashboard/partners/teach_for_change.jpg",
+      "alt": "teach_for_change",
+      "name": "Teach for Change",
+      "countryName": "India ",
+      "partnerState": "Telangana",
+      "category": "Momentum ",
+      "website": "https://www.teachforchange.in/",
+      "coordinates": [
+        "",
+        ""
+      ]
     }
   ]
 }
