@@ -191,6 +191,8 @@ LAYER_KEYS = {
     "systeminstitutions": "system",
     "educationinstitution": "system",
     "educationinstitutions": "system",
+    "educationinstitute": "system",
+    "educationinstitutes": "system",
 }
 
 

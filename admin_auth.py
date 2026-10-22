@@ -2,6 +2,7 @@
 
 import hashlib
 import hmac
+import ipaddress
 import math
 import os
 import time
@@ -17,9 +18,13 @@ ENV_FILE = Path(__file__).resolve().parent / ".env"
 IDLE_TIMEOUT = 30 * 60
 SESSION_TIMEOUT = 8 * 60 * 60
 MAX_LOGIN_FAILURES = 5
+MAX_IP_LOGIN_FAILURES = 20
+MAX_GLOBAL_LOGIN_FAILURES = 100
+MAX_LOGIN_KEYS = 4096
 LOGIN_WINDOW = 60
 # Shared across browser sessions in this server process; refreshing cannot reset it.
-_login_failures = deque(maxlen=MAX_LOGIN_FAILURES)
+_login_failures = {}
+_global_login_failures = deque(maxlen=MAX_GLOBAL_LOGIN_FAILURES)
 _login_lock = Lock()
 
 
@@ -38,31 +43,85 @@ def _session_token(username, password):
     return hmac.new(password.encode(), username.encode(), hashlib.sha256).hexdigest()
 
 
+def _client_ip():
+    # Forwarded headers are untrusted unless the operator explicitly opts in.
+    # The proxy must overwrite this header with ONE IP and block direct access.
+    try:
+        config = dotenv_values(ENV_FILE, interpolate=False)
+    except (OSError, UnicodeError):
+        config = {}
+    trust_proxy = config.get(
+        "ADMIN_TRUST_PROXY_HEADERS", os.environ.get("ADMIN_TRUST_PROXY_HEADERS", "false")
+    )
+    if str(trust_proxy).lower() == "true":
+        candidate = st.context.headers.get("X-Forwarded-For", "")
+    else:
+        candidate = st.context.ip_address
+    try:
+        return str(ipaddress.ip_address((candidate or "").strip()))
+    except ValueError:
+        # Missing/malformed addresses share a conservative fallback budget.
+        return "unknown"
+
+
+def _login_limits(client_ip, supplied_username, now):
+    """Return (retry delay, buckets) while holding _login_lock."""
+    for key, failures in list(_login_failures.items()):
+        while failures and now - failures[0] >= LOGIN_WINDOW:
+            failures.popleft()
+        if not failures:
+            del _login_failures[key]
+    while _global_login_failures and now - _global_login_failures[0] >= LOGIN_WINDOW:
+        _global_login_failures.popleft()
+
+    user_hash = hashlib.sha256(f"{client_ip}\0{supplied_username}".encode()).hexdigest()
+    limits = ((('ip', client_ip), MAX_IP_LOGIN_FAILURES),
+              (('ip+user', user_hash), MAX_LOGIN_FAILURES))
+    blocked = []
+    for key, limit in limits:
+        failures = _login_failures.get(key, ())
+        if len(failures) >= limit:
+            blocked.append(LOGIN_WINDOW - (now - failures[0]))
+    if len(_global_login_failures) >= MAX_GLOBAL_LOGIN_FAILURES:
+        blocked.append(LOGIN_WINDOW - (now - _global_login_failures[0]))
+    missing = sum(key not in _login_failures for key, _ in limits)
+    if len(_login_failures) + missing > MAX_LOGIN_KEYS:
+        # Do not evict active buckets: that would allow cycling keys to reset limits.
+        blocked.append(min(LOGIN_WINDOW - (now - failures[0])
+                           for failures in _login_failures.values()))
+    if blocked:
+        return max(1, math.ceil(max(blocked))), ()
+    return 0, limits
+
+
 def _login():
     username, password = _credentials()
     supplied_username = st.session_state.pop("_login_username", "")
     supplied_password = st.session_state.pop("_login_password", "")
+    client_ip = _client_ip()
     with _login_lock:
         now = time.monotonic()
-        while _login_failures and now - _login_failures[0] >= LOGIN_WINDOW:
-            _login_failures.popleft()
-        if len(_login_failures) >= MAX_LOGIN_FAILURES:
+        retry_after, limits = _login_limits(client_ip, supplied_username, now)
+        if retry_after:
             _logout()
             st.session_state["_login_error"] = (
                 f"Too many sign-in attempts. Try again in "
-                f"{max(1, math.ceil(LOGIN_WINDOW - (now - _login_failures[0])))} seconds."
+                f"{retry_after} seconds."
             )
             return
         username_matches = hmac.compare_digest(supplied_username.encode(), username.encode())
         password_matches = hmac.compare_digest(supplied_password.encode(), password.encode())
         _logout()
         if username and password and username_matches and password_matches:
-            _login_failures.clear()
+            # A successful login must not reset other sources' or the IP's budget.
+            _login_failures.pop(limits[1][0], None)
             st.session_state["_admin_session"] = _session_token(username, password)
             st.session_state["_admin_signed_in_at"] = now
             st.session_state["_admin_last_active"] = now
         else:
-            _login_failures.append(now)
+            for key, limit in limits:
+                _login_failures.setdefault(key, deque(maxlen=limit)).append(now)
+            _global_login_failures.append(now)
             st.session_state["_login_error"] = "Invalid username or password."
 
 

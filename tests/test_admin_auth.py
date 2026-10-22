@@ -18,6 +18,11 @@ class AdminLoginTests(unittest.TestCase):
     def setUp(self):
         admin_auth._login_failures.clear()
         self.addCleanup(admin_auth._login_failures.clear)
+        admin_auth._global_login_failures.clear()
+        self.addCleanup(admin_auth._global_login_failures.clear)
+        self.ip_patch = patch("admin_auth._client_ip", return_value="198.51.100.1")
+        self.ip_patch.start()
+        self.addCleanup(self.ip_patch.stop)
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.env_file = Path(directory.name) / ".env"
@@ -36,8 +41,8 @@ class AdminLoginTests(unittest.TestCase):
         self.assertFalse(app.exception)
         return app
 
-    def login(self, app, password="test-password"):
-        app.text_input(key="_login_username").set_value("test-admin")
+    def login(self, app, password="test-password", username="test-admin"):
+        app.text_input(key="_login_username").set_value(username)
         app.text_input(key="_login_password").set_value(password)
         app.button[0].click().run()
         self.assertFalse(app.exception)
@@ -124,6 +129,78 @@ class AdminLoginTests(unittest.TestCase):
         self.assertIn("session has ended", app.info[0].value)
         self.login(app)
         self.assertEqual(len(app.get("file_uploader")), 1)
+
+    def test_one_source_cannot_lock_out_another_source(self):
+        attacker = self.app()
+        for _ in range(admin_auth.MAX_LOGIN_FAILURES):
+            self.login(attacker, "wrong-password")
+        with patch("admin_auth._client_ip", return_value="198.51.100.2"):
+            administrator = self.login(self.app())
+        self.assertEqual(len(administrator.get("file_uploader")), 1)
+        self.login(attacker)
+        self.assertIn("Too many sign-in attempts", attacker.error[0].value)
+        self.assertFalse(attacker.get("file_uploader"))
+
+    def test_ip_budget_blocks_username_rotation(self):
+        app = self.app()
+        for index in range(admin_auth.MAX_IP_LOGIN_FAILURES):
+            self.login(app, "wrong", username=f"user-{index}")
+        self.login(app)
+        self.assertIn("Too many sign-in attempts", app.error[0].value)
+        self.assertFalse(app.get("file_uploader"))
+        self.assertEqual(len(admin_auth._global_login_failures), admin_auth.MAX_IP_LOGIN_FAILURES)
+        # Usernames are hashed in the rate-limit keys.
+        self.assertFalse(any("user-" in key[1] for key in admin_auth._login_failures))
+
+    def test_coarse_global_backstop_blocks_distributed_guesses(self):
+        with patch("admin_auth.MAX_GLOBAL_LOGIN_FAILURES", 2):
+            for index in range(2):
+                with patch("admin_auth._client_ip", return_value=f"198.51.100.{index + 1}"):
+                    self.login(self.app(), "wrong")
+            with patch("admin_auth._client_ip", return_value="198.51.100.3"):
+                app = self.login(self.app())
+            self.assertIn("Too many sign-in attempts", app.error[0].value)
+            self.assertFalse(app.get("file_uploader"))
+
+    def test_limiter_storage_is_bounded_and_expired_keys_are_pruned(self):
+        with patch("admin_auth.MAX_LOGIN_KEYS", 2):
+            with patch("admin_auth.time", types.SimpleNamespace(monotonic=lambda: 1000)):
+                self.login(self.app(), "wrong")
+                self.assertEqual(len(admin_auth._login_failures), 2)
+                with patch("admin_auth._client_ip", return_value="198.51.100.2"):
+                    app = self.login(self.app(), "wrong")
+                self.assertIn("Too many sign-in attempts", app.error[0].value)
+                self.assertEqual(len(admin_auth._login_failures), 2)
+            with patch("admin_auth.time", types.SimpleNamespace(monotonic=lambda: 1061)):
+                self.login(app)
+                self.assertEqual(len(app.get("file_uploader")), 1)
+                self.assertFalse(admin_auth._login_failures)
+
+    def test_client_ip_ignores_untrusted_headers_and_validates_proxy_input(self):
+        self.ip_patch.stop()
+        context = types.SimpleNamespace(
+            ip_address="198.51.100.1", headers={"X-Forwarded-For": "203.0.113.2"}
+        )
+        with patch("admin_auth.st.context", context), patch.dict(
+            "os.environ", {"ADMIN_TRUST_PROXY_HEADERS": "false"}
+        ):
+            self.assertEqual(admin_auth._client_ip(), "198.51.100.1")
+            self.env_file.write_text("ADMIN_TRUST_PROXY_HEADERS=true\n")
+            self.assertEqual(admin_auth._client_ip(), "203.0.113.2")
+            for address in ("198.51.100.2, 203.0.113.3", "invalid", ""):
+                context.headers["X-Forwarded-For"] = address
+                self.assertEqual(admin_auth._client_ip(), "unknown")
+            context.headers["X-Forwarded-For"] = "2001:0db8::1"
+            self.assertEqual(admin_auth._client_ip(), "2001:db8::1")
+            self.env_file.write_text("ADMIN_TRUST_PROXY_HEADERS=false\n")
+            context.ip_address = None
+            self.assertEqual(admin_auth._client_ip(), "unknown")
+
+    def test_sample_credentials_fail_closed(self):
+        self.env_file.write_text((ROOT / "sample.env").read_text())
+        app = self.app()
+        self.assertIn("not configured", app.error[0].value)
+        self.assertFalse(app.get("file_uploader"))
 
     def test_absolute_timeout_applies_even_with_recent_activity(self):
         with patch("admin_auth.time", types.SimpleNamespace(monotonic=lambda: 1000)):
