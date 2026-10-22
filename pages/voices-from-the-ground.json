@@ -15,32 +15,32 @@
       {
         "label": "Shiksha \nChaupals",
         "value": 51078,
-        "icon": "https://storage.googleapis.com/dev-sg-dashbaord/sg-dashboard/assets/icons/shiksha_chaupal.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/shiksha_chaupal.svg"
       },
       {
         "label": "Community members \nparticipating in dialogues",
         "value": 1315814,
-        "icon": "https://storage.googleapis.com/dev-sg-dashbaord/sg-dashboard/assets/icons/community_members.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_members.svg"
       },
       {
         "label": "Local challenges \nidentified",
         "value": 123174,
-        "icon": "https://storage.googleapis.com/dev-sg-dashbaord/sg-dashboard/assets/icons/local_challenges.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_challenges.svg"
       },
       {
         "label": "Community leaders \ndriving improvements",
         "value": 800,
-        "icon": "https://storage.googleapis.com/dev-sg-dashbaord/sg-dashboard/assets/icons/community_leader.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/community_leader.svg"
       },
       {
         "label": "Local solutions \nidentified",
         "value": 110994,
-        "icon": "https://storage.googleapis.com/dev-sg-dashbaord/sg-dashboard/assets/icons/local_solutions.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions.svg"
       },
       {
         "label": "Local solutions \nimplemented",
         "value": 6004,
-        "icon": "https://storage.googleapis.com/dev-sg-dashbaord/sg-dashboard/assets/icons/local_solutions_implemented.svg"
+        "icon": "https://storage.googleapis.com/dev-sg-dashboard/sg-dashboard/assets/icons/local_solutions_implemented.svg"
       }
     ],
     "styles": {
