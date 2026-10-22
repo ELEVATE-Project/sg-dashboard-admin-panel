@@ -2,25 +2,6 @@ import streamlit as st
 import pandas as pd
 import re
 
-# ✅ Import script functions
-from tabs_scripts.community_led_details import community_led_programs_sum_with_codes, pie_chart_community_led
-from tabs_scripts.goals import goals
-from tabs_scripts.key_progress_indicators import key_progress_indicators
-from tabs_scripts.line_chart import extract_district_line_chart, extract_micro_improvements, extract_state_line_chart, update_voices_json_line_chart, update_leaders_engaged_dual_axis_chart
-from tabs_scripts.network_map_data import get_network_map_data
-from tabs_scripts.partners import get_partners
-from tabs_scripts.extract_state_details import update_district_view_indicators
-from tabs_scripts.pie_chart import pie_chart
-from tabs_scripts.testimonials import testimonials
-from tabs_scripts.programs import generate_program_reports
-from tabs_scripts.extract_district_details import extract_district_details
-from tabs_scripts.extract_community_details import extract_community_details , delete_district_community_pie_charts
-from tabs_scripts.upload_images_from_excel import upload_images_from_excel
-from tabs_scripts.upload_excel_to_gcs import upload_excel_to_gcs
-from tabs_scripts.outcomes_model_from_excel import generate_outcomes_model_json
-from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
-from tabs_scripts.impact_programs import update_impact_program_frameworks
-
 from constants import ALLOWED_TABS as allowed_tabs
 
 
@@ -36,30 +17,8 @@ def normalize_name(name):
     return re.sub(r'[^a-z0-9]', '', name.strip().lower())
 
 
-# ✅ Map sheet names to upload processing functions
-upload_actions = {
-    "Data on homepage": key_progress_indicators,
-    "Dashboard first page": pie_chart,
-    "Goals": goals,
-    "States details": update_district_view_indicators,
-    "District Details": extract_district_details,
-    "Programs": generate_program_reports,
-    "Micro improvements progress": extract_micro_improvements,
-    "Graph_VoiceTab_MI": update_voices_json_line_chart,
-    "Partners": get_partners,
-    "Network Map": get_network_map_data,
-    "Testimonials": testimonials,
-    "Imagesicons": upload_images_from_excel,
-    "Voices Tab Big Numbers": voices_tab_big_numbers,
-    "Content Requirements": generate_outcomes_model_json,
-    "Impact_Programs": update_impact_program_frameworks
-}
-
 # ✅ Create a mapping of normalized names → clean display names
 normalized_to_display = {normalize_name(name): name for name in allowed_tabs}
-
-# ✅ Streamlit Page Setup
-st.set_page_config(page_title="File Upload App", page_icon=":page_facing_up:")
 
 # ✅ Custom Styling
 st.markdown("""
@@ -91,22 +50,8 @@ st.markdown("""
         font-weight: bold;
     }
 
-    .st-emotion-cache-1w723zb {
-        padding:0;
-        max-width:90%;
-        display:flex;
-        justify-content:center;
-    }
 
-    .st-emotion-cache-pa57uv {
-        width:80%;
-        align-items:center;
-    }
 
-    .st-emotion-cache-pa57uv > img {
-        width:236px !important;
-        max-width:100% !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -115,6 +60,44 @@ uploaded_file = st.file_uploader("Choose a file", type=["csv", "txt", "xlsx"])
 
 # ✅ Main logic
 if uploaded_file is not None:
+    # ✅ Import script functions
+    from tabs_scripts.community_led_details import community_led_programs_sum_with_codes, pie_chart_community_led
+    from tabs_scripts.goals import goals
+    from tabs_scripts.key_progress_indicators import key_progress_indicators
+    from tabs_scripts.line_chart import extract_district_line_chart, extract_micro_improvements, extract_state_line_chart, update_voices_json_line_chart, update_leaders_engaged_dual_axis_chart
+    from tabs_scripts.network_map_data import get_network_map_data
+    from tabs_scripts.partners import get_partners
+    from tabs_scripts.extract_state_details import update_district_view_indicators
+    from tabs_scripts.pie_chart import pie_chart
+    from tabs_scripts.testimonials import testimonials
+    from tabs_scripts.programs import generate_program_reports
+    from tabs_scripts.extract_district_details import extract_district_details
+    from tabs_scripts.extract_community_details import extract_community_details , delete_district_community_pie_charts
+    from tabs_scripts.upload_images_from_excel import upload_images_from_excel
+    from tabs_scripts.upload_excel_to_gcs import upload_excel_to_gcs
+    from tabs_scripts.outcomes_model_from_excel import generate_outcomes_model_json
+    from tabs_scripts.voices_tab_big_numbers import voices_tab_big_numbers
+    from tabs_scripts.impact_programs import update_impact_program_frameworks
+
+    # ✅ Map sheet names to upload processing functions
+    upload_actions = {
+        "Data on homepage": key_progress_indicators,
+        "Dashboard first page": pie_chart,
+        "Goals": goals,
+        "States details": update_district_view_indicators,
+        "District Details": extract_district_details,
+        "Programs": generate_program_reports,
+        "Micro improvements progress": extract_micro_improvements,
+        "Graph_VoiceTab_MI": update_voices_json_line_chart,
+        "Partners": get_partners,
+        "Network Map": get_network_map_data,
+        "Testimonials": testimonials,
+        "Imagesicons": upload_images_from_excel,
+        "Voices Tab Big Numbers": voices_tab_big_numbers,
+        "Content Requirements": generate_outcomes_model_json,
+        "Impact_Programs": update_impact_program_frameworks
+    }
+
     st.success("✅ File uploaded successfully!")
 
     try:

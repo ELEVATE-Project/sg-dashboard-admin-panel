@@ -1,22 +1,25 @@
 import streamlit as st
 import importlib.util
 from pathlib import Path
-from backend_voices_data.backend_data_uploader import CSV_TYPES, upload_to_gcp
+from admin_auth import require_login
 
-# =========================
-# 🎨 PAGE CONFIG & STYLING
-# =========================
-# st.set_page_config(
-#     page_title="SG Dashboard Admin Panel",
-#     page_icon=":bar_chart:",
-#     layout="wide"
-# )
+st.set_page_config(
+    page_title="SG Dashboard Admin Panel", page_icon=":bar_chart:",
+    layout="wide", initial_sidebar_state="collapsed"
+)
+
 
 st.markdown("""
 <style>
     [data-testid="stHeader"] { display: none; }
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
+
+    [data-testid="stElementContainer"][data-stale="true"] {
+        opacity: 1 !important;
+        filter: none !important;
+        transition: none !important;
+    }
 
     h1 {
         color: #2e7d32;
@@ -35,28 +38,41 @@ st.markdown("""
         color: #2e7d32 !important;
     }
 
-    .st-emotion-cache-1w723zb {
-        padding:0;
-        max-width:90%;
-        display:flex;
-        justify-content:center;
-    }
 
-    .st-emotion-cache-pa57uv {
-        width:80%;
-        align-items:center;
-    }
 
-    .st-emotion-cache-pa57uv > img {
-        width:236px !important;
-        max-width:100% !important;
-    }
 
-    .st-emotion-cache-3uj0rx h1 {
-      padding:0 !important;
+    [data-testid="stMainBlockContainer"] {
+        max-width: 1440px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    .st-key-admin_section [role="radiogroup"] {
+        gap: 0.5rem 1rem;
+        border-bottom: 1px solid #dfe5df;
+        flex-wrap: wrap;
+    }
+    .st-key-admin_section [data-baseweb="radio"] > div:first-child {
+        display: none;
+    }
+    .st-key-admin_section [data-baseweb="radio"] {
+        margin: 0;
+        padding: 0.65rem 0.25rem;
+        border-bottom: 3px solid transparent;
+        color: #1565c0;
+    }
+    .st-key-admin_section [data-baseweb="radio"]:has(input:checked) {
+        border-bottom-color: #2e7d32;
+        color: #2e7d32;
+        font-weight: 600;
+    }
+    .st-key-admin_section [data-baseweb="radio"]:has(input:focus-visible) {
+        outline: 2px solid #2e7d32;
+        outline-offset: 2px;
     }
 </style>
 """, unsafe_allow_html=True)
+
+require_login()
 
 # =========================
 # 🧭 HEADER
@@ -65,28 +81,32 @@ st.markdown("""
 # st.image("main_logo.svg", caption="Shikshagraha Dashboard", use_container_width=True)
 
 
-col1, col2 = st.columns([1, 4])  # adjust width ratio
+col1, col2 = st.columns([1, 4], vertical_alignment="center")
 
 with col1:
     st.image("main_logo.svg", width=200)  # control logo size
 
 with col2:
     st.markdown(
-        "<h1 style='margin-top: 20px;'>SG Dashboard Admin Panel</h1>",
+        "<h1>SG Dashboard Admin Panel</h1>",
         unsafe_allow_html=True
     )
 
 # =========================
 # 🗂️ TWO MAIN TABS
 # =========================
-tabs = st.tabs([
+sections = [
     "📁 File Upload Dashboard",
     "🧩 JSON Editor Section",
     "Upload image from local device",
     "Handle all images",
     "Source Excels",
     "Backend Data Uploader"
-])
+]
+selected_section = st.radio(
+    "Admin sections", sections, index=0, horizontal=True,
+    key="admin_section", label_visibility="collapsed"
+)
 
 
 # =========================
@@ -113,7 +133,7 @@ def run_page(script_path: str):
 # =========================
 # TAB 1 → File Upload Page
 # =========================
-with tabs[0]:
+if selected_section == sections[0]:
     st.markdown("### 📤 Upload & Manage Data Files")
     st.caption("Upload your Excel/CSV/TXT files and process them with one click.")
     run_page("frontend-pages/file-upload.py")
@@ -121,26 +141,26 @@ with tabs[0]:
 # =========================
 # TAB 2 → JSON Editor Page
 # =========================
-with tabs[1]:
+elif selected_section == sections[1]:
     st.markdown("### 🧩 Manage JSON Data Files")
     st.caption("Edit and save JSON files for landing pages, network data, and more.")
     run_page("frontend-pages/json-editor.py")
 
 
 
-with tabs[2]:
+elif selected_section == sections[2]:
     st.markdown("### 🧩 Upload image from local device")
     st.caption("Upload svg images and get url of gcs")
     run_page("frontend-pages/upload-images.py")
 
 
-with tabs[3]:
-    st.markdown("### 🧩 Upload image from local device")
-    st.caption("Upload svg images and get url of gcs")
+elif selected_section == sections[3]:
+    st.markdown("### 🖼️ Manage Images")
+    st.caption("View and manage uploaded images.")
     run_page("frontend-pages/handle-all-images.py")
 
 
-with tabs[4]:
+elif selected_section == sections[4]:
     st.markdown("### 📦 Source Excels")
     st.caption("View uploaded Excel source files and delete old ones.")
     run_page("frontend-pages/source-excels.py")
@@ -149,7 +169,9 @@ with tabs[4]:
 # TAB 6 → Backend Data Uploader
 # =========================
 
-with tabs[5]:
+elif selected_section == sections[5]:
+    from backend_voices_data.backend_data_uploader import CSV_TYPES, upload_to_gcp
+
     st.markdown("### 📤 Upload Your Backend CSV File")
     
     col1, col2 = st.columns(2)
