@@ -183,11 +183,16 @@ def get_evidence_metadata(evidence_link):
 
 
 LAYER_KEYS = {
-    "learnersoutcomes": "students",
+    "learnersoutcomes": "learner_outcomes",
+    "learneroutcomes": "learner_outcomes",
     "schoolsanganwadicentres": "schools",
     "schoolsandanganwadicentres": "schools",
     "community": "community",
     "systeminstitutions": "system",
+    "educationinstitution": "system",
+    "educationinstitutions": "system",
+    "educationinstitute": "system",
+    "educationinstitutes": "system",
 }
 
 
