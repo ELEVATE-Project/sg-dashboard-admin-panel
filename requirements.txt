@@ -43,7 +43,7 @@ rsa
 setuptools
 six
 smmap
-streamlit
+streamlit>=1.54
 tenacity
 toml
 tornado

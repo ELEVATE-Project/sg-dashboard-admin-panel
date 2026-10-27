@@ -1,3 +1,5 @@
+from processing_report import report_print as print
+
 import argparse
 import copy
 import importlib.util

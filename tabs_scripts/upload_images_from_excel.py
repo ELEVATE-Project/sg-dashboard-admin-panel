@@ -1,3 +1,5 @@
+from processing_report import report_print as print
+
 import openpyxl
 import os
 import importlib.util

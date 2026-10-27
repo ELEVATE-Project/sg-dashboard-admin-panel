@@ -5,13 +5,17 @@ import hmac
 import ipaddress
 import math
 import os
+import pickle
+import secrets
 import time
+from copy import deepcopy
 from collections import deque
 from pathlib import Path
 from threading import Lock
 
 import streamlit as st
 from dotenv import dotenv_values
+from streamlit.components.v2 import component
 
 
 ENV_FILE = Path(__file__).resolve().parent / ".env"
@@ -26,6 +30,117 @@ LOGIN_WINDOW = 60
 _login_failures = {}
 _global_login_failures = deque(maxlen=MAX_GLOBAL_LOGIN_FAILURES)
 _login_lock = Lock()
+_browser_sessions = {}
+_session_lock = Lock()
+MAX_BROWSER_SESSIONS = 64
+MAX_RETAINED_BYTES = 256 * 1024 * 1024
+UPLOAD_STATE_KEYS = (
+    '_last_uploaded_excel', '_excel_current_key', '_excel_results',
+    '_excel_archive', '_excel_archive_key', '_excel_archive_messages',
+)
+
+_session_component = component('admin_tab_session', js="""
+let lastSent;
+export default function({data, setStateValue}) {
+    const key = 'sg-admin-session:' + window.location.pathname;
+    let token = '';
+    let available = true;
+    try {
+        if (data.clear) sessionStorage.removeItem(key);
+        else if (data.token) sessionStorage.setItem(key, data.token);
+        token = sessionStorage.getItem(key) || '';
+    } catch (_) { available = false; }
+    const result = {token, available};
+    const serialized = JSON.stringify(result);
+    if (serialized !== lastSent) {
+        lastSent = serialized;
+        setStateValue('browser', result);
+    }
+}
+""")
+
+
+def _browser_bridge(token=None, clear=False):
+    result = _session_component(data={'token': token, 'clear': clear},
+                                key='_admin_browser_bridge', height=0,
+                                on_browser_change=lambda: None)
+    return result.browser
+
+
+def _browser_key(token):
+    if not isinstance(token, str) or len(token) != 43 or not token.isascii():
+        return None
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _record_is_current(record, now):
+    return (0 <= now - record['signed_in'] < SESSION_TIMEOUT
+            and 0 <= now - record['last_active'] < IDLE_TIMEOUT)
+
+
+def _start_browser_session(username, password, now):
+    token = secrets.token_urlsafe(32)
+    with _session_lock:
+        for key, record in list(_browser_sessions.items()):
+            if not _record_is_current(record, now):
+                del _browser_sessions[key]
+        if len(_browser_sessions) >= MAX_BROWSER_SESSIONS:
+            oldest = min(_browser_sessions, key=lambda key: _browser_sessions[key]['last_active'])
+            del _browser_sessions[oldest]
+        _browser_sessions[_browser_key(token)] = {
+            'credentials': _session_token(username, password),
+            'signed_in': now, 'last_active': now, 'upload_state': {}, 'upload_bytes': 0,
+        }
+    st.session_state['_browser_session_token'] = token
+    st.session_state.pop('_browser_clear_pending', None)
+
+
+def _resume_browser_session(token, username, password):
+    key = _browser_key(token)
+    now = time.monotonic()
+    with _session_lock:
+        record = _browser_sessions.get(key)
+        if not record:
+            return False
+        if not (_record_is_current(record, now) and hmac.compare_digest(
+                record['credentials'], _session_token(username, password))):
+            del _browser_sessions[key]
+            return False
+        record['last_active'] = now
+        restored = deepcopy(record['upload_state'])
+        st.session_state['_admin_session'] = record['credentials']
+        st.session_state['_admin_signed_in_at'] = record['signed_in']
+        st.session_state['_admin_last_active'] = now
+    st.session_state['_browser_session_token'] = token
+    st.session_state.update(restored)
+    return True
+
+
+def persist_upload_state():
+    """Retain only this authenticated browser session's latest upload and report."""
+    key = _browser_key(st.session_state.get('_browser_session_token'))
+    with _session_lock:
+        record = _browser_sessions.get(key)
+        if not record or not _record_is_current(record, time.monotonic()):
+            return
+        saved = {name: st.session_state[name] for name in UPLOAD_STATE_KEYS if name in st.session_state}
+        # Serialize only server-owned state to measure it; never deserialize
+        # client-provided pickle data. Reports can exceed the workbook size.
+        size = len(pickle.dumps(saved, protocol=pickle.HIGHEST_PROTOCOL))
+        if size > MAX_RETAINED_BYTES:
+            record['upload_state'] = {}
+            record['upload_bytes'] = 0
+            return
+        record['upload_state'] = deepcopy(saved)
+        record['upload_bytes'] = size
+        # Bound serialized retained state, releasing older bundles first.
+        total = sum(item['upload_bytes'] for item in _browser_sessions.values())
+        for old in sorted(_browser_sessions.values(), key=lambda item: item['last_active']):
+            if total <= MAX_RETAINED_BYTES:
+                break
+            total -= old['upload_bytes']
+            old['upload_state'] = {}
+            old['upload_bytes'] = 0
 
 
 def _credentials():
@@ -118,6 +233,7 @@ def _login():
             st.session_state["_admin_session"] = _session_token(username, password)
             st.session_state["_admin_signed_in_at"] = now
             st.session_state["_admin_last_active"] = now
+            _start_browser_session(username, password, now)
         else:
             for key, limit in limits:
                 _login_failures.setdefault(key, deque(maxlen=limit)).append(now)
@@ -126,7 +242,11 @@ def _login():
 
 
 def _logout():
+    key = _browser_key(st.session_state.get('_browser_session_token'))
+    with _session_lock:
+        _browser_sessions.pop(key, None)
     st.session_state.clear()
+    st.session_state['_browser_clear_pending'] = True
 
 
 def _valid_session(username, password):
@@ -143,6 +263,12 @@ def _valid_session(username, password):
         and 0 <= now - last_active < IDLE_TIMEOUT
     ):
         return False
+    key = _browser_key(st.session_state.get('_browser_session_token'))
+    with _session_lock:
+        record = _browser_sessions.get(key)
+        if not record or not _record_is_current(record, now):
+            return False
+        record['last_active'] = now
     st.session_state["_admin_last_active"] = now
     return True
 
@@ -244,7 +370,23 @@ def require_login():
     # replaces its entire tree before any dashboard elements are sent.
     login_slot = st.empty()
     header_slot = st.empty()
-    if _valid_session(username, password):
+    valid = _valid_session(username, password)
+    if not valid and "_admin_session" in st.session_state:
+        _logout()
+        st.session_state["_login_notice"] = "Your session has ended. Please sign in again."
+
+    clearing = st.session_state.get('_browser_clear_pending', False)
+    browser = _browser_bridge(st.session_state.get('_browser_session_token') if valid else None, clearing)
+    if isinstance(browser, dict):
+        if clearing:
+            if not browser.get('token'):
+                st.session_state.pop('_browser_clear_pending', None)
+        elif not valid and browser.get('token'):
+            valid = _resume_browser_session(browser['token'], username, password)
+            if not valid:
+                st.session_state['_browser_clear_pending'] = True
+                st.rerun()
+    if valid:
         login_slot.empty()
         with header_slot.container():
             with st.container(key="authenticated_header", height=40, border=False):
@@ -253,9 +395,6 @@ def require_login():
                     st.button("Log out", on_click=_logout, use_container_width=True)
         return
 
-    if "_admin_session" in st.session_state:
-        _logout()
-        st.session_state["_login_notice"] = "Your session has ended. Please sign in again."
     header_slot.empty()
     with login_slot.container():
         st.markdown(LOGIN_STYLE, unsafe_allow_html=True)

@@ -1,5 +1,6 @@
 import builtins
 import importlib.util
+import pickle
 from pathlib import Path
 import sys
 import tempfile
@@ -16,6 +17,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class AdminLoginTests(unittest.TestCase):
     def setUp(self):
+        admin_auth._browser_sessions.clear()
+        self.addCleanup(admin_auth._browser_sessions.clear)
+        self.bridge = patch('admin_auth._browser_bridge', return_value={'token': '', 'available': True})
+        self.bridge.start()
+        self.addCleanup(self.bridge.stop)
         admin_auth._login_failures.clear()
         self.addCleanup(admin_auth._login_failures.clear)
         admin_auth._global_login_failures.clear()
@@ -51,11 +57,132 @@ class AdminLoginTests(unittest.TestCase):
     def test_anonymous_and_invalid_login_cannot_access_admin(self):
         app = self.app(actual=True)
         self.assertFalse(app.get("file_uploader"))
+
         self.assertFalse(app.get("segmented_control"))
         self.login(app, "wrong-password")
         self.assertEqual(app.error[0].value, "Invalid username or password.")
         self.assertNotIn("_admin_session", app.session_state)
         self.assertFalse(app.get("file_uploader"))
+
+    def test_refresh_restores_login_and_latest_workbook_then_logout_revokes_it(self):
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        app.session_state['_last_uploaded_excel'] = {'name': 'latest.xlsx', 'data': b'private excel bytes'}
+        app.session_state['_excel_results'] = [{'status': 'Uploaded'}]
+        with patch('admin_auth.st.session_state', app.session_state.filtered_state):
+            admin_auth.persist_upload_state()
+        with patch('admin_auth._browser_bridge', return_value={'token': token, 'available': True}):
+            refreshed = self.app()
+            self.assertEqual(len(refreshed.get('file_uploader')), 1)
+            self.assertEqual(refreshed.session_state['_last_uploaded_excel']['data'], b'private excel bytes')
+            self.assertEqual(refreshed.session_state['_excel_results'], [{'status': 'Uploaded'}])
+            refreshed.button[0].click().run()
+            self.assertFalse(refreshed.get('file_uploader'))
+            self.assertNotIn('_last_uploaded_excel', refreshed.session_state)
+            self.assertNotIn(admin_auth._browser_key(token), admin_auth._browser_sessions)
+            # Replaying the old browser handle after logout cannot restore data.
+            replayed = self.app()
+            self.assertFalse(replayed.get('file_uploader'))
+            self.assertNotIn('_last_uploaded_excel', replayed.session_state)
+
+    def test_refresh_cannot_restore_after_password_rotation_or_expiry(self):
+        with patch('admin_auth.time', types.SimpleNamespace(monotonic=lambda: 1000)):
+            app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        with patch('admin_auth.time', types.SimpleNamespace(monotonic=lambda: 1000 + admin_auth.IDLE_TIMEOUT)), patch(
+            'admin_auth._browser_bridge', return_value={'token': token, 'available': True}
+        ):
+            expired = self.app()
+        self.assertFalse(expired.get('file_uploader'))
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        self.env_file.write_text('ADMIN_USERNAME=test-admin\nADMIN_PASSWORD=changed\n')
+        with patch('admin_auth._browser_bridge', return_value={'token': token, 'available': True}):
+            rotated = self.app()
+        self.assertFalse(rotated.get('file_uploader'))
+
+    def test_different_browser_sessions_do_not_share_workbooks(self):
+        first = self.login(self.app())
+        first.session_state['_last_uploaded_excel'] = {'name': 'first.xlsx', 'data': b'first private workbook'}
+        with patch('admin_auth.st.session_state', first.session_state.filtered_state):
+            admin_auth.persist_upload_state()
+        second = self.login(self.app())
+        token = second.session_state['_browser_session_token']
+        with patch('admin_auth._browser_bridge', return_value={'token': token, 'available': True}):
+            refreshed = self.app()
+        self.assertEqual(len(refreshed.get('file_uploader')), 1)
+        self.assertNotIn('_last_uploaded_excel', refreshed.session_state)
+
+    def test_retained_workbook_memory_is_bounded(self):
+        first_upload = {'_last_uploaded_excel': {'name': 'first.xlsx', 'data': b'12345678'}}
+        second_upload = {'_last_uploaded_excel': {'name': 'second.xlsx', 'data': b'abcdefgh'}}
+        limit = sum(len(pickle.dumps(saved, protocol=pickle.HIGHEST_PROTOCOL))
+                    for saved in (first_upload, second_upload)) - 1
+        with patch('admin_auth.MAX_RETAINED_BYTES', limit):
+            first = self.login(self.app())
+            first_token = first.session_state['_browser_session_token']
+            first.session_state['_last_uploaded_excel'] = first_upload['_last_uploaded_excel']
+            with patch('admin_auth.st.session_state', first.session_state.filtered_state):
+                admin_auth.persist_upload_state()
+            second = self.login(self.app())
+            second_token = second.session_state['_browser_session_token']
+            second.session_state['_last_uploaded_excel'] = second_upload['_last_uploaded_excel']
+            with patch('admin_auth.st.session_state', second.session_state.filtered_state):
+                admin_auth.persist_upload_state()
+            self.assertFalse(admin_auth._browser_sessions[admin_auth._browser_key(first_token)]['upload_state'])
+            self.assertEqual(admin_auth._browser_sessions[admin_auth._browser_key(second_token)]['upload_state'], second_upload)
+            self.assertLessEqual(sum(item['upload_bytes'] for item in admin_auth._browser_sessions.values()), limit)
+
+    def test_retention_size_includes_output_payloads_and_metadata(self):
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        saved = {
+            '_last_uploaded_excel': {'name': 'small.xlsx', 'data': b'x'},
+            '_excel_results': [{'outputs': [{'data': 'local data' * 1024}],
+                                'uploads': [{'data': 'uploaded payload' * 1024}]}],
+            '_excel_archive': {'gcs_path': 'gs://test/source.xlsx'},
+        }
+        state = {**app.session_state.filtered_state, **saved}
+        with patch('admin_auth.st.session_state', state):
+            admin_auth.persist_upload_state()
+        record = admin_auth._browser_sessions[admin_auth._browser_key(token)]
+        self.assertEqual(record['upload_bytes'], len(pickle.dumps(saved, protocol=pickle.HIGHEST_PROTOCOL)))
+        self.assertGreater(record['upload_bytes'], 1024)
+        self.assertEqual(record['upload_state'], saved)
+
+    def test_oversized_report_is_not_deepcopied_or_retained(self):
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        state = app.session_state.filtered_state
+        state['_last_uploaded_excel'] = {'name': 'small.xlsx', 'data': b'x'}
+        state['_excel_results'] = [{'outputs': [{'data': 'large report' * 1024}]}]
+        with patch('admin_auth.st.session_state', state), patch('admin_auth.MAX_RETAINED_BYTES', 1024), patch(
+            'admin_auth.deepcopy'
+        ) as copy:
+            admin_auth.persist_upload_state()
+        copy.assert_not_called()
+        record = admin_auth._browser_sessions[admin_auth._browser_key(token)]
+        self.assertEqual(record['upload_bytes'], 0)
+        self.assertEqual(record['upload_state'], {})
+
+    def test_removing_a_workbook_also_removes_its_retained_copy(self):
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        saved = app.session_state.filtered_state
+        saved['_last_uploaded_excel'] = {'name': 'latest.xlsx', 'data': b'private workbook'}
+        with patch('admin_auth.st.session_state', saved):
+            admin_auth.persist_upload_state()
+            del saved['_last_uploaded_excel']
+            admin_auth.persist_upload_state()
+        with patch('admin_auth._browser_bridge', return_value={'token': token, 'available': True}):
+            refreshed = self.app()
+        self.assertNotIn('_last_uploaded_excel', refreshed.session_state)
+
+    def test_unknown_browser_session_handle_cannot_bypass_login(self):
+        with patch('admin_auth._browser_bridge', return_value={'token': 'A' * 43, 'available': True}):
+            app = self.app()
+        self.assertFalse(app.get('file_uploader'))
+        self.assertNotIn('_admin_session', app.session_state)
 
     def test_login_is_fast_path_and_logout_clears_session(self):
         original_import = builtins.__import__

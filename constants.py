@@ -163,6 +163,8 @@ COMMUNITY_DISTRICT_METRICS = [
 ]
 
 LINE_CHART_QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
+# Canonical header order for micro-improvement chart sheets.
+LINE_CHART_HEADERS = ["State", "District", "Year", *LINE_CHART_QUARTERS]
 
 LINE_CHART_DEFAULT_INDEXES = {
     "state": 0,
