@@ -1,3 +1,5 @@
+from processing_report import report_print as print
+
 from io import BytesIO
 import openpyxl
 import json
@@ -367,6 +369,25 @@ def extract_micro_improvements(excel_file):
             json.dump(dashboard_data, file, indent=2)
 
         print(f"Updated dashboard.json with new line-chart data: {json.dumps(result, indent=2)}")
+        # Publish the dashboard chart even when Graph_VoiceTab_MI is absent.
+        # State/district charts below are separate outputs and must still run
+        # if this publication fails.
+        try:
+            gcp_access_path = os.path.join(script_dir, '..', 'cloud-scripts', 'gcp_access.py')
+            spec = importlib.util.spec_from_file_location('gcp_access', gcp_access_path)
+            gcp_access = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(gcp_access)
+            folder_url = gcp_access.upload_file_to_gcs_and_get_directory(
+                bucket_name=os.environ.get('BUCKET_NAME'),
+                source_file_path=json_path,
+                destination_blob_name='sg-dashboard/dashboard.json',
+            )
+            if folder_url:
+                print(f'✅ Uploaded dashboard.json to GCS: {folder_url}')
+            else:
+                print('❌ Failed to upload dashboard.json')
+        except Exception as error:
+            print(f'❌ Error uploading dashboard.json: {error}')
         extract_state_line_chart(excel_file)
         return json.dumps(dashboard_data, indent=2)
 
@@ -436,6 +457,11 @@ def extract_district_line_chart(excel_file):
 
             state_name = str(state_name).strip() if state_name else ""
             district_name = str(district_name).strip() if district_name else ""
+
+            # State totals share this sheet with district rows.
+            if not district_name:
+                row_num += 1
+                continue
 
             if state_name not in state_codes:
                 print(f"⚠️ State '{state_name}' not found in state_code_details.json, skipping row {row_num}")

@@ -7,6 +7,7 @@ import re
 from dotenv import load_dotenv
 
 from constants import GCS_CLOUD_PLATFORM_SCOPE, GCS_STORAGE_BASE_URL
+from processing_report import record_upload
 
 load_dotenv()
 
@@ -87,9 +88,11 @@ def upload_file_to_gcs_and_get_directory(bucket_name, source_file_path, destinat
     """
     Uploads a file to a Google Cloud Storage bucket and returns the public URL for the folder.
     """
+    payload = None
     try:
         if not os.path.exists(source_file_path):
             logger.error(f"Source file not found: {source_file_path}")
+            record_upload(source_file_path, bucket_name, destination_blob_name, error="Source file not found")
             return None
 
         storage_client = get_storage_client()
@@ -99,8 +102,9 @@ def upload_file_to_gcs_and_get_directory(bucket_name, source_file_path, destinat
         blob = bucket.blob(destination_blob_name)
 
         if str(source_file_path).lower().endswith(".json"):
+            payload = get_json_upload_payload(source_file_path, bucket_name)
             blob.upload_from_string(
-                get_json_upload_payload(source_file_path, bucket_name),
+                payload,
                 content_type="application/json"
             )
         else:
@@ -118,13 +122,16 @@ def upload_file_to_gcs_and_get_directory(bucket_name, source_file_path, destinat
 
         if blob.public_url:
             logger.info(f"Public URL for file: {blob.public_url}")
+            record_upload(source_file_path, bucket_name, destination_blob_name, payload=payload)
             return public_folder_url
         else:
             logger.error("File is not publicly accessible")
+            record_upload(source_file_path, bucket_name, destination_blob_name, error="Public upload could not be confirmed")
             return None
 
     except Exception as e:
         logger.error(f"Failed to upload file or generate public URL: {str(e)}")
+        record_upload(source_file_path, bucket_name, destination_blob_name, error=e)
         return None
 
 
