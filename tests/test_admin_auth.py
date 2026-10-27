@@ -1,5 +1,6 @@
 import builtins
 import importlib.util
+import pickle
 from pathlib import Path
 import sys
 import tempfile
@@ -113,18 +114,56 @@ class AdminLoginTests(unittest.TestCase):
         self.assertNotIn('_last_uploaded_excel', refreshed.session_state)
 
     def test_retained_workbook_memory_is_bounded(self):
-        with patch('admin_auth.MAX_RETAINED_BYTES', 10):
+        first_upload = {'_last_uploaded_excel': {'name': 'first.xlsx', 'data': b'12345678'}}
+        second_upload = {'_last_uploaded_excel': {'name': 'second.xlsx', 'data': b'abcdefgh'}}
+        limit = sum(len(pickle.dumps(saved, protocol=pickle.HIGHEST_PROTOCOL))
+                    for saved in (first_upload, second_upload)) - 1
+        with patch('admin_auth.MAX_RETAINED_BYTES', limit):
             first = self.login(self.app())
             first_token = first.session_state['_browser_session_token']
-            first.session_state['_last_uploaded_excel'] = {'name': 'first.xlsx', 'data': b'12345678'}
+            first.session_state['_last_uploaded_excel'] = first_upload['_last_uploaded_excel']
             with patch('admin_auth.st.session_state', first.session_state.filtered_state):
                 admin_auth.persist_upload_state()
             second = self.login(self.app())
-            second.session_state['_last_uploaded_excel'] = {'name': 'second.xlsx', 'data': b'abcdefgh'}
+            second_token = second.session_state['_browser_session_token']
+            second.session_state['_last_uploaded_excel'] = second_upload['_last_uploaded_excel']
             with patch('admin_auth.st.session_state', second.session_state.filtered_state):
                 admin_auth.persist_upload_state()
             self.assertFalse(admin_auth._browser_sessions[admin_auth._browser_key(first_token)]['upload_state'])
-            self.assertLessEqual(sum(item['upload_bytes'] for item in admin_auth._browser_sessions.values()), 10)
+            self.assertEqual(admin_auth._browser_sessions[admin_auth._browser_key(second_token)]['upload_state'], second_upload)
+            self.assertLessEqual(sum(item['upload_bytes'] for item in admin_auth._browser_sessions.values()), limit)
+
+    def test_retention_size_includes_output_payloads_and_metadata(self):
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        saved = {
+            '_last_uploaded_excel': {'name': 'small.xlsx', 'data': b'x'},
+            '_excel_results': [{'outputs': [{'data': 'local data' * 1024}],
+                                'uploads': [{'data': 'uploaded payload' * 1024}]}],
+            '_excel_archive': {'gcs_path': 'gs://test/source.xlsx'},
+        }
+        state = {**app.session_state.filtered_state, **saved}
+        with patch('admin_auth.st.session_state', state):
+            admin_auth.persist_upload_state()
+        record = admin_auth._browser_sessions[admin_auth._browser_key(token)]
+        self.assertEqual(record['upload_bytes'], len(pickle.dumps(saved, protocol=pickle.HIGHEST_PROTOCOL)))
+        self.assertGreater(record['upload_bytes'], 1024)
+        self.assertEqual(record['upload_state'], saved)
+
+    def test_oversized_report_is_not_deepcopied_or_retained(self):
+        app = self.login(self.app())
+        token = app.session_state['_browser_session_token']
+        state = app.session_state.filtered_state
+        state['_last_uploaded_excel'] = {'name': 'small.xlsx', 'data': b'x'}
+        state['_excel_results'] = [{'outputs': [{'data': 'large report' * 1024}]}]
+        with patch('admin_auth.st.session_state', state), patch('admin_auth.MAX_RETAINED_BYTES', 1024), patch(
+            'admin_auth.deepcopy'
+        ) as copy:
+            admin_auth.persist_upload_state()
+        copy.assert_not_called()
+        record = admin_auth._browser_sessions[admin_auth._browser_key(token)]
+        self.assertEqual(record['upload_bytes'], 0)
+        self.assertEqual(record['upload_state'], {})
 
     def test_removing_a_workbook_also_removes_its_retained_copy(self):
         app = self.login(self.app())

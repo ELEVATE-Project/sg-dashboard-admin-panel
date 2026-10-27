@@ -5,6 +5,7 @@ import hmac
 import ipaddress
 import math
 import os
+import pickle
 import secrets
 import time
 from copy import deepcopy
@@ -123,11 +124,16 @@ def persist_upload_state():
         if not record or not _record_is_current(record, time.monotonic()):
             return
         saved = {name: st.session_state[name] for name in UPLOAD_STATE_KEYS if name in st.session_state}
-        upload = saved.get('_last_uploaded_excel', {})
-        size = len(upload.get('data', b''))
+        # Serialize only server-owned state to measure it; never deserialize
+        # client-provided pickle data. Reports can exceed the workbook size.
+        size = len(pickle.dumps(saved, protocol=pickle.HIGHEST_PROTOCOL))
+        if size > MAX_RETAINED_BYTES:
+            record['upload_state'] = {}
+            record['upload_bytes'] = 0
+            return
         record['upload_state'] = deepcopy(saved)
         record['upload_bytes'] = size
-        # Bound retained workbook memory, releasing older uploads first.
+        # Bound serialized retained state, releasing older bundles first.
         total = sum(item['upload_bytes'] for item in _browser_sessions.values())
         for old in sorted(_browser_sessions.values(), key=lambda item: item['last_active']):
             if total <= MAX_RETAINED_BYTES:
