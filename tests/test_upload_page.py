@@ -1,3 +1,4 @@
+from datetime import date
 from io import BytesIO
 from pathlib import Path
 import sys
@@ -8,20 +9,22 @@ from unittest.mock import patch
 import openpyxl
 from streamlit.testing.v1 import AppTest
 
+from constants import LINE_CHART_HEADERS, TABS_METADATA
+from processing_report import record_upload, report_print
 from upload_page_module import upload_page
 
 ACTIONS = upload_page.ACTIONS
-from processing_report import record_upload, report_print
 
 
 class UploadPageTests(unittest.TestCase):
     def setUp(self):
+        self.sample_year = date.today().year
         workbook = openpyxl.Workbook()
         workbook.active.title = 'Goals'
-        workbook.active.append(['Indicator', 'Data'])
+        workbook.active.append(TABS_METADATA['GOALS'])
         workbook.active.append(['Schools', 12])
         homepage = workbook.create_sheet('Data on homepage')
-        homepage.append(['Indicator', 'Definition', 'Data', 'Icon link'])
+        homepage.append(TABS_METADATA['HOME_PAGE'])
         homepage.append(['Schools', 'Schools in the network', 12, ''])
         workbook.create_sheet('Instructions').append(['Not processed'])
         self.upload = BytesIO()
@@ -74,24 +77,23 @@ class UploadPageTests(unittest.TestCase):
 
     def test_homepage_upload_updates_its_dependent_overview(self):
         self.add_sheets({
-            'States details': [['State Name', 'Indicator', 'Definition', 'Data'], ['State', 'Schools', '', 1]],
-            'State_district details': [['State'], ['State']],
+            'States details': [TABS_METADATA['STATE_DETAILS'], ['State', 'Schools', '', 1]],
+            'State_district details': [TABS_METADATA['STATE_DISTRICT_DETAILS'], ['State', '', 'STATE_TEST', '']],
         })
         self.run_sheet('Data on homepage', ['key_progress_indicators', 'update_district_view_indicators'])
 
     def test_micro_upload_runs_both_chart_steps_in_order(self):
         self.add_sheets({
-            'Micro improvements progress': [['State', 'District', 'Year', 'Q1'], ['State', None, 2025, 1]],
-            'Graph_VoiceTab_MI': [['State', 'District', 'Year', 'Q1'], ['State', None, 2025, 1]],
+            'Micro improvements progress': [LINE_CHART_HEADERS, ['State', None, self.sample_year, 1]],
+            'Graph_VoiceTab_MI': [LINE_CHART_HEADERS, ['State', None, self.sample_year, 1]],
         })
         self.run_sheet('Micro improvements progress', ['extract_micro_improvements', 'update_voices_json_line_chart'])
 
     def test_program_upload_attaches_frameworks_after_regeneration(self):
         self.add_sheets({
-            'Programs': [['State Name', 'District Name', 'Program Type', 'Name of the Program'], ['State', '', 'SLC', 'Example']],
+            'Programs': [TABS_METADATA['PROGRAMS'][:4], ['State', '', 'SLC', 'Example']],
             'Impact_Programs': [
-                ['State Name', 'District Name', 'Program Type', 'Name of the Program', 'Impact Layer',
-                 'Framework Dimension / Change', 'Impact Explanation / Points', 'Evidence Link'],
+                TABS_METADATA['IMPACT_PROGRAMS'],
                 ['State', '', 'SLC', 'Example', 'System', 'Change', 'Details', ''],
             ],
         })
@@ -99,13 +101,13 @@ class UploadPageTests(unittest.TestCase):
 
     def test_community_upload_runs_totals_and_district_details(self):
         self.add_sheets({
-            'New_Community led Programs ': [['State'], ['State']],
-            'State_district details': [['State'], ['State']],
+            'New_Community led Programs ': [TABS_METADATA['NEW_COMMUNITY_LED_PROGRAMS'], ['State']],
+            'State_district details': [TABS_METADATA['STATE_DISTRICT_DETAILS'], ['State', '', 'STATE_TEST', '']],
         })
         self.run_sheet('New_Community led Programs ', ['community_led_programs_sum_with_codes', 'extract_community_details'])
 
     def test_missing_followup_sheet_is_reported_and_not_called(self):
-        self.add_sheets({'Micro improvements progress': [['State', 'Year'], ['State', 2025]]})
+        self.add_sheets({'Micro improvements progress': [LINE_CHART_HEADERS, ['State', None, self.sample_year, 1]]})
         calls = []
         self.callbacks['extract_micro_improvements'] = lambda source: calls.append('micro')
         self.callbacks['update_voices_json_line_chart'] = lambda source: self.fail('Missing sheet must not be processed')
@@ -118,8 +120,8 @@ class UploadPageTests(unittest.TestCase):
 
     def test_failure_in_first_sheet_step_does_not_hide_followup(self):
         self.add_sheets({
-            'States details': [['State Name', 'Indicator', 'Definition', 'Data'], ['State', 'Schools', '', 1]],
-            'State_district details': [['State'], ['State']],
+            'States details': [TABS_METADATA['STATE_DETAILS'], ['State', 'Schools', '', 1]],
+            'State_district details': [TABS_METADATA['STATE_DISTRICT_DETAILS'], ['State', '', 'STATE_TEST', '']],
         })
         def fail(source):
             raise ValueError('Invalid homepage value')

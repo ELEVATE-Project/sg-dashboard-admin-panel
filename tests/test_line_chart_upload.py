@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import openpyxl
 
-from constants import GCS_STORAGE_BASE_URL, LINE_CHART_QUARTERS, MICRO_IMPROVEMENTS_PROGRESS_SHEET
+from constants import GCS_STORAGE_BASE_URL, LINE_CHART_HEADERS, MICRO_IMPROVEMENTS_PROGRESS_SHEET
 from processing_report import record_upload
 from tabs_scripts import line_chart
 from upload_page_module import upload_page
@@ -49,7 +49,7 @@ class LineChartUploadTests(unittest.TestCase):
                     }))
                     workbook = openpyxl.Workbook()
                     workbook.active.title = MICRO_IMPROVEMENTS_PROGRESS_SHEET
-                    workbook.active.append(['State', 'District', 'Year', *LINE_CHART_QUARTERS])
+                    workbook.active.append(LINE_CHART_HEADERS)
                     # Reverse input order also verifies that output years are sorted.
                     for year in reversed(years):
                         workbook.active.append([SAMPLE_STATE, None, year, *STATE_QUARTER_VALUES])
