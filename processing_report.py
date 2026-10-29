@@ -3,8 +3,10 @@ import builtins
 from contextvars import ContextVar
 import json
 import re
+from threading import Lock
 
 _current_report = ContextVar("excel_processing_report", default=None)
+dashboard_write_lock = Lock()
 
 
 def report_print(*args, **kwargs):

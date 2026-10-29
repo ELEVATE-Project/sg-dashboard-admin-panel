@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timezone
 
 from constants import GCS_EXCEL_UPLOAD_PREFIX
+from cloud_listing_cache import invalidate_cloud_listings
 
 
 def _load_gcp_access():
@@ -23,11 +24,12 @@ def _safe_filename(filename):
 
 
 def _get_bucket():
-    bucket_name = os.environ.get("BUCKET_NAME")
+    # The helper loads .env; do this before inspecting the bucket setting.
+    gcp_access = _load_gcp_access()
+    bucket_name = (os.environ.get("BUCKET_NAME") or '').strip()
     if not bucket_name:
         return None, None
 
-    gcp_access = _load_gcp_access()
     storage_client = gcp_access.get_storage_client()
     return bucket_name, storage_client.bucket(bucket_name)
 
@@ -73,6 +75,7 @@ def upload_excel_to_gcs(uploaded_file):
         )
 
         print(f"✅ Uploaded source Excel to gs://{bucket_name}/{destination_blob_name}")
+        invalidate_cloud_listings()
         blob.reload()
         return _format_blob_details(bucket_name, blob)
     except Exception as e:
@@ -83,7 +86,7 @@ def upload_excel_to_gcs(uploaded_file):
 def list_uploaded_excels():
     bucket_name, bucket = _get_bucket()
     if not bucket:
-        return []
+        raise ValueError('BUCKET_NAME is not configured. Set it in the root .env file or server environment.')
 
     blobs = bucket.list_blobs(prefix=f"{GCS_EXCEL_UPLOAD_PREFIX}/")
     excel_files = [
@@ -104,6 +107,7 @@ def delete_uploaded_excel(blob_name):
 
     blob = bucket.blob(blob_name)
     blob.delete()
+    invalidate_cloud_listings()
     print(f"✅ Deleted source Excel gs://{bucket_name}/{blob_name}")
     return True
 

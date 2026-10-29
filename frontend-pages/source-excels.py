@@ -1,10 +1,16 @@
 import streamlit as st
+import os
+from functools import partial
+
+from cloud_listing_cache import get_listing, invalidate_cloud_listings
 
 from tabs_scripts.upload_excel_to_gcs import (
     delete_uploaded_excel,
     download_uploaded_excel,
     list_uploaded_excels,
 )
+
+PAGE_SIZE = 5
 
 
 def format_file_size(size_bytes):
@@ -22,18 +28,33 @@ def rerun_app():
         st.experimental_rerun()
 
 
+def change_page(page):
+    st.session_state['_source_excels_page'] = page
+
+
 st.title("Source Excels")
 
 try:
-    excel_uploads = list_uploaded_excels()
+    excel_uploads = get_listing('_source_excel_listing', os.getenv('BUCKET_NAME'), list_uploaded_excels)
+    listing_loaded = True
 except Exception as e:
     st.error(f"❌ Error loading uploaded Excel files: {e}")
     excel_uploads = []
+    listing_loaded = False
 
-if not excel_uploads:
+if listing_loaded and not excel_uploads:
     st.info("No source Excel files uploaded yet.")
 
-for item in excel_uploads:
+total = len(excel_uploads)
+page_count = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+page = min(max(st.session_state.get('_source_excels_page', 0), 0), page_count - 1)
+st.session_state['_source_excels_page'] = page
+start = page * PAGE_SIZE
+end = min(start + PAGE_SIZE, total)
+if total:
+    st.caption(f'Showing {start + 1}–{end} of {total} files · Newest first')
+
+for item in excel_uploads[start:end]:
     col_name, col_uploaded, col_size, col_download, col_delete = st.columns([3, 2, 1, 1, 1])
 
     with col_name:
@@ -48,10 +69,10 @@ for item in excel_uploads:
 
     with col_download:
         try:
-            file_bytes = download_uploaded_excel(item["blob_name"])
             st.download_button(
                 "Download",
-                data=file_bytes,
+                data=partial(download_uploaded_excel, item["blob_name"]),
+                on_click="ignore",
                 file_name=item["file_name"],
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 key=f"download_excel_{item['blob_name']}",
@@ -82,7 +103,22 @@ for item in excel_uploads:
                 st.session_state[confirm_key] = False
                 try:
                     delete_uploaded_excel(item["blob_name"])
+                    invalidate_cloud_listings()
                     st.success(f"Deleted {item['file_name']}")
                     rerun_app()
                 except Exception as e:
                     st.error(f"❌ Error deleting {item['file_name']}: {e}")
+
+if page_count > 1:
+    st.divider()
+    info, previous, following = st.columns([4, 1, 1], vertical_alignment='center')
+    with info:
+        st.caption(f'Page {page + 1} of {page_count} · Showing {start + 1}–{end} of {total} files')
+    with previous:
+        st.button('Previous', key='source_excels_previous', disabled=page == 0,
+                  icon=':material/chevron_left:', use_container_width=True,
+                  on_click=change_page, args=(page - 1,))
+    with following:
+        st.button('Next', key='source_excels_next', disabled=page == page_count - 1,
+                  icon=':material/chevron_right:', type='primary', use_container_width=True,
+                  on_click=change_page, args=(page + 1,))

@@ -2,6 +2,9 @@ import streamlit as st
 import os
 import importlib.util
 import uuid
+import tempfile
+from io import BytesIO
+from cloud_listing_cache import invalidate_cloud_listings
 from tabs_scripts.upload_image_from_device import upload_svg_from_local
 
 # -------------------------------
@@ -35,6 +38,8 @@ if st.session_state.remove_queue:
             blob_name=svg_to_remove["blob_path"],
         )
 
+        invalidate_cloud_listings()
+
         # Remove from session
         st.session_state.uploaded_svgs = [s for s in st.session_state.uploaded_svgs if s["id"] != remove_id]
         st.session_state.removed_message = f":wastebasket: {svg_to_remove['name']} removed successfully"
@@ -58,35 +63,74 @@ st.subheader("SVG Upload Dashboard")
 file_key = f"svg_file_{st.session_state.upload_session_id}"
 name_key = f"image_name_{st.session_state.upload_session_id}"
 
-svg_file = st.file_uploader("Choose SVG image", type=["svg"], key=file_key)
-image_name = st.text_input("Enter image name", value="", key=name_key)
+def remember_selected_svg(widget_key):
+    selected = st.session_state.get(widget_key)
+    if selected is None:
+        st.session_state.pop('_selected_svg_draft', None)
+    else:
+        st.session_state['_selected_svg_draft'] = {
+            'name': selected.name, 'data': selected.getvalue()
+        }
 
-if svg_file and image_name.strip():
-    temp_dir = "temp_uploads"
-    os.makedirs(temp_dir, exist_ok=True)
-    file_path = os.path.join(temp_dir, svg_file.name)
 
-    with open(file_path, "wb") as f:
-        f.write(svg_file.getbuffer())
+svg_file = st.file_uploader(
+    "Choose SVG image", type=["svg"], key=file_key,
+    on_change=remember_selected_svg, args=(file_key,),
+)
+if svg_file is not None:
+    st.session_state['_selected_svg_draft'] = {
+        'name': getattr(svg_file, 'name', 'image.svg'), 'data': svg_file.getvalue()
+    }
+elif st.session_state.get('_selected_svg_draft'):
+    retained = st.session_state['_selected_svg_draft']
+    svg_file = BytesIO(retained['data'])
+    svg_file.name = retained['name']
+    st.caption(f"Selected image: {svg_file.name}")
 
-    if st.button("Upload SVG"):
-        success, result = upload_svg_from_local(file_path, image_name)
-        if success:
-            st.session_state.uploaded_svgs.append({
-                "id": str(uuid.uuid4()),
-                "name": image_name,
-                "blob_path": result["blob_path"],
-                "url": result["url"]
-            })
-            st.session_state.upload_session_id += 1
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                st.warning(f"Could not delete temp file: {e}")
-            st.success(":white_check_mark: SVG uploaded successfully")
-            st.rerun()
+st.markdown(
+    f"<style>.st-key-{name_key} input {{"
+    "border: 1px solid #9ca3af; background-color: #ffffff; border-radius: 6px;"
+    "}</style>",
+    unsafe_allow_html=True,
+)
+image_name = st.text_input(
+    "Enter image name", value=st.session_state.get("_svg_name_draft", ""),
+    key=name_key, placeholder="Enter image name"
+)
+
+st.session_state["_svg_name_draft"] = image_name
+
+if svg_file is not None and image_name.strip() and st.button("Upload SVG", key="upload_svg"):
+    if svg_file is None:
+        st.error("Choose an SVG image before uploading.")
+    elif not image_name.strip():
+        st.error("Enter an image name before uploading.")
+    else:
+        try:
+            # Create a temporary file only when submitting, and always clean it up.
+            with tempfile.TemporaryDirectory(prefix="sg-image-") as temp_dir:
+                file_path = os.path.join(temp_dir, "upload.svg")
+                with open(file_path, "wb") as output:
+                    output.write(svg_file.getbuffer())
+                success, result = upload_svg_from_local(file_path, image_name.strip())
+        except Exception:
+            st.error("Could not upload the image. Check cloud storage configuration and try again.")
         else:
-            st.error(f"Upload failed: {result}")
+            if success:
+                invalidate_cloud_listings()
+                st.session_state.pop("_selected_svg_draft", None)
+                st.session_state.pop("_svg_name_draft", None)
+                st.session_state.uploaded_svgs.append({
+                    "id": str(uuid.uuid4()),
+                    "name": image_name.strip(),
+                    "blob_path": result["blob_path"],
+                    "url": result["url"]
+                })
+                st.session_state.upload_session_id += 1
+                st.session_state.removed_message = ":white_check_mark: SVG uploaded successfully"
+                st.rerun()
+            else:
+                st.error(f"Upload failed: {result}")
 
 # -------------------------------
 # Display all uploaded SVGs with remove buttons
