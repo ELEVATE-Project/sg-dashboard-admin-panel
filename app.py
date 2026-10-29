@@ -18,13 +18,6 @@ st.markdown("""
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 
-    /* Hide outgoing section content while Streamlit replaces its elements. */
-    [class*="st-key-admin_page_"][data-stale="true"],
-    [data-stale="true"] [class*="st-key-admin_page_"],
-    [class*="st-key-admin_page_"] [data-stale="true"] {
-        visibility: hidden !important;
-    }
-
     h1 {
         color: #2e7d32;
         font-size: 36px;
@@ -90,9 +83,18 @@ st.markdown(f'<style>{navigation_css}</style>', unsafe_allow_html=True)
 # section's DOM during a rerun, even when a placeholder is emptied and refilled.
 active_section = st.session_state.get('admin_section', sections[0])
 active_index = sections.index(active_section) if active_section in sections else 0
+section_changed = st.session_state.get('_rendered_admin_section') != active_section
+transition_css = """
+    [class*="st-key-admin_page_"][data-stale="true"],
+    [data-stale="true"] [class*="st-key-admin_page_"],
+    [class*="st-key-admin_page_"] [data-stale="true"] {
+        visibility: hidden !important;
+    }
+""" if section_changed else ''
 st.markdown(
     '<style>[class*="st-key-admin_page_"]:not('
-    f'.st-key-admin_page_{active_index}) {{ display: none !important; }}</style>',
+    f'.st-key-admin_page_{active_index}) {{ display: none !important; }}'
+    f'{transition_css}</style>',
     unsafe_allow_html=True,
 )
 
@@ -148,9 +150,8 @@ def run_page(script_path: str):
 
 # Replace the prior section immediately, including while cloud data is loading.
 section = ADMIN_SECTIONS[sections.index(selected_section)]
-section_slot = st.empty()
-section_slot.empty()
-with section_slot.container():
+st.session_state['_rendered_admin_section'] = selected_section
+with st.container(key='admin_content'):
     with st.container(key=f'admin_page_{sections.index(selected_section)}'):
         st.markdown(f"### {section['heading']}")
         if section['caption']:

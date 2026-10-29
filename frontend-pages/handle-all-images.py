@@ -1,4 +1,5 @@
 import importlib.util
+import logging
 import mimetypes
 import os
 import time
@@ -13,6 +14,7 @@ from cloud_listing_cache import get_listing, invalidate_cloud_listings
 
 ROOT = Path(__file__).resolve().parents[1]
 PAGE_SIZE = 10
+logger = logging.getLogger(__name__)
 
 
 def load_gcp_access():
@@ -46,6 +48,7 @@ def delete_image(blob):
     try:
         blob.delete()
     except Exception:
+        logger.exception('Could not delete image')
         st.session_state['_image_delete_error'] = (
             'Could not delete this image. Check storage delete permissions and try again.'
         )
@@ -93,6 +96,7 @@ def main():
                 '_image_page_listing', (scope, tokens[-1]), load_page
             )
     except Exception:
+        logger.exception('Could not load image listing')
         loading.empty()
         st.error('Could not load images. Check the cloud credentials in the root .env file '
                  'or application default credentials, the bucket name, and storage list permissions.')
@@ -158,6 +162,7 @@ def main():
     try:
         total = get_image_total(bucket_factory=storage_bucket) if blobs or len(tokens) > 1 or next_token else 0
     except Exception:
+        logger.exception('Could not count images')
         total = None  # A failed count must not prevent browsing the images.
     range_label = range_base
     range_label += f' of {total} images' if total is not None else ' images · Total unavailable'

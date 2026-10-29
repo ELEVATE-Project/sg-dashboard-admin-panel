@@ -76,10 +76,13 @@ class HandleImagesTests(unittest.TestCase):
             loader.return_value.get_storage_client.assert_not_called()
 
     def test_configuration_failure_is_reported_without_secret_details(self):
-        with patch.object(page, 'load_gcp_access', side_effect=ValueError('private credential data')):
+        with patch.object(page, 'load_gcp_access', side_effect=ValueError('private credential data')), \
+                self.assertLogs(page.logger, level='ERROR') as logs:
             app = self.app()
             self.assertIn('Could not load images', app.error[0].value)
             self.assertNotIn('private credential data', app.error[0].value)
+            self.assertIn('Could not load image listing', logs.output[0])
+            self.assertIsInstance(logs.records[0].exc_info[1], ValueError)
             self.assertFalse(app.info)
 
     def test_listing_failure_during_iteration_is_reported(self):
@@ -194,10 +197,13 @@ class HandleImagesTests(unittest.TestCase):
         self.counter.side_effect = PermissionError('denied')
         image = self.blob()
         with patch.dict(os.environ, {'BUCKET_NAME': 'test-bucket'}), \
-                patch.object(page, 'load_gcp_access') as loader:
+                patch.object(page, 'load_gcp_access') as loader, \
+                self.assertLogs(page.logger, level='ERROR') as logs:
             loader.return_value.get_storage_client.return_value.bucket.return_value.list_blobs.return_value = Listing([image])
             app = self.app()
             self.assertFalse(app.error)
+            self.assertIn('Could not count images', logs.output[0])
+            self.assertIsInstance(logs.records[0].exc_info[1], PermissionError)
             self.assertIn('Showing 1–1 images · Total unavailable', [item.value for item in app.caption])
             self.assertIn(image.public_url, [item.value for item in app.markdown])
 
@@ -206,7 +212,8 @@ class HandleImagesTests(unittest.TestCase):
         image.delete.side_effect = PermissionError('private error details')
         with patch.dict(os.environ, {'BUCKET_NAME': 'test-bucket'}), \
                 patch.object(page, 'load_gcp_access') as loader, \
-                patch.dict(sys.modules, {'handle_images_test_page': page}):
+                patch.dict(sys.modules, {'handle_images_test_page': page}), \
+                self.assertLogs(page.logger, level='ERROR') as logs:
             loader.return_value.get_storage_client.return_value.bucket.return_value.list_blobs.return_value = Listing([image])
             app = self.app()
             app.button[0].click().run()
@@ -214,6 +221,8 @@ class HandleImagesTests(unittest.TestCase):
             self.assertIn('Could not delete', app.error[0].value)
             self.assertFalse(app.success)
             image.delete.assert_called_once()
+            self.assertIn('Could not delete image', logs.output[0])
+            self.assertIsInstance(logs.records[0].exc_info[1], PermissionError)
 
     def test_successful_delete_refreshes_listing(self):
         image = self.blob()

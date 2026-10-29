@@ -60,14 +60,55 @@ class SourceExcelPaginationTests(unittest.TestCase):
             app = self.app()
             self.listing.assert_called_once()
             self.download.assert_not_called()
+            button.assert_not_called()
+            app.button(key=f"prepare_excel_{self.files[0]['blob_name']}").click().run()
+            self.assertFalse(app.exception)
+            self.assertNotIn(f"prepare_excel_{self.files[0]['blob_name']}",
+                             [action.key for action in app.button])
             request = button.call_args_list[0].kwargs
             self.assertEqual(request['file_name'], self.files[0]['file_name'])
             self.assertEqual(request['on_click'], 'ignore')
-            self.assertEqual(request['data'](), b'excel')
+            self.assertEqual(request['data'], b'excel')
+            self.assertFalse(callable(request['data']))
             self.download.assert_called_once_with(self.files[0]['blob_name'])
             app.run()
             self.assertFalse(app.exception)
             self.listing.assert_called_once()
+
+    def test_download_failure_is_visible_and_retry_succeeds(self):
+        self.download.side_effect = [PermissionError('access denied'), b'excel']
+        app = self.app()
+        prepare_key = f"prepare_excel_{self.files[0]['blob_name']}"
+        app.button(key=prepare_key).click().run()
+        self.assertFalse(app.exception)
+        self.assertIn('Download failed: access denied', [item.value for item in app.error])
+        self.assertNotIn('_source_excel_download', app.session_state)
+        app.button(key=prepare_key).click().run()
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        self.assertEqual(app.session_state['_source_excel_download']['data'], b'excel')
+        self.assertEqual(self.download.call_count, 2)
+        self.delete.assert_not_called()
+
+    def test_missing_download_data_is_reported_and_not_registered(self):
+        self.download.return_value = None
+        with patch('streamlit.download_button') as button:
+            app = self.app()
+            app.button(key=f"prepare_excel_{self.files[0]['blob_name']}").click().run()
+            self.assertFalse(app.exception)
+            self.assertIn('Download failed:', app.error[0].value)
+            self.assertNotIn('_source_excel_download', app.session_state)
+            button.assert_not_called()
+
+    def test_preparing_another_file_replaces_payload_and_paging_clears_it(self):
+        app = self.app()
+        for item in self.files[:2]:
+            app.button(key=f"prepare_excel_{item['blob_name']}").click().run()
+            self.assertFalse(app.exception)
+            self.assertEqual(app.session_state['_source_excel_download']['blob_name'], item['blob_name'])
+        app.button(key='source_excels_next').click().run()
+        self.assertNotIn('_source_excel_download', app.session_state)
+        self.assertEqual(self.download.call_count, 2)
 
     def test_current_page_clamps_when_listing_shrinks(self):
         app = self.app()
