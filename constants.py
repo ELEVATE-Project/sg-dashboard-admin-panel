@@ -1,3 +1,44 @@
+# Admin navigation order, labels, headings, and page scripts.
+ADMIN_SECTIONS = (
+    {
+        "label": "📁 File Upload Dashboard",
+        "heading": "📤 Upload & Manage Data Files",
+        "caption": "Upload your Excel/CSV/TXT files and process them with one click.",
+        "script": "frontend-pages/file-upload.py",
+    },
+    {
+        "label": "🧩 JSON Editor Section",
+        "heading": "🧩 Manage JSON Data Files",
+        "caption": "Edit and save JSON files for landing pages, network data, and more.",
+        "script": "frontend-pages/json-editor.py",
+    },
+    {
+        "label": "Upload image from local device",
+        "heading": "🧩 Upload image from local device",
+        "caption": "Upload svg images and get url of gcs",
+        "script": "frontend-pages/upload-images.py",
+    },
+    {
+        "label": "Handle all images",
+        "heading": "🖼️ Manage Images",
+        "caption": "View and manage uploaded images.",
+        "script": "frontend-pages/handle-all-images.py",
+    },
+    {
+        "label": "Source Excels",
+        "heading": "📦 Source Excels",
+        "caption": "View uploaded Excel source files and delete old ones.",
+        "script": "frontend-pages/source-excels.py",
+    },
+    {
+        "label": "Backend Data Uploader",
+        "heading": "📤 Upload Your Backend CSV File",
+        "caption": None,
+        "script": None,  # This section uses the inline backend upload form.
+    },
+)
+
+
 PAGE_METADATA = {
     "HOME_PAGE": "Data on homepage",
     "PARTNERS":"Partners",

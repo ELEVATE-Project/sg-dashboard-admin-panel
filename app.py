@@ -2,6 +2,9 @@ import streamlit as st
 import importlib.util
 from pathlib import Path
 from admin_auth import require_login
+from constants import ADMIN_SECTIONS
+
+sections = [section["label"] for section in ADMIN_SECTIONS]
 
 st.set_page_config(
     page_title="SG Dashboard Admin Panel", page_icon=":bar_chart:",
@@ -14,12 +17,6 @@ st.markdown("""
     [data-testid="stHeader"] { display: none; }
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
-
-    [data-testid="stElementContainer"][data-stale="true"] {
-        opacity: 1 !important;
-        filter: none !important;
-        transition: none !important;
-    }
 
     h1 {
         color: #2e7d32;
@@ -72,6 +69,35 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# These rules react to the radio input in the browser, before the server rerun.
+# Radio values are option indexes in the pinned Streamlit frontend.
+navigation_css = '\n'.join(
+    f'body:has(.st-key-admin_section input[value="{index}"]:checked) '
+    f'[class*="st-key-admin_page_"]:not(.st-key-admin_page_{index}) '
+    '{ display: none !important; }'
+    for index in range(len(sections))
+)
+st.markdown(f'<style>{navigation_css}</style>', unsafe_allow_html=True)
+
+# Send this before authentication and cloud requests. Streamlit can keep the old
+# section's DOM during a rerun, even when a placeholder is emptied and refilled.
+active_section = st.session_state.get('admin_section', sections[0])
+active_index = sections.index(active_section) if active_section in sections else 0
+section_changed = st.session_state.get('_rendered_admin_section') != active_section
+transition_css = """
+    [class*="st-key-admin_page_"][data-stale="true"],
+    [data-stale="true"] [class*="st-key-admin_page_"],
+    [class*="st-key-admin_page_"] [data-stale="true"] {
+        visibility: hidden !important;
+    }
+""" if section_changed else ''
+st.markdown(
+    '<style>[class*="st-key-admin_page_"]:not('
+    f'.st-key-admin_page_{active_index}) {{ display: none !important; }}'
+    f'{transition_css}</style>',
+    unsafe_allow_html=True,
+)
+
 require_login()
 
 # =========================
@@ -93,16 +119,8 @@ with col2:
     )
 
 # =========================
-# 🗂️ TWO MAIN TABS
+# 🗂️ ADMIN SECTIONS
 # =========================
-sections = [
-    "📁 File Upload Dashboard",
-    "🧩 JSON Editor Section",
-    "Upload image from local device",
-    "Handle all images",
-    "Source Excels",
-    "Backend Data Uploader"
-]
 selected_section = st.radio(
     "Admin sections", sections, index=0, horizontal=True,
     key="admin_section", label_visibility="collapsed"
@@ -130,77 +148,47 @@ def run_page(script_path: str):
         module.main()
 
 
-# =========================
-# TAB 1 → File Upload Page
-# =========================
-if selected_section == sections[0]:
-    st.markdown("### 📤 Upload & Manage Data Files")
-    st.caption("Upload your Excel/CSV/TXT files and process them with one click.")
-    run_page("frontend-pages/file-upload.py")
+# Replace the prior section immediately, including while cloud data is loading.
+section = ADMIN_SECTIONS[sections.index(selected_section)]
+st.session_state['_rendered_admin_section'] = selected_section
+with st.container(key='admin_content'):
+    with st.container(key=f'admin_page_{sections.index(selected_section)}'):
+        st.markdown(f"### {section['heading']}")
+        if section['caption']:
+            st.caption(section['caption'])
 
-# =========================
-# TAB 2 → JSON Editor Page
-# =========================
-elif selected_section == sections[1]:
-    st.markdown("### 🧩 Manage JSON Data Files")
-    st.caption("Edit and save JSON files for landing pages, network data, and more.")
-    run_page("frontend-pages/json-editor.py")
-
-
-
-elif selected_section == sections[2]:
-    st.markdown("### 🧩 Upload image from local device")
-    st.caption("Upload svg images and get url of gcs")
-    run_page("frontend-pages/upload-images.py")
-
-
-elif selected_section == sections[3]:
-    st.markdown("### 🖼️ Manage Images")
-    st.caption("View and manage uploaded images.")
-    run_page("frontend-pages/handle-all-images.py")
-
-
-elif selected_section == sections[4]:
-    st.markdown("### 📦 Source Excels")
-    st.caption("View uploaded Excel source files and delete old ones.")
-    run_page("frontend-pages/source-excels.py")
-
-# =========================
-# TAB 6 → Backend Data Uploader
-# =========================
-
-elif selected_section == sections[5]:
-    from backend_voices_data.backend_data_uploader import CSV_TYPES, upload_to_gcp
-
-    st.markdown("### 📤 Upload Your Backend CSV File")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        csv_type = st.selectbox(
-            "Select Data Type *", 
-            options=["Select..."] + CSV_TYPES,
-            index=0,
-            help="Choose the category of data you are uploading."
-        )
-        
-
-    # File Uploader
-    uploaded_file = st.file_uploader("Upload CSV File *", type=['csv'], key="backend_uploader")
-
-    # Submit Button
-    if st.button("Submit Upload", key="submit_backend"):
-        if csv_type == "Select...":
-            st.error("Please select a valid data type.", icon="🚨")
-        elif uploaded_file is None:
-            st.error("Please upload a file.", icon="🚨")
+        if section['script']:
+            run_page(section['script'])
         else:
-            # Upload
-            with st.spinner("Uploading to GCP and processing..."):
-                success, message = upload_to_gcp(uploaded_file, csv_type)
+            from backend_voices_data.backend_data_uploader import CSV_TYPES, upload_to_gcp
 
-            if success:
-                st.success(message or "JSON file uploaded successfully.", icon="✅")
-                st.balloons()
-            else:
-                st.error(message or "Failed to upload JSON file.", icon="❌")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                csv_type = st.selectbox(
+                    "Select Data Type *",
+                    options=["Select..."] + CSV_TYPES,
+                    index=0,
+                    help="Choose the category of data you are uploading."
+                )
+
+
+            # File Uploader
+            uploaded_file = st.file_uploader("Upload CSV File *", type=['csv'], key="backend_uploader")
+
+            # Submit Button
+            if st.button("Submit Upload", key="submit_backend"):
+                if csv_type == "Select...":
+                    st.error("Please select a valid data type.", icon="🚨")
+                elif uploaded_file is None:
+                    st.error("Please upload a file.", icon="🚨")
+                else:
+                    # Upload
+                    with st.spinner("Uploading to GCP and processing..."):
+                        success, message = upload_to_gcp(uploaded_file, csv_type)
+
+                    if success:
+                        st.success(message or "JSON file uploaded successfully.", icon="✅")
+                        st.balloons()
+                    else:
+                        st.error(message or "Failed to upload JSON file.", icon="❌")

@@ -16,7 +16,7 @@
 
     - name: Fetch the latest code
       git:
-        repo: https://github.com/Vivek-M-08/sg-dashboard-admin-panel.git
+        repo: https://github.com/ELEVATE-Project/sg-dashboard-admin-panel.git
         dest: "{{ project_path }}"
         version: "{{ gitBranch | default('release-2.0.0') }}"
         force: yes

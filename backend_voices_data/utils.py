@@ -3,6 +3,7 @@ Shared utility functions for backend data processing
 """
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from dotenv import load_dotenv
 from google.cloud import storage
@@ -55,14 +56,18 @@ def setup_logger(log_dir, log_filename, logger_name='Processor'):
     
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
-    logger.handlers = []
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        handler.close()
     
     formatter = logging.Formatter(
         '%(asctime)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     
-    file_handler = logging.FileHandler(log_filepath)
+    file_handler = RotatingFileHandler(
+        log_filepath, maxBytes=5 * 1024 * 1024, backupCount=2, encoding='utf-8'
+    )
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)

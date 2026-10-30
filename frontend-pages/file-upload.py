@@ -8,14 +8,13 @@ from io import BytesIO
 import json
 from pathlib import Path
 import re
-from threading import Lock
 
 import openpyxl
 import pandas as pd
 import streamlit as st
 
 from constants import PAGE_METADATA, TABS_METADATA, LEADERS_ENGAGED_SHEET
-from processing_report import _current_report, report_print
+from processing_report import _current_report, dashboard_write_lock, report_print
 from admin_auth import persist_upload_state
 
 
@@ -228,7 +227,7 @@ def bind_upload_reporting(namespace):
 @st.cache_resource
 def _processing_lock():
     # The page is reloaded on reruns; keep one lock across browser sessions.
-    return Lock()
+    return dashboard_write_lock
 
 
 @contextmanager
