@@ -43,6 +43,16 @@ def clean_text(value):
     return "\n".join(lines)
 
 
+def split_cell_entries(value):
+    """Treat newline-separated values in a spreadsheet cell as separate entries."""
+    entries = []
+    for line in str(value or "").splitlines():
+        line = re.sub(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)", "", line).strip()
+        if line:
+            entries.append(line)
+    return entries
+
+
 def clean_json_value(value):
     if isinstance(value, str):
         return clean_text(value)
@@ -278,10 +288,10 @@ def get_framework_row_key(row_dict):
 def add_framework_entry(framework_by_layer, row_dict):
     impact_layer = str(row_dict.get("impact_layer") or "").strip()
     dimension = str(row_dict.get("framework_dimension__change") or "").strip()
-    explanation = str(row_dict.get("impact_explanation__points") or "").strip()
-    evidence_link = str(row_dict.get("evidence_link") or "").strip()
+    explanations = split_cell_entries(row_dict.get("impact_explanation__points"))
+    evidence_links = split_cell_entries(row_dict.get("evidence_link"))
 
-    if not (impact_layer or dimension or explanation or evidence_link):
+    if not (impact_layer or dimension or explanations or evidence_links):
         return
 
     layer = framework_by_layer.setdefault(
@@ -299,14 +309,17 @@ def add_framework_entry(framework_by_layer, row_dict):
         },
     )
 
-    detail = {}
-    if explanation:
-        detail["description"] = explanation
-    if evidence_link:
-        detail["evidence_link"] = evidence_link
-
-    if detail:
-        framework["details"].append(detail)
+    # Keep point/evidence pairs aligned by line number. Retain extra links as
+    # evidence entries and extra points as cards when the counts differ.
+    pair_count = max(len(explanations), len(evidence_links))
+    for index in range(pair_count):
+        detail = {}
+        if index < len(explanations):
+            detail["description"] = explanations[index]
+        if index < len(evidence_links):
+            detail["evidence_link"] = evidence_links[index]
+        if detail:
+            framework["details"].append(detail)
 
 
 def serialize_framework(framework_by_layer):

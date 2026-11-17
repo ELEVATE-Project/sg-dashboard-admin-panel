@@ -3,6 +3,7 @@
 import hashlib
 import hmac
 import ipaddress
+import json
 import math
 import os
 import pickle
@@ -12,6 +13,7 @@ from copy import deepcopy
 from collections import deque
 from pathlib import Path
 from threading import Lock
+from datetime import datetime, timezone, timedelta
 
 import streamlit as st
 from dotenv import dotenv_values
@@ -19,6 +21,9 @@ from streamlit.components.v2 import component
 
 
 ENV_FILE = Path(__file__).resolve().parent / ".env"
+ACTIVITY_FILE = Path(__file__).resolve().parent / "logs" / "admin_activity.jsonl"
+ACTIVITY_RETENTION_DAYS = 90
+_activity_lock = Lock()
 IDLE_TIMEOUT = 30 * 60
 SESSION_TIMEOUT = 8 * 60 * 60
 MAX_LOGIN_FAILURES = 5
@@ -149,9 +154,102 @@ def _credentials():
         # Passwords containing ${...} must be compared literally.
         config = dotenv_values(ENV_FILE, interpolate=False)
     except (OSError, UnicodeError):
-        return "", ""
-    return tuple(config.get(key, os.environ.get(key, "")) or ""
-                 for key in ("ADMIN_USERNAME", "ADMIN_PASSWORD"))
+        config = {}
+    raw_users = config.get("ADMIN_USERS", os.environ.get("ADMIN_USERS", "")) or ""
+    if raw_users:
+        try:
+            users = json.loads(raw_users)
+            return {str(user): str(secret) for user, secret in users.items()
+                    if user and secret} if isinstance(users, dict) else {}
+        except (ValueError, AttributeError):
+            return {}
+    username, password = (config.get(key, os.environ.get(key, "")) or ""
+                          for key in ("ADMIN_USERNAME", "ADMIN_PASSWORD"))
+    return {username: password} if username and password else {}
+
+
+def current_admin():
+    return st.session_state.get('_admin_username', '')
+
+
+def _browser_and_os():
+    """Return coarse browser/OS labels from the request's user-agent header."""
+    try:
+        agent = st.context.headers.get('User-Agent', '') or ''
+    except Exception:
+        agent = ''
+    if 'Edg/' in agent:
+        browser = 'Edge'
+    elif 'Chrome/' in agent:
+        browser = 'Chrome'
+    elif 'Firefox/' in agent:
+        browser = 'Firefox'
+    elif 'Safari/' in agent:
+        browser = 'Safari'
+    else:
+        browser = 'Unknown'
+    if 'Windows' in agent:
+        operating_system = 'Windows'
+    elif 'Mac OS X' in agent or 'Macintosh' in agent:
+        operating_system = 'macOS'
+    elif 'Android' in agent:
+        operating_system = 'Android'
+    elif 'iPhone' in agent or 'iPad' in agent:
+        operating_system = 'iOS/iPadOS'
+    elif 'Linux' in agent:
+        operating_system = 'Linux'
+    else:
+        operating_system = 'Unknown'
+    return browser, operating_system
+
+
+def record_activity(event, *, username=None, filename='', status='', details=''):
+    """Append a small audit record and prune records outside the retention window."""
+    browser, operating_system = _browser_and_os()
+    session_token = st.session_state.get('_browser_session_token', '')
+    session_id = hashlib.sha256(session_token.encode()).hexdigest()[:12] if session_token else ''
+    row = {'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+           'event': event, 'username': username or current_admin() or 'unknown',
+           'ip': _client_ip(), 'browser': browser, 'operating_system': operating_system,
+           'session_id': session_id, 'filename': str(filename)[:240], 'status': status,
+           'details': str(details)[:240]}
+    cutoff = datetime.now(timezone.utc) - timedelta(days=ACTIVITY_RETENTION_DAYS)
+    with _activity_lock:
+        try:
+            existing = ACTIVITY_FILE.read_text(encoding='utf-8').splitlines()
+        except OSError:
+            existing = []
+        retained = []
+        for line in existing:
+            try:
+                saved = json.loads(line)
+                timestamp = datetime.fromisoformat(saved['timestamp'])
+                if timestamp >= cutoff:
+                    retained.append(json.dumps(saved, ensure_ascii=False))
+            except (ValueError, KeyError, TypeError):
+                continue
+        ACTIVITY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        temporary = ACTIVITY_FILE.with_suffix('.tmp')
+        temporary.write_text('\n'.join([*retained, json.dumps(row, ensure_ascii=False)]) + '\n', encoding='utf-8')
+        os.replace(temporary, ACTIVITY_FILE)
+
+
+def read_activity():
+    with _activity_lock:
+        try:
+            lines = ACTIVITY_FILE.read_text(encoding='utf-8').splitlines()
+        except OSError:
+            return []
+    rows = []
+    cutoff = datetime.now(timezone.utc) - timedelta(days=ACTIVITY_RETENTION_DAYS)
+    for line in lines:
+        try:
+            row = json.loads(line)
+            if datetime.fromisoformat(row['timestamp']) >= cutoff:
+                rows.append(row)
+        except (ValueError, KeyError, TypeError):
+            continue
+    return rows
 
 
 def _session_token(username, password):
@@ -210,7 +308,7 @@ def _login_limits(client_ip, supplied_username, now):
 
 
 def _login():
-    username, password = _credentials()
+    users = _credentials()
     supplied_username = st.session_state.pop("_login_username", "")
     supplied_password = st.session_state.pop("_login_password", "")
     client_ip = _client_ip()
@@ -219,29 +317,38 @@ def _login():
         retry_after, limits = _login_limits(client_ip, supplied_username, now)
         if retry_after:
             _logout()
+            record_activity('login', username=supplied_username, status='blocked')
             st.session_state["_login_error"] = (
                 f"Too many sign-in attempts. Try again in "
                 f"{retry_after} seconds."
             )
             return
-        username_matches = hmac.compare_digest(supplied_username.encode(), username.encode())
+        password = users.get(supplied_username, '')
+        username_matches = bool(password)
         password_matches = hmac.compare_digest(supplied_password.encode(), password.encode())
         _logout()
-        if username and password and username_matches and password_matches:
+        if username_matches and password_matches:
             # A successful login must not reset other sources' or the IP's budget.
             _login_failures.pop(limits[1][0], None)
+            username = supplied_username
             st.session_state["_admin_session"] = _session_token(username, password)
+            st.session_state['_admin_username'] = supplied_username
             st.session_state["_admin_signed_in_at"] = now
             st.session_state["_admin_last_active"] = now
             _start_browser_session(username, password, now)
+            record_activity('login', username=supplied_username, status='success')
+            st.session_state.pop('_login_error', None)
         else:
             for key, limit in limits:
                 _login_failures.setdefault(key, deque(maxlen=limit)).append(now)
             _global_login_failures.append(now)
             st.session_state["_login_error"] = "Invalid username or password."
+            record_activity('login', username=supplied_username, status='failed')
 
 
 def _logout():
+    if st.session_state.get('_admin_username'):
+        record_activity('logout', status='success')
     key = _browser_key(st.session_state.get('_browser_session_token'))
     with _session_lock:
         _browser_sessions.pop(key, None)
@@ -360,17 +467,19 @@ LOGIN_STYLE = """
 
 def require_login():
     """Stop before any admin functionality loads for an unauthenticated user."""
-    username, password = _credentials()
-    if not username or not password:
+    users = _credentials()
+    if not users:
         _logout()
-        st.error("Admin login is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD on the server.")
+        st.error("Admin login is not configured. Set ADMIN_USERS or ADMIN_USERNAME and ADMIN_PASSWORD on the server.")
         st.stop()
 
     # Keep login and logout in separate, fixed slots. Clearing the login slot
     # replaces its entire tree before any dashboard elements are sent.
     login_slot = st.empty()
     header_slot = st.empty()
-    valid = _valid_session(username, password)
+    active_username = st.session_state.get('_admin_username', '')
+    active_password = users.get(active_username, '')
+    valid = bool(active_password) and _valid_session(active_username, active_password)
     if not valid and "_admin_session" in st.session_state:
         _logout()
         st.session_state["_login_notice"] = "Your session has ended. Please sign in again."
@@ -382,7 +491,7 @@ def require_login():
             if not browser.get('token'):
                 st.session_state.pop('_browser_clear_pending', None)
         elif not valid and browser.get('token'):
-            valid = _resume_browser_session(browser['token'], username, password)
+            valid = bool(active_password) and _resume_browser_session(browser['token'], active_username, active_password)
             if not valid:
                 st.session_state['_browser_clear_pending'] = True
                 st.rerun()

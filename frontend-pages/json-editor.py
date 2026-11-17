@@ -9,6 +9,7 @@ import streamlit as st
 from streamlit_ace import st_ace
 
 from processing_report import dashboard_write_lock
+from admin_auth import record_activity
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -125,6 +126,8 @@ def save_document(path, edited_json, expected_version, publish=False):
                     result['upload_error'] = 'Cloud storage did not confirm the upload.'
             except Exception as error:
                 result['upload_error'] = str(error)
+            record_activity('upload', filename=path.name,
+                            status='success' if not result['upload_error'] else 'failed', details='JSON publish')
         return result
 
 
