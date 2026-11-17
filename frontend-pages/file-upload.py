@@ -338,12 +338,16 @@ def process(file_bytes, inventory, upload_key, status):
             st.session_state['_excel_results'] = results
             live_results.dataframe(pd.DataFrame(result_rows(results)), hide_index=True, width='stretch')
 
+        completed = False
         try:
             with reporting_steps(run_step):
                 yield
+            completed = True
         finally:
             record_activity('upload', filename=uploaded_file.name,
-                            status='success' if results and all(item['status'] not in ('Failed', 'Partial') for item in results) else 'failed',
+                            status='success' if completed and results and all(
+                                item['status'] not in ('Failed', 'Partial') for item in results
+                            ) else 'failed',
                             details=f'Workbook processing · {len(results)} step(s)')
         needs_attention = any(result['status'] in ('Failed', 'Partial', 'Warning') for result in results)
         status.update(label='Processing finished — review results below' if needs_attention else 'Processing finished',

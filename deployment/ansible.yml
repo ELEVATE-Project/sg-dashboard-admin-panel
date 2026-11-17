@@ -51,6 +51,27 @@
         virtualenv: "{{ venv_path }}"
         extra_args: "--upgrade pip"
 
+    - name: Install logrotate
+      package:
+        name: logrotate
+        state: present
+
+    - name: Configure bounded application log retention
+      copy:
+        dest: /etc/logrotate.d/sg-dashboard-admin
+        mode: '0644'
+        content: |
+          {{ project_path }}/logs/*.log {{ root_path }}/logs/streamlit.log {
+              daily
+              maxsize 10M
+              rotate 14
+              missingok
+              notifempty
+              compress
+              delaycompress
+              copytruncate
+          }
+
     - name: Create streamlit start script
       copy:
         dest: "{{ root_path }}/start-streamlit.sh"

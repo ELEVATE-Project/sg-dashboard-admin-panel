@@ -47,7 +47,9 @@ def split_cell_entries(value):
     """Treat newline-separated values in a spreadsheet cell as separate entries."""
     entries = []
     for line in str(value or "").splitlines():
-        line = re.sub(r"^\s*(?:[-*•]\s*|\d+[.)]\s*)", "", line).strip()
+        # Require whitespace after list markers so values like "-5%" and
+        # "3.5 million" keep their leading sign or decimal part.
+        line = re.sub(r"^\s*(?:[-*•]\s+|\d+[.)]\s+)", "", line).strip()
         if line:
             entries.append(line)
     return entries

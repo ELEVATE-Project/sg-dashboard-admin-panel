@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import ipaddress
 import json
+import logging
 import math
 import os
 import pickle
@@ -23,7 +24,12 @@ from streamlit.components.v2 import component
 ENV_FILE = Path(__file__).resolve().parent / ".env"
 ACTIVITY_FILE = Path(__file__).resolve().parent / "logs" / "admin_activity.jsonl"
 ACTIVITY_RETENTION_DAYS = 90
+MAX_ACTIVITY_EVENTS = 10_000
+MAX_ACTIVITY_FILE_BYTES = 10 * 1024 * 1024
+ACTIVITY_CLEANUP_INTERVAL = 5 * 60
 _activity_lock = Lock()
+_last_activity_cleanup = 0.0
+_logger = logging.getLogger(__name__)
 IDLE_TIMEOUT = 30 * 60
 SESSION_TIMEOUT = 8 * 60 * 60
 MAX_LOGIN_FAILURES = 5
@@ -34,6 +40,7 @@ LOGIN_WINDOW = 60
 # Shared across browser sessions in this server process; refreshing cannot reset it.
 _login_failures = {}
 _global_login_failures = deque(maxlen=MAX_GLOBAL_LOGIN_FAILURES)
+_blocked_audit_last = {}
 _login_lock = Lock()
 _browser_sessions = {}
 _session_lock = Lock()
@@ -94,18 +101,24 @@ def _start_browser_session(username, password, now):
             del _browser_sessions[oldest]
         _browser_sessions[_browser_key(token)] = {
             'credentials': _session_token(username, password),
+            'username': username,
             'signed_in': now, 'last_active': now, 'upload_state': {}, 'upload_bytes': 0,
         }
     st.session_state['_browser_session_token'] = token
     st.session_state.pop('_browser_clear_pending', None)
 
 
-def _resume_browser_session(token, username, password):
+def _resume_browser_session(token, users):
     key = _browser_key(token)
     now = time.monotonic()
     with _session_lock:
         record = _browser_sessions.get(key)
         if not record:
+            return False
+        username = record.get('username', '')
+        password = users.get(username, '')
+        if not password:
+            del _browser_sessions[key]
             return False
         if not (_record_is_current(record, now) and hmac.compare_digest(
                 record['credentials'], _session_token(username, password))):
@@ -114,6 +127,7 @@ def _resume_browser_session(token, username, password):
         record['last_active'] = now
         restored = deepcopy(record['upload_state'])
         st.session_state['_admin_session'] = record['credentials']
+        st.session_state['_admin_username'] = username
         st.session_state['_admin_signed_in_at'] = record['signed_in']
         st.session_state['_admin_last_active'] = now
     st.session_state['_browser_session_token'] = token
@@ -204,42 +218,42 @@ def _browser_and_os():
 
 
 def record_activity(event, *, username=None, filename='', status='', details=''):
-    """Append a small audit record and prune records outside the retention window."""
-    browser, operating_system = _browser_and_os()
-    session_token = st.session_state.get('_browser_session_token', '')
-    session_id = hashlib.sha256(session_token.encode()).hexdigest()[:12] if session_token else ''
-    row = {'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
-           'event': event, 'username': username or current_admin() or 'unknown',
-           'ip': _client_ip(), 'browser': browser, 'operating_system': operating_system,
-           'session_id': session_id, 'filename': str(filename)[:240], 'status': status,
-           'details': str(details)[:240]}
-    cutoff = datetime.now(timezone.utc) - timedelta(days=ACTIVITY_RETENTION_DAYS)
-    with _activity_lock:
-        try:
-            existing = ACTIVITY_FILE.read_text(encoding='utf-8').splitlines()
-        except OSError:
-            existing = []
-        retained = []
-        for line in existing:
-            try:
-                saved = json.loads(line)
-                timestamp = datetime.fromisoformat(saved['timestamp'])
-                if timestamp >= cutoff:
-                    retained.append(json.dumps(saved, ensure_ascii=False))
-            except (ValueError, KeyError, TypeError):
-                continue
-        ACTIVITY_FILE.parent.mkdir(parents=True, exist_ok=True)
-        temporary = ACTIVITY_FILE.with_suffix('.tmp')
-        temporary.write_text('\n'.join([*retained, json.dumps(row, ensure_ascii=False)]) + '\n', encoding='utf-8')
-        os.replace(temporary, ACTIVITY_FILE)
+    """Append an audit record without letting audit-storage faults break app work."""
+    try:
+        browser, operating_system = _browser_and_os()
+        session_token = st.session_state.get('_browser_session_token', '')
+        session_id = hashlib.sha256(session_token.encode()).hexdigest()[:12] if session_token else ''
+        row = {'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+               'event': event, 'username': username or current_admin() or 'unknown',
+               'ip': _client_ip(), 'browser': browser, 'operating_system': operating_system,
+               'session_id': session_id, 'filename': str(filename)[:240], 'status': status,
+               'details': str(details)[:240]}
+        with _activity_lock:
+            _cleanup_activity_locked()
+            ACTIVITY_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with ACTIVITY_FILE.open('a', encoding='utf-8') as activity_file:
+                activity_file.write(json.dumps(row, ensure_ascii=False) + '\n')
+        return True
+    except Exception:
+        _logger.exception('Could not write admin activity event %r', event)
+        return False
 
 
-def read_activity():
-    with _activity_lock:
-        try:
-            lines = ACTIVITY_FILE.read_text(encoding='utf-8').splitlines()
-        except OSError:
-            return []
+def _cleanup_activity_locked(*, force=False):
+    """Periodically keep only valid, recent events within the count and byte caps."""
+    global _last_activity_cleanup
+    try:
+        size = ACTIVITY_FILE.stat().st_size
+    except OSError:
+        return []
+    now = time.monotonic()
+    if (not force and _last_activity_cleanup > 0 and size <= MAX_ACTIVITY_FILE_BYTES
+            and now - _last_activity_cleanup < ACTIVITY_CLEANUP_INTERVAL):
+        return []
+    try:
+        lines = ACTIVITY_FILE.read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return []
     rows = []
     cutoff = datetime.now(timezone.utc) - timedelta(days=ACTIVITY_RETENTION_DAYS)
     for line in lines:
@@ -249,7 +263,28 @@ def read_activity():
                 rows.append(row)
         except (ValueError, KeyError, TypeError):
             continue
+    serialized = [json.dumps(row, ensure_ascii=False) + '\n' for row in rows]
+    serialized_bytes = sum(len(line.encode('utf-8')) for line in serialized)
+    while serialized and (len(serialized) > MAX_ACTIVITY_EVENTS
+                          or serialized_bytes > MAX_ACTIVITY_FILE_BYTES):
+        serialized_bytes -= len(serialized.pop(0).encode('utf-8'))
+        rows.pop(0)
+    if len(rows) != len(lines) or size > MAX_ACTIVITY_FILE_BYTES:
+        ACTIVITY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        temporary = ACTIVITY_FILE.with_suffix('.tmp')
+        temporary.write_text(''.join(serialized), encoding='utf-8')
+        os.replace(temporary, ACTIVITY_FILE)
+    _last_activity_cleanup = now
     return rows
+
+
+def read_activity():
+    with _activity_lock:
+        try:
+            return _cleanup_activity_locked(force=True)
+        except Exception:
+            _logger.exception('Could not read or clean the admin activity log')
+            return []
 
 
 def _session_token(username, password):
@@ -307,6 +342,24 @@ def _login_limits(client_ip, supplied_username, now):
     return 0, limits
 
 
+def _should_audit_blocked_login(client_ip, supplied_username, now):
+    """Record at most one blocked attempt per IP/account during the limit window."""
+    key = hashlib.sha256(f"{client_ip}\0{supplied_username}".encode()).hexdigest()
+    previous = _blocked_audit_last.get(key)
+    if previous is not None and now - previous < LOGIN_WINDOW:
+        return False
+    if previous is not None:
+        del _blocked_audit_last[key]
+    if len(_blocked_audit_last) >= MAX_LOGIN_KEYS:
+        for old_key, last_recorded in list(_blocked_audit_last.items()):
+            if now - last_recorded >= LOGIN_WINDOW:
+                del _blocked_audit_last[old_key]
+        if len(_blocked_audit_last) >= MAX_LOGIN_KEYS:
+            return False
+    _blocked_audit_last[key] = now
+    return True
+
+
 def _login():
     users = _credentials()
     supplied_username = st.session_state.pop("_login_username", "")
@@ -317,7 +370,8 @@ def _login():
         retry_after, limits = _login_limits(client_ip, supplied_username, now)
         if retry_after:
             _logout()
-            record_activity('login', username=supplied_username, status='blocked')
+            if _should_audit_blocked_login(client_ip, supplied_username, now):
+                record_activity('login', username=supplied_username, status='blocked')
             st.session_state["_login_error"] = (
                 f"Too many sign-in attempts. Try again in "
                 f"{retry_after} seconds."
@@ -491,7 +545,7 @@ def require_login():
             if not browser.get('token'):
                 st.session_state.pop('_browser_clear_pending', None)
         elif not valid and browser.get('token'):
-            valid = bool(active_password) and _resume_browser_session(browser['token'], active_username, active_password)
+            valid = _resume_browser_session(browser['token'], users)
             if not valid:
                 st.session_state['_browser_clear_pending'] = True
                 st.rerun()
