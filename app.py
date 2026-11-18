@@ -1,7 +1,7 @@
 import streamlit as st
 import importlib.util
 from pathlib import Path
-from admin_auth import require_login
+from admin_auth import require_login, record_activity
 from constants import ADMIN_SECTIONS
 
 sections = [section["label"] for section in ADMIN_SECTIONS]
@@ -185,7 +185,12 @@ with st.container(key='admin_content'):
                 else:
                     # Upload
                     with st.spinner("Uploading to GCP and processing..."):
-                        success, message = upload_to_gcp(uploaded_file, csv_type)
+                        try:
+                            success, message = upload_to_gcp(uploaded_file, csv_type)
+                        except Exception as error:
+                            success, message = False, str(error)
+                        record_activity('upload', filename=getattr(uploaded_file, 'name', ''),
+                                        status='success' if success else 'failed', details=f'Backend CSV · {csv_type}')
 
                     if success:
                         st.success(message or "JSON file uploaded successfully.", icon="✅")

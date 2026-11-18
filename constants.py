@@ -36,6 +36,12 @@ ADMIN_SECTIONS = (
         "caption": None,
         "script": None,  # This section uses the inline backend upload form.
     },
+    {
+        "label": "Admin Activity Log",
+        "heading": "Admin Activity Log",
+        "caption": "Login and upload events retained for 90 days.",
+        "script": "frontend-pages/activity-log.py",
+    },
 )
 
 

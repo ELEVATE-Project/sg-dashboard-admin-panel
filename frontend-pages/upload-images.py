@@ -6,6 +6,7 @@ import tempfile
 from io import BytesIO
 from cloud_listing_cache import invalidate_cloud_listings
 from tabs_scripts.upload_image_from_device import upload_svg_from_local
+from admin_auth import record_activity
 
 # -------------------------------
 # Session state initialization
@@ -114,9 +115,11 @@ if svg_file is not None and image_name.strip() and st.button("Upload SVG", key="
                     output.write(svg_file.getbuffer())
                 success, result = upload_svg_from_local(file_path, image_name.strip())
         except Exception:
+            record_activity('upload', filename=getattr(svg_file, 'name', image_name.strip()), status='failed', details='SVG upload')
             st.error("Could not upload the image. Check cloud storage configuration and try again.")
         else:
             if success:
+                record_activity('upload', filename=getattr(svg_file, 'name', image_name.strip()), status='success', details='SVG upload')
                 invalidate_cloud_listings()
                 st.session_state.pop("_selected_svg_draft", None)
                 st.session_state.pop("_svg_name_draft", None)
@@ -130,6 +133,7 @@ if svg_file is not None and image_name.strip() and st.button("Upload SVG", key="
                 st.session_state.removed_message = ":white_check_mark: SVG uploaded successfully"
                 st.rerun()
             else:
+                record_activity('upload', filename=getattr(svg_file, 'name', image_name.strip()), status='failed', details='SVG upload')
                 st.error(f"Upload failed: {result}")
 
 # -------------------------------

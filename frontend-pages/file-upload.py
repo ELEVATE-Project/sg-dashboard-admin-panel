@@ -15,7 +15,7 @@ import streamlit as st
 
 from constants import PAGE_METADATA, TABS_METADATA, LEADERS_ENGAGED_SHEET
 from processing_report import _current_report, dashboard_write_lock, report_print
-from admin_auth import persist_upload_state
+from admin_auth import persist_upload_state, record_activity
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -338,8 +338,17 @@ def process(file_bytes, inventory, upload_key, status):
             st.session_state['_excel_results'] = results
             live_results.dataframe(pd.DataFrame(result_rows(results)), hide_index=True, width='stretch')
 
-        with reporting_steps(run_step):
-            yield
+        completed = False
+        try:
+            with reporting_steps(run_step):
+                yield
+            completed = True
+        finally:
+            record_activity('upload', filename=uploaded_file.name,
+                            status='success' if completed and results and all(
+                                item['status'] not in ('Failed', 'Partial') for item in results
+                            ) else 'failed',
+                            details=f'Workbook processing · {len(results)} step(s)')
         needs_attention = any(result['status'] in ('Failed', 'Partial', 'Warning') for result in results)
         status.update(label='Processing finished — review results below' if needs_attention else 'Processing finished',
                       state='error' if needs_attention else 'complete', expanded=False)
